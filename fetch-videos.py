@@ -29,14 +29,14 @@ def load_api_key():
 def get_channel_videos(channel_id):
     
     # load youtube API KEY
-    developerKey = load_api_key()
+    developer_key = load_api_key()
 
     # Build the YouTube API client
-    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey)
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey = developer_key)
     
     # Fetch the uploaded videos playlist for the channel
-    request = youtube.channels().list(part="contentDetails", id=channel_id)
-    response = request.execute()
+    # request = youtube.channels().list(part="contentDetails", id=channel_id)
+    response = youtube.channels().list(part="contentDetails", id=channel_id).execute()
     
     # Get the uploads playlist ID
     playlist_id = response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
@@ -49,14 +49,18 @@ def get_channel_videos(channel_id):
     
     # Parse and return video details
     videos = [
-        {"title": item["snippet"]["title"], "videoId": item["snippet"]["resourceId"]["videoId"]}
+        {
+            "title": item["snippet"]["title"],
+            "videoId": item["snippet"]["resourceId"]["videoId"],
+            "url": f"https://www.youtube.com/watch?v={item['snippet']['resourceId']['videoId']}"
+        }
         for item in response.get("items", [])
     ]
     return videos
 
 # Example usage
 if __name__ == "__main__":
-    channel_id = "UC_x5XG1OV2P6uZZ5FSM9Ttw"  # Example channel ID (Google Developers)
+    channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # Example channel ID (Google Developers)
     videos = get_channel_videos(channel_id)
     for video in videos:
-        print(f"Title: {video['title']}, Video ID: {video['videoId']}")
+        print(f"Title: {video['title']}, Video ID: {video['videoId']}, URL: {video['url']}")
