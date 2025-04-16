@@ -7,3 +7,6 @@ pip intall -r requirements.txt
 
 # freeze dependencies into file
 pip freeze > requirements.txt
+
+# google cloud console
+https://console.cloud.google.com/apis/

@@ -35,8 +35,8 @@ def get_channel_videos(channel_id):
     youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey = developer_key)
     
     # Fetch the uploaded videos playlist for the channel
-    # request = youtube.channels().list(part="contentDetails", id=channel_id)
-    response = youtube.channels().list(part="contentDetails", id=channel_id).execute()
+    request = youtube.channels().list(part="contentDetails", id=channel_id)
+    response = request.execute()
     
     # Get the uploads playlist ID
     playlist_id = response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
