@@ -1,4 +1,5 @@
 from googleapiclient.discovery import build
+from youtube_transcript_api import YouTubeTranscriptApi
 
 import os
 from dotenv import load_dotenv
@@ -58,9 +59,27 @@ def get_channel_videos(channel_id):
     ]
     return videos
 
+
+def fetch_transcript(video_id, languages=['es']):
+    """
+    Returns a plain-text transcript for the given YouTube video ID.
+    """
+    # Fetch raw transcript segments
+    transcript_list = YouTubeTranscriptApi.get_transcript(
+        video_id, languages=languages
+    )
+    # Join all text segments into one string
+    full_text = " ".join(segment['text'] for segment in transcript_list)
+    return full_text
+
+
 # Example usage
 if __name__ == "__main__":
     channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # Example channel ID (Google Developers)
     videos = get_channel_videos(channel_id)
     for video in videos:
         print(f"Title: {video['title']}, Video ID: {video['videoId']}, URL: {video['url']}")
+
+    vid = "2GDyF6Nv6Dc"  # Replace with your videoId - "V9I8K0R3tgU" b1jUQUSsp0A
+    text = fetch_transcript(vid)
+    print(f"\nVideo transcript: {text}")
