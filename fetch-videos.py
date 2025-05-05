@@ -6,6 +6,10 @@ from dotenv import load_dotenv
 
 import openai
 
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+
+# Set Hugging Face cache directory to D:\hf_cache
+os.environ["HF_HOME"] = "D:/software_projects/hf_cache"
 
 # Replace with your API key
 YOUTUBE_API_SERVICE_NAME = "youtube"
@@ -125,12 +129,52 @@ def summarize_for_twitter(text: str) -> str:
         model="gpt-3.5-turbo",  # or "gpt-4o-mini" if cost is a concern and you have access or "gpt-4o"
         messages=[{"role": "user", "content": prompt_short}],
         temperature=0.5,
-        max_tokens=100
+        max_tokens=100,
     )
 
     # 4. Extract and return the assistant’s reply
     return response.choices[0].message.content.strip()
 
+
+def get_text_generator(
+        model_name: str = "google/flan-t5-small",  # Changed from LlamaForCausalLM to a compatible seq2seq model
+        max_new_tokens: int = 64,
+        temperature: float = 0.7,                  # Slightly lower for more factual, financial tone
+        do_sample: bool = True,
+        tokenizer: str = "google/flan-t5-small",
+    ):
+    """
+    Returns a Hugging Face text-generation pipeline configured with your parameters.
+
+    :param model_name: the pre-trained model to use (must match tokenizer for seq2seq)
+    :param max_new_tokens: how many new tokens to generate
+    :param temperature: sampling temperature (0.0 for greedy)
+    :param do_sample: whether to use sampling (vs. greedy decoding)
+    """
+    return pipeline(
+        "text2text-generation",  # Changed to match model type (flan-T5 is encoder-decoder)
+        model=model_name,
+        framework="pt",  # <-- Force PyTorch backend (optional)
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        do_sample=do_sample,
+        tokenizer=tokenizer
+    )
+
+
+
+def call_llm(generator, prompt: str) -> str:
+    """
+    Feeds your prompt into the given generator pipeline.
+
+    :param generator: a transformers text-generation pipeline
+    :param prompt: the full prompt/instruction you want the model to follow
+    """
+
+    output = generator(prompt)[0]["generated_text"]
+
+    # Remove the prompt from the beginning of the result
+    return output[len(prompt):].strip()
 
 # Example usage
 if __name__ == "__main__":
@@ -143,5 +187,26 @@ if __name__ == "__main__":
     transcript_text = fetch_transcript(vid)
     print(f"\nVideo transcript: {transcript_text}")
 
-    twitter_summary = summarize_for_twitter(transcript_text)
+    # twitter_summary = summarize_for_twitter(transcript_text)
+
+    # instantiate once (fast) and reuse
+    gen = get_text_generator()
+
+    # 2. Define your prompt with the transcript appended
+    prompt = (
+        "Could you summarize the video script I pass you below in several independent sentences?\n"
+        "The sentences should be education-focused and designed to be posted on Twitter (X) as independent posts.\n"
+        "Provide 3–5 short sentences, not more. Sentences should be really meaningful and targeted to a financial investing community.\n"
+        "Some examples of previously produced sentences:\n"
+        "1– Warren Buffett is stockpiling cash, not to time the market but to seize rare opportunities when prices drop—patience pays. 💰📉 #InvestingWisdom #ValueInvesting\n"
+        "2– Market corrections often stem from external catalysts, not overvaluation alone. Staying prepared beats market timing. 🧠📊 #StockMarket #LongTermInvesting\n"
+        "3– Diversification and a long-term mindset are key in navigating market volatility. Ride the waves, don’t chase the tide. 🌊📈 #FinancialFreedom #InvestSmart\n"
+        "4– In market downturns, cash is king. Buffett’s 2008 investments in Goldman Sachs and GE proved that opportunity comes to the prepared. 🔑💼 #CashOnHand #BuffettWisdom\n"
+        "5– Stock market corrections can be golden opportunities. As Buffett says, when it rains gold, carry a wash tub—not a teaspoon. 🌧️💵 #StockMarketCorrection #WealthBuilding\n\n"
+        f"---\n\nHere’s the transcript:\n{transcript_text}\n\n"
+        "Please output only the list of new sentences."
+    )
+
+    twitter_summary = call_llm(gen, prompt)
+
     print("Generated Tweets:\n", twitter_summary)
