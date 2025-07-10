@@ -4,7 +4,9 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import os
 from dotenv import load_dotenv
 
-import openai
+from openai import OpenAI
+
+import re
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
@@ -97,7 +99,7 @@ def get_transcript_from_video(video_id, languages=['es']):
     # Join all text segments into one string
     full_text = " ".join(segment['text'] for segment in transcript_list)
 
-    print("Video transcript created successfully.")
+    print(f"Video:{video_id} transcript created successfully.")
 
     return full_text
 
@@ -107,6 +109,44 @@ def load_prompt_from_file(prompt_file_name):
     with open(ruta, "r", encoding="utf-8") as f:
         print(f"Prompt loaded successfully from file: {prompt_file_name}")
         return f.read()
+    
+
+def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
+    
+    api_key = load_openai_api_key()
+    
+    if not api_key:
+        raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
+
+    client = OpenAI(api_key=api_key)
+
+    # Wrap the prompt with an instruction to output max_sentences sentences, one per line
+    system_message = {
+        "role": "system",
+        "content": (
+            "You are a helpful assistant. "
+            "Summarize the following transcript into "
+            f"{max_sentences} independent, education-focused sentences "
+            "designed for Twitter. Output each sentence on its own line, "
+            "without numbering or bullet points."
+        )
+    }
+    user_message = {"role": "user", "content": prompt}
+
+    # Llamada a la API
+    response = client.chat.completions.create(
+        model=model,
+        messages=[system_message, user_message],
+        temperature=0.7
+    )
+
+    raw_output = response.choices[0].message.content
+
+    # Split lines, strip whitespace, remove any leading digits or bullets
+    lines = [line.strip() for line in raw_output.splitlines() if line.strip()]
+    clean_sentences = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
+
+    return clean_sentences
 
 
 def summarize_for_twitter(text: str) -> str:
@@ -208,12 +248,16 @@ if __name__ == "__main__":
 
     print(f"Prompt base + Video transcript:\n{prompt_with_transcript}")
 
+    tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
+
+    for idx, tweet in enumerate(tweets, start=1):
+        print(f"Tweet:{idx}: {tweet}")
 
     # twitter_summary = summarize_for_twitter(transcript_text)
 
     # instantiate once (fast) and reuse
-    gen = get_text_generator()
+    # gen = get_text_generator()
 
-    twitter_summary = call_llm(gen, prompt)
+    # twitter_summary = call_llm(gen, prompt)
 
-    print("Generated Tweets:\n", twitter_summary)
+    # print("Generated Tweets:\n", twitter_summary)
