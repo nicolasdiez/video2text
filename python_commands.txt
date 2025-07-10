@@ -3,7 +3,7 @@ source video2text-venv/Scripts/activate
 
 # install dependencies from file
 source video2text-venv/Scripts/activate
-pip intall -r requirements.txt
+pip install -r requirements.txt
 
 # freeze dependencies into file
 pip freeze > requirements.txt

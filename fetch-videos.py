@@ -8,6 +8,7 @@ import openai
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
+
 # Set Hugging Face cache directory to D:\hf_cache
 os.environ["HF_HOME"] = "D:/software_projects/hf_cache"
 
@@ -47,7 +48,7 @@ def load_openai_api_key():
     return OPENAI_API_KEY
 
 
-def get_channel_videos(channel_id):
+def get_channel_videos(channel_id, max_videos=10):
     
     # load youtube API KEY
     developer_key = load_youtube_api_key()
@@ -64,7 +65,7 @@ def get_channel_videos(channel_id):
     
     # Fetch videos from the playlist
     request = youtube.playlistItems().list(
-        part="snippet", playlistId=playlist_id, maxResults=10
+        part="snippet", playlistId=playlist_id, maxResults=max_videos
     )
     response = request.execute()
     
@@ -77,10 +78,15 @@ def get_channel_videos(channel_id):
         }
         for item in response.get("items", [])
     ]
+
+    print(f"Channel ID: {channel_id}")
+    print(f"Max requested videos: {max_videos}")
+    print(f"Number of videos fetched: {len(videos)}")
+
     return videos
 
 
-def fetch_transcript(video_id, languages=['es']):
+def get_transcript_from_video(video_id, languages=['es']):
     """
     Returns a plain-text transcript for the given YouTube video ID.
     """
@@ -90,7 +96,17 @@ def fetch_transcript(video_id, languages=['es']):
     )
     # Join all text segments into one string
     full_text = " ".join(segment['text'] for segment in transcript_list)
+
+    print("Video transcript created successfully.")
+
     return full_text
+
+
+def load_prompt_from_file(prompt_file_name):
+    ruta = f"prompts/{prompt_file_name}"
+    with open(ruta, "r", encoding="utf-8") as f:
+        print(f"Prompt loaded successfully from file: {prompt_file_name}")
+        return f.read()
 
 
 def summarize_for_twitter(text: str) -> str:
@@ -145,7 +161,6 @@ def get_text_generator(
     ):
     """
     Returns a Hugging Face text-generation pipeline configured with your parameters.
-
     :param model_name: the pre-trained model to use (must match tokenizer for seq2seq)
     :param max_new_tokens: how many new tokens to generate
     :param temperature: sampling temperature (0.0 for greedy)
@@ -162,7 +177,6 @@ def get_text_generator(
     )
 
 
-
 def call_llm(generator, prompt: str) -> str:
     """
     Feeds your prompt into the given generator pipeline.
@@ -176,36 +190,29 @@ def call_llm(generator, prompt: str) -> str:
     # Remove the prompt from the beginning of the result
     return output[len(prompt):].strip()
 
+
 # Example usage
 if __name__ == "__main__":
     channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # Example channel ID (Google Developers)
     videos = get_channel_videos(channel_id)
-    for video in videos:
-        print(f"Title: {video['title']}, Video ID: {video['videoId']}, URL: {video['url']}")
+    for i, video in enumerate(videos, start=1):
+        print(f"Video: {i}, Title: {video['title']}, Video ID: {video['videoId']}, URL: {video['url']}")
 
-    vid = "2GDyF6Nv6Dc"  # Replace with your videoId - "V9I8K0R3tgU" b1jUQUSsp0A
-    transcript_text = fetch_transcript(vid)
-    print(f"\nVideo transcript: {transcript_text}")
+    videoId = "2GDyF6Nv6Dc"  # Replace with your videoId - "V9I8K0R3tgU" b1jUQUSsp0A
+    transcript_text = get_transcript_from_video(videoId)
+    # print(f"Video transcript:\n{transcript_text}")
+
+
+    prompt_base = load_prompt_from_file("shortsentences-from-transcript.txt")
+    prompt_with_transcript = f"{prompt_base.strip()}\n{transcript_text}"
+
+    print(f"Prompt base + Video transcript:\n{prompt_with_transcript}")
+
 
     # twitter_summary = summarize_for_twitter(transcript_text)
 
     # instantiate once (fast) and reuse
     gen = get_text_generator()
-
-    # 2. Define your prompt with the transcript appended
-    prompt = (
-        "Could you summarize the video script I pass you below in several independent sentences?\n"
-        "The sentences should be education-focused and designed to be posted on Twitter (X) as independent posts.\n"
-        "Provide 3–5 short sentences, not more. Sentences should be really meaningful and targeted to a financial investing community.\n"
-        "Some examples of previously produced sentences:\n"
-        "1– Warren Buffett is stockpiling cash, not to time the market but to seize rare opportunities when prices drop—patience pays. 💰📉 #InvestingWisdom #ValueInvesting\n"
-        "2– Market corrections often stem from external catalysts, not overvaluation alone. Staying prepared beats market timing. 🧠📊 #StockMarket #LongTermInvesting\n"
-        "3– Diversification and a long-term mindset are key in navigating market volatility. Ride the waves, don’t chase the tide. 🌊📈 #FinancialFreedom #InvestSmart\n"
-        "4– In market downturns, cash is king. Buffett’s 2008 investments in Goldman Sachs and GE proved that opportunity comes to the prepared. 🔑💼 #CashOnHand #BuffettWisdom\n"
-        "5– Stock market corrections can be golden opportunities. As Buffett says, when it rains gold, carry a wash tub—not a teaspoon. 🌧️💵 #StockMarketCorrection #WealthBuilding\n\n"
-        f"---\n\nHere’s the transcript:\n{transcript_text}\n\n"
-        "Please output only the list of new sentences."
-    )
 
     twitter_summary = call_llm(gen, prompt)
 
