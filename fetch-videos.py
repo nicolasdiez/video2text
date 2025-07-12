@@ -50,7 +50,7 @@ def load_openai_api_key():
     return OPENAI_API_KEY
 
 
-def get_channel_videos(channel_id, max_videos=10):
+def get_videos_from_channel(channel_id, max_videos=10):
     
     # load youtube API KEY
     developer_key = load_youtube_api_key()
@@ -124,7 +124,7 @@ def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-t
     system_message = {
         "role": "system",
         "content": (
-            "You are a helpful assistant. "
+            "You are a helpful assistant."
             "Summarize the following transcript into "
             f"{max_sentences} independent, education-focused sentences "
             "designed for Twitter. Output each sentence on its own line, "
@@ -233,15 +233,18 @@ def call_llm(generator, prompt: str) -> str:
 
 # Example usage
 if __name__ == "__main__":
+
     channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # Example channel ID (Google Developers)
-    videos = get_channel_videos(channel_id)
+
+    videos = get_videos_from_channel(channel_id)
+    
     for i, video in enumerate(videos, start=1):
         print(f"Video: {i}, Title: {video['title']}, Video ID: {video['videoId']}, URL: {video['url']}")
 
     videoId = "2GDyF6Nv6Dc"  # Replace with your videoId - "V9I8K0R3tgU" b1jUQUSsp0A
+    
     transcript_text = get_transcript_from_video(videoId)
     # print(f"Video transcript:\n{transcript_text}")
-
 
     prompt_base = load_prompt_from_file("shortsentences-from-transcript.txt")
     prompt_with_transcript = f"{prompt_base.strip()}\n{transcript_text}"
@@ -251,7 +254,7 @@ if __name__ == "__main__":
     tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
 
     for idx, tweet in enumerate(tweets, start=1):
-        print(f"Tweet:{idx}: {tweet}")
+        print(f"Tweet:{idx} - {tweet}")
 
     # twitter_summary = summarize_for_twitter(transcript_text)
 
