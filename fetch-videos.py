@@ -58,19 +58,19 @@ def load_twitter_api_credentials():
     load_dotenv()
 
     # Recupera cada una de las 5 credenciales necesarias
-    consumer_key    = os.getenv('TWITTER_API_KEY')
-    consumer_secret = os.getenv('TWITTER_API_SECRET')
-    access_token    = os.getenv('TWITTER_ACCESS_TOKEN')
-    access_secret   = os.getenv('TWITTER_ACCESS_SECRET')
-    bearer_token    = os.getenv('TWITTER_BEARER_TOKEN')
+    consumer_key    = os.getenv('X_API_KEY')
+    consumer_secret = os.getenv('X_API_SECRET')
+    access_token    = os.getenv('X_API_ACCESS_TOKEN')
+    access_secret   = os.getenv('X_API_ACCESS_TOKEN_SECRET')
+    bearer_token    = os.getenv('X_API_BEARER_TOKEN')
 
     # Comprueba si falta alguna
     missing = []
-    if not consumer_key:    missing.append('TWITTER_API_KEY')
-    if not consumer_secret: missing.append('TWITTER_API_SECRET')
-    if not access_token:    missing.append('TWITTER_ACCESS_TOKEN')
-    if not access_secret:   missing.append('TWITTER_ACCESS_SECRET')
-    if not bearer_token:    missing.append('TWITTER_BEARER_TOKEN')
+    if not consumer_key:    missing.append('X_API_KEY')
+    if not consumer_secret: missing.append('X_API_SECRET')
+    if not access_token:    missing.append('X_API_ACCESS_TOKEN')
+    if not access_secret:   missing.append('X_API_ACCESS_TOKEN_SECRET')
+    if not bearer_token:    missing.append('X_API_BEARER_TOKEN')
 
     if missing:
         raise RuntimeError(
@@ -182,19 +182,35 @@ def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-t
 
 def post_tweet_v2(text: str) -> str:
 
-    TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET, TWITTER_BEARER_TOKEN = load_twitter_api_credentials()
+    X_API_KEY, X_API_SECRET, X_API_ACCESS_TOKEN, X_API_ACCESS_TOKEN_SECRET, X_API_BEARER_TOKEN = load_twitter_api_credentials()
+
+    print(X_API_KEY, X_API_SECRET, X_API_ACCESS_TOKEN, X_API_ACCESS_TOKEN_SECRET, X_API_BEARER_TOKEN)
 
     client = tweepy.Client(
-       consumer_key=TWITTER_API_KEY,
-        consumer_secret=TWITTER_API_SECRET,
-        access_token=TWITTER_ACCESS_TOKEN,
-        access_token_secret=TWITTER_ACCESS_SECRET,
-        bearer_token=TWITTER_BEARER_TOKEN
+        consumer_key=X_API_KEY,
+        consumer_secret=X_API_SECRET,
+        access_token=X_API_ACCESS_TOKEN,
+        access_token_secret=X_API_ACCESS_TOKEN_SECRET,
+        bearer_token=X_API_BEARER_TOKEN
     )
 
     resp = client.create_tweet(text=text)
     return resp.data["id"]
 
+
+def load_tweets_debugging():
+
+    # Prepara un objeto 'tweets' con 5 elementos para depuración
+    tweets = [
+        "For beginner investors, focusing on stock market investments through index funds like the S&P 500 can reduce risk and provide automatic diversification. 📈💼 #Investing101 #IndexFunds",
+        "Selecting individual stocks may not be the best strategy for beginners due to the necessary time and knowledge. Index funds offer a simpler and more hands-off approach to investing. 📊🔍 #InvestSmart #Diversification",
+        "Utilizing a broker to facilitate stock purchases and implementing a strategy of regular, scheduled investments can help beginners navigate the complexities of the market with reduced risk. 💻💸 #Brokerage #InvestingStrategy",
+        "Investing in index funds allows beginners to access a diverse portfolio of top companies, with the added benefit of automatic adjustments to maintain portfolio balance. 🌐💰 #FinancialEducation #AutomaticInvesting",
+        "Beginner investors can start their investment journey with minimal risk by opting for index funds, which offer exposure to a broad range of companies without the need for extensive time and expertise. 📚💡 #InvestingBasics #LowRiskInvesting"
+        ]
+
+
+    return tweets
 
 def summarize_for_twitter(text: str) -> str:
     """
@@ -298,10 +314,11 @@ if __name__ == "__main__":
 
     print(f"Prompt base + Video transcript:\n{prompt_with_transcript}")
 
-    tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
+    # tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
+    tweets = load_tweets_debugging()
 
     for idx, tweet in enumerate(tweets, start=1):
-        print(f"Tweet:{idx} - {tweet}")
+        print(f"Tweet: {idx} - {tweet}")
 
     tweet_text = tweets.pop(0)
     tweet_id = post_tweet_v2(tweet_text)
