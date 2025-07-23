@@ -6,7 +6,7 @@ source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
 # freeze dependencies into file
-pip freeze > requirements.txt
+python -m pip freeze > requirements.txt
 
 # google cloud console
 https://console.cloud.google.com/apis/

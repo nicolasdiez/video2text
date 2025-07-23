@@ -10,6 +10,7 @@ import re
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
+import tweepy
 
 # Set Hugging Face cache directory to D:\hf_cache
 os.environ["HF_HOME"] = "D:/software_projects/hf_cache"
@@ -36,6 +37,7 @@ def load_youtube_api_key():
 
 
 def load_openai_api_key():
+
     # Load variables from the .env file into the environment
     load_dotenv()
 
@@ -48,6 +50,35 @@ def load_openai_api_key():
 
     print("Loaded Open AI API key successfully.")
     return OPENAI_API_KEY
+
+
+def load_twitter_api_credentials():
+
+    # Carga las variables definidas en el fichero .env al entorno de ejecución
+    load_dotenv()
+
+    # Recupera cada una de las 5 credenciales necesarias
+    consumer_key    = os.getenv('TWITTER_API_KEY')
+    consumer_secret = os.getenv('TWITTER_API_SECRET')
+    access_token    = os.getenv('TWITTER_ACCESS_TOKEN')
+    access_secret   = os.getenv('TWITTER_ACCESS_SECRET')
+    bearer_token    = os.getenv('TWITTER_BEARER_TOKEN')
+
+    # Comprueba si falta alguna
+    missing = []
+    if not consumer_key:    missing.append('TWITTER_API_KEY')
+    if not consumer_secret: missing.append('TWITTER_API_SECRET')
+    if not access_token:    missing.append('TWITTER_ACCESS_TOKEN')
+    if not access_secret:   missing.append('TWITTER_ACCESS_SECRET')
+    if not bearer_token:    missing.append('TWITTER_BEARER_TOKEN')
+
+    if missing:
+        raise RuntimeError(
+            f"Faltan las siguientes credenciales de Twitter en el .env: {', '.join(missing)}"
+        )
+
+    print("Todas las credenciales de Twitter se han cargado correctamente.")
+    return consumer_key, consumer_secret, access_token, access_secret, bearer_token
 
 
 def get_videos_from_channel(channel_id, max_videos=10):
@@ -147,6 +178,22 @@ def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-t
     clean_sentences = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
     return clean_sentences
+
+
+def post_tweet_v2(text: str) -> str:
+
+    TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET, TWITTER_BEARER_TOKEN = load_twitter_api_credentials()
+
+    client = tweepy.Client(
+       consumer_key=TWITTER_API_KEY,
+        consumer_secret=TWITTER_API_SECRET,
+        access_token=TWITTER_ACCESS_TOKEN,
+        access_token_secret=TWITTER_ACCESS_SECRET,
+        bearer_token=TWITTER_BEARER_TOKEN
+    )
+
+    resp = client.create_tweet(text=text)
+    return resp.data["id"]
 
 
 def summarize_for_twitter(text: str) -> str:
@@ -255,6 +302,10 @@ if __name__ == "__main__":
 
     for idx, tweet in enumerate(tweets, start=1):
         print(f"Tweet:{idx} - {tweet}")
+
+    tweet_text = tweets.pop(0)
+    tweet_id = post_tweet_v2(tweet_text)
+    print(f"Publicado en X (v2) con ID: {tweet_id}")
 
     # twitter_summary = summarize_for_twitter(transcript_text)
 
