@@ -212,6 +212,7 @@ def load_tweets_debugging():
 
     return tweets
 
+
 def summarize_for_twitter(text: str) -> str:
     """
     Sends the transcript text to ChatGPT and returns a 3–5 sentence,
