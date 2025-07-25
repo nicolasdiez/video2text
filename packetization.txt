@@ -1,0 +1,51 @@
+video2text/
+├── domain/
+│   ├── entities/
+│   │   ├── user.py
+│   │   ├── channel.py
+│   │   ├── video.py
+│   │   ├── tweet_generation.py
+│   │   ├── tweet.py
+│   │   └── tweet_published.py
+│   └── ports/
+│       ├── user_repository.py
+│       ├── channel_repository.py
+│       ├── video_repository.py
+│       ├── tweet_generation_repository.py
+│       ├── tweet_published_repository.py
+│       ├── tweet_repository.py
+│       ├── video_source_port.py
+│       ├── transcription_port.py
+│       ├── openai_port.py
+│       └── twitter_port.py
+│
+├── adapters/
+│   ├── inbound/
+│   │   └─
+│   └── outbound/
+│       ├── mongodb/
+│       │   ├── user_repository.py
+│       │   ├── channel_repository.py
+│       │   ├── video_repository.py
+│       │   ├── tweet_repository.py
+│       │   ├── tweet_generation_repository.py
+│       │   └── tweet_published_repository.py
+│       ├── youtube_video_client.py
+│       ├── transcription_client.py
+│       ├── openai_client.py
+│       └── twitter_client.py
+│
+├── application/
+│   └── services/
+│       ├── user_service.py
+│       ├── channel_service.py
+│       ├── video_service.py
+│       ├── tweet_generation_service.py
+│       ├── published_tweet_service.py
+│       └── pipeline_service.py
+│
+├── infrastructure/
+│   ├── config.py      # carga .env y Settings
+│   └── db.py          # inicializa AsyncIOMotorClient y exporta `db`
+│
+└── main.py            # arranca FastAPI, registra routers de adapters/inbound/http/
