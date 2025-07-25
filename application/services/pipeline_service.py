@@ -36,13 +36,13 @@ class PipelineService:
 
     async def run_for_channel(self, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
 
-        # 1) Obtener videos nuevos del canal
-        videos: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel_id, max_videos)
-        print(f"[PipelineService] {len(videos)} videos obtenidos del canal {channel_id}")
-
-        # 2) Cargar prompt base desde fichero
+        # 1) Cargar prompt base desde fichero
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
         print(f"[PipelineService] Prompt cargado: {prompt_file}")
+
+        # 2) Obtener videos nuevos del canal
+        videos: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel_id, max_videos)
+        print(f"[PipelineService] {len(videos)} videos obtenidos del canal {channel_id}")
 
         # 3) Procesar cada video
         for idx, video in enumerate(videos, start=1):

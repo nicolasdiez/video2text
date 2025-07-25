@@ -6,7 +6,7 @@ import asyncio
 from openai import OpenAI
 from domain.ports.openai_port import OpenAIPort
 
-class OpenAIAdapter(OpenAIPort):
+class OpenAIClient(OpenAIPort):
     """
     Implementación de OpenAIPort usando la librería oficial openai.
     """
@@ -15,7 +15,7 @@ class OpenAIAdapter(OpenAIPort):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
 
 
-    async def generate_sentences(self, prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
+    async def generate_tweets(self, prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
         
         if not self.api_key:
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
