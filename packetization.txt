@@ -17,6 +17,7 @@ video2text/
 │       ├── video_source_port.py
 │       ├── transcription_port.py
 │       ├── openai_port.py
+│       ├── prompt_loader_port.py
 │       └── twitter_port.py
 │
 ├── adapters/

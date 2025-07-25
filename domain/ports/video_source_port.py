@@ -10,5 +10,5 @@ class VideoMetadata(Protocol):
 
 class VideoSourcePort(ABC):
     @abstractmethod
-    async def fetch_new_videos(self, channel_id: str) -> List[VideoMetadata]:
+    async def fetch_new_videos(self, channel_id: str, max_videos: int) -> List[VideoMetadata]:
         pass
