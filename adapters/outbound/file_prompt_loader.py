@@ -11,12 +11,13 @@ class FilePromptLoader(PromptLoaderPort):
     """
     Implementación de PromptLoaderPort que lee desde el sistema de archivos.
     """
-
+    
     def __init__(self, prompts_dir: str = "prompts"):
         self.prompts_dir = prompts_dir
         
         # Logging
         print(f"[{self.__class__.__name__}] __init__ finished OK")
+
 
     async def load_prompt(self, prompt_file_name: str) -> str:
         """

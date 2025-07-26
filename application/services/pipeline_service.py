@@ -36,7 +36,7 @@ class PipelineService:
 
     async def run_for_channel(self, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
 
-        # 1) Cargar prompt base desde fichero
+        # 1) Cargar prompt base desde fichero (sin bloquear hilo)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
         print(f"[PipelineService] Prompt cargado: {prompt_file}")
 

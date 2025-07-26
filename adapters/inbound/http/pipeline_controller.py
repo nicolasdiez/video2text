@@ -23,6 +23,7 @@ async def run_pipeline(channel_id: str, body: RunRequest):
       - prompt_file: path al prompt base
       - max_tweets: tweets máximos a generar
     """
+    
     try:
         await pipeline_service.run_for_channel(channel_id = channel_id, prompt_file = body.prompt_file, max_videos = body.max_videos, max_tweets = body.max_tweets)
         return {"status": "success"}
