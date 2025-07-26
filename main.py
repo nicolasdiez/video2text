@@ -40,7 +40,7 @@ twitter_client = TwitterClient(
     bearer_token       = TWITTER_BEARER_TOKEN
 )
 
-# Crear la instancia del PipelineService con las implementaciones concretas de los adaptadores (inyecto Adapters en los Ports de PipelineService)
+# Crear la instancia del PipelineService con las implementaciones concretas de los adaptadores (inyectar Adapters en los Ports de PipelineService)
 pipeline_service_instance = PipelineService(
     video_source   = video_source,
     transcriber    = transcriber,
@@ -49,14 +49,14 @@ pipeline_service_instance = PipelineService(
     twitter_client = twitter_client,
 )
 
-# Inyectar la instancia de PipelineService con todos los Adapters creados en la variable pipeline_service (PipelineService) de pipeline controller 
+# Inyectar la instancia de PipelineService (ya con todos los Adapters) en la variable pipeline_service (PipelineService) del pipeline controller 
 pipeline_controller.pipeline_service = pipeline_service_instance
 
-# Monta FastAPI y registra el router de pipeline
+# Montar FastAPI y registrar el router de pipeline
 app = FastAPI(
     title       = "YouTube→Tweet Pipeline",
     version     = "1.0.0",
-    description = "Orquesta videos de YouTube, genera tweets con OpenAI y los publica en Twitter."
+    description = "Recupera videos de YouTube, genera tweets con OpenAI y los publica en Twitter."
 )
 
 app.include_router(pipeline_controller.router)

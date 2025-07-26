@@ -34,6 +34,7 @@ class OpenAIClient(OpenAIPort):
 
 
     def _call_and_process(self, prompt: str, max_sentences: int, model: str) -> list[str]:
+        
         client = OpenAI(api_key=self.api_key)
 
         system_message = {

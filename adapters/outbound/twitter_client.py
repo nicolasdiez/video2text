@@ -51,9 +51,9 @@ class TwitterClient(TwitterPort):
 
     async def publish(self, text: str) -> str:
         """
-        Publica un tweet de forma asíncrona delegando la llamada bloqueante
-        a un hilo aparte.
+        Publica un tweet de forma asíncrona delegando la llamada bloqueante a un hilo aparte.
         """
+
         tweet_id = await asyncio.to_thread(self._publish_sync, text)
 
         # Logging
@@ -61,8 +61,10 @@ class TwitterClient(TwitterPort):
 
         return tweet_id
 
+
     def _publish_sync(self, text: str) -> str:
-        # Aquí se llama al método bloqueante de tweepy
+
+        # Aquí se llama al método bloqueante create_tweet(...) de tweepy
         resp = self.client.create_tweet(text=text)
         tweet_id = resp.data["id"]
         print(f"[TwitterClient] Tweet published with ID: {tweet_id}")

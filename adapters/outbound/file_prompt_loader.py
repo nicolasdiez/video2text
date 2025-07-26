@@ -1,6 +1,5 @@
 # adapters/outbound/file_prompt_loader.py
 
-
 import os
 import asyncio
 import inspect  # para trazas logging con print
