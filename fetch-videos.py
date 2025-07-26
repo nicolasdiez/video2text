@@ -315,7 +315,7 @@ if __name__ == "__main__":
 
     print(f"Prompt base + Video transcript:\n{prompt_with_transcript}")
 
-    # tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
+    tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
     tweets = load_tweets_debugging()
 
     for idx, tweet in enumerate(tweets, start=1):

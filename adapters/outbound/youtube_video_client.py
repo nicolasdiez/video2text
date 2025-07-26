@@ -1,4 +1,6 @@
 import os
+import inspect  # para trazas logging con print
+
 from typing import List
 from googleapiclient.discovery import build
 
@@ -14,6 +16,9 @@ class YouTubeVideo(VideoMetadata):
 
 
 class YouTubeVideoClient(VideoSourcePort):
+    """
+    Implementación del puerto VideoSourcePort para recuperar videos de un canal mediante fetch_new_videos.
+    """
 
     def __init__(self, api_key: str = None):
 
@@ -28,6 +33,10 @@ class YouTubeVideoClient(VideoSourcePort):
             "v3",         # versión
             developerKey=self.api_key
         )
+
+        # Logging
+        print(f"[{self.__class__.__name__}] __init__ finished OK")
+
 
     async def fetch_new_videos(self, channel_id: str, max_videos: int = 10) -> List[VideoMetadata]:
         
@@ -58,5 +67,6 @@ class YouTubeVideoClient(VideoSourcePort):
         # Logging
         print(f"[YouTubeVideoClient] Canal: {channel_id}")
         print(f"[YouTubeVideoClient] Solicitados: {max_videos}, Obtenidos: {len(videos)}")
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
 
         return videos

@@ -3,6 +3,7 @@
 import os
 import asyncio
 import tweepy
+import inspect  # para trazas logging con print
 
 from domain.ports.twitter_port import TwitterPort
 
@@ -44,16 +45,29 @@ class TwitterClient(TwitterPort):
             bearer_token        = self.bearer_token
         )
 
+        # Logging
+        print(f"[{self.__class__.__name__}] __init__ finished OK")
+
+
     async def publish(self, text: str) -> str:
         """
         Publica un tweet de forma asíncrona delegando la llamada bloqueante
         a un hilo aparte.
         """
-        return await asyncio.to_thread(self._publish_sync, text)
+        tweet_id = await asyncio.to_thread(self._publish_sync, text)
+
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+
+        return tweet_id
 
     def _publish_sync(self, text: str) -> str:
         # Aquí se llama al método bloqueante de tweepy
         resp = self.client.create_tweet(text=text)
         tweet_id = resp.data["id"]
         print(f"[TwitterClient] Tweet published with ID: {tweet_id}")
+
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+
         return tweet_id

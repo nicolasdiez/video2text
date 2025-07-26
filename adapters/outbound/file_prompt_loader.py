@@ -3,6 +3,8 @@
 
 import os
 import asyncio
+import inspect  # para trazas logging con print
+
 from domain.ports.prompt_loader_port import PromptLoaderPort
 
 class FilePromptLoader(PromptLoaderPort):
@@ -12,6 +14,9 @@ class FilePromptLoader(PromptLoaderPort):
 
     def __init__(self, prompts_dir: str = "prompts"):
         self.prompts_dir = prompts_dir
+        
+        # Logging
+        print(f"[{self.__class__.__name__}] __init__ finished OK")
 
     async def load_prompt(self, prompt_file_name: str) -> str:
         """
@@ -20,8 +25,15 @@ class FilePromptLoader(PromptLoaderPort):
         path = os.path.join(self.prompts_dir, prompt_file_name)
         content = await asyncio.to_thread(self._read_file, path)
         print(f"[FilePromptLoader] Prompt loaded successfully from file: {prompt_file_name}")
+        
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        
         return content
+    
 
     def _read_file(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
+            # Logging
+            print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
             return f.read()

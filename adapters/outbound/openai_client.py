@@ -3,6 +3,8 @@
 import os
 import re
 import asyncio
+import inspect  # para trazas logging con print
+
 from openai import OpenAI
 from domain.ports.openai_port import OpenAIPort
 
@@ -13,6 +15,9 @@ class OpenAIClient(OpenAIPort):
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        
+        # Logging
+        print(f"[{self.__class__.__name__}] __init__ finished OK")
 
 
     async def generate_tweets(self, prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
@@ -20,7 +25,12 @@ class OpenAIClient(OpenAIPort):
         if not self.api_key:
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
 
-        return await asyncio.to_thread(self._call_and_process, prompt, max_sentences, model)
+        clean = await asyncio.to_thread(self._call_and_process, prompt, max_sentences, model)
+
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+
+        return clean
 
 
     def _call_and_process(self, prompt: str, max_sentences: int, model: str) -> list[str]:
@@ -47,5 +57,8 @@ class OpenAIClient(OpenAIPort):
         raw_output = response.choices[0].message.content
         lines = [line.strip() for line in raw_output.splitlines() if line.strip()]
         clean = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
+
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
 
         return clean

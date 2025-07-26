@@ -33,6 +33,7 @@ video2text/
 │       │   └── tweet_published_repository.py
 │       ├── youtube_video_client.py
 │       ├── transcription_client.py
+│       ├── file_prompt_loader.py
 │       ├── openai_client.py
 │       └── twitter_client.py
 │

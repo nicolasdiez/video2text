@@ -2,6 +2,8 @@
 
 import os
 import asyncio
+import inspect  # para trazas logging con print
+
 from typing import Optional
 from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -9,18 +11,21 @@ from domain.ports.transcription_port import TranscriptionPort
 
 class YouTubeTranscriptionClient(TranscriptionPort):
     """
-    Implementación del puerto TranscriptionPort usando youtube_transcript_api para obtener la transcripción. Maneja un único idioma.
+    Implementación del puerto TranscriptionPort usando YouTubeTranscriptApi para obtener la transcripción. Maneja un único idioma.
     """
 
     def __init__(self, default_language: str = "es"):
         self.default_language = default_language
+
+        # Logging
+        print(f"[{self.__class__.__name__}] __init__ finished OK")
 
 
     async def transcribe(self, video_id: str, language: Optional[str] = None) -> str:
         """
         Descarga y concatena la transcripción de un video.
         """
-        lang = language  or self.default_language
+        lang = language or self.default_language
 
         # youtube_transcript_api es síncrono, lo ejecutamos en un hilo aparte
         transcript_list = await asyncio.to_thread(
@@ -33,5 +38,8 @@ class YouTubeTranscriptionClient(TranscriptionPort):
         full_text = " ".join(segment["text"] for segment in transcript_list)
 
         print(f"[YouTubeTranscriptionClient] Video: {video_id} transcript created successfully.")
-
+        
+        # Logging
+        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        
         return full_text
