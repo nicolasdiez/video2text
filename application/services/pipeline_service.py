@@ -1,5 +1,5 @@
 # application/services/pipeline_service.py
-# recordatorio --> todo lo que vive en application/services solo debe importar Ports (no Adapters)
+# recordatorio --> todo lo que vive en /application (negocio) solo debe importar y usar Ports (no Adapters)
 
 from domain.ports.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.transcription_port import TranscriptionPort

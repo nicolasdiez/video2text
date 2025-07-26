@@ -9,7 +9,7 @@ from domain.ports.prompt_loader_port import PromptLoaderPort
 
 class FilePromptLoader(PromptLoaderPort):
     """
-    Implementación de PromptLoaderPort que lee desde el sistema de archivos.
+    Implementación de PromptLoaderPort que lee el propmt desde el sistema de archivos.
     """
     
     def __init__(self, prompts_dir: str = "prompts"):

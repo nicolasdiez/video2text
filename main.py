@@ -40,7 +40,7 @@ twitter_client = TwitterClient(
     bearer_token       = TWITTER_BEARER_TOKEN
 )
 
-# Crear la instancia del PipelineService inyectando las implementaciones concretas de los adaptadores
+# Crear la instancia del PipelineService con las implementaciones concretas de los adaptadores (inyecto Adapters en los Ports de PipelineService)
 pipeline_service_instance = PipelineService(
     video_source   = video_source,
     transcriber    = transcriber,
@@ -49,7 +49,7 @@ pipeline_service_instance = PipelineService(
     twitter_client = twitter_client,
 )
 
-# Inyectar la instancia de PipelineService en el pipeline controller
+# Inyectar la instancia de PipelineService con todos los Adapters creados en la variable pipeline_service (PipelineService) de pipeline controller 
 pipeline_controller.pipeline_service = pipeline_service_instance
 
 # Monta FastAPI y registra el router de pipeline

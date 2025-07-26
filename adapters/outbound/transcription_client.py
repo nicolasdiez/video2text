@@ -11,7 +11,7 @@ from domain.ports.transcription_port import TranscriptionPort
 
 class YouTubeTranscriptionClient(TranscriptionPort):
     """
-    Implementación del puerto TranscriptionPort usando YouTubeTranscriptApi para obtener la transcripción. Maneja un único idioma.
+    Implementación del puerto TranscriptionPort que usa YouTubeTranscriptApi para obtener la transcripción. Maneja un único idioma.
     """
 
     def __init__(self, default_language: str = "es"):
