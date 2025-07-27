@@ -1,5 +1,5 @@
 # application/services/pipeline_service.py
-# recordatorio --> todo lo que vive en /application (negocio) solo debe importar y usar Ports (no Adapters)
+# recordatorio hexagonal --> todo lo que vive en /application (negocio) solo debe importar y usar Ports (no Adapters)
 
 from domain.ports.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.transcription_port import TranscriptionPort
@@ -46,10 +46,10 @@ class PipelineService:
 
         # 3) Procesar cada video
         for idx, video in enumerate(videos, start=1):
-            print(f"[PipelineService] Procesando video {idx}/{len(videos)}: {video.title}")
+            print(f"[PipelineService] Procesando video {idx}/{len(videos)} (video {video.videoId}): {video.title}")
 
             # 3.1 Transcripción
-            transcript = await self.transcriber.transcribe(video.videoId)
+            transcript = await self.transcriber.transcribe(video.videoId, language=['es'])
             print(f"[PipelineService] Transcripción recibida (video {video.videoId}), {len(transcript)} caracteres")
 
             # 3.2 Generar prompt completo
@@ -63,8 +63,8 @@ class PipelineService:
             )
             print(f"[PipelineService] {len(tweets)} tweets sugeridos para video {video.videoId}")
 
-            # 3.4 Depuración: imprimir cada tweet
             for t_idx, tweet_text in enumerate(tweets, start=1):
+                # 3.4 Depuración: imprimir cada tweet
                 print(f"Tweet: {t_idx} - {tweet_text}")
 
                 # 3.5 Publicar en Twitter

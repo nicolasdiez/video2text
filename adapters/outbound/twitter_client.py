@@ -6,6 +6,19 @@ import tweepy
 import inspect  # para trazas logging con print
 
 from domain.ports.twitter_port import TwitterPort
+from functools import wraps
+
+DEBUG = os.getenv("APP_DEBUG", "false").lower() == "true"
+
+def skip_if_debug(fn):
+    @wraps(fn)
+    async def wrapper(self, *args, **kwargs):
+        if DEBUG:
+            print(f"[DEBUG] Se omitió TwitterClient publish con args={args}, kwargs={kwargs}")
+            return None
+        return await fn(self, *args, **kwargs)
+    return wrapper
+
 
 class TwitterClient(TwitterPort):
     """
@@ -46,9 +59,10 @@ class TwitterClient(TwitterPort):
         )
 
         # Logging
-        print(f"[{self.__class__.__name__}] __init__ finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
 
+    @skip_if_debug
     async def publish(self, text: str) -> str:
         """
         Publica un tweet de forma asíncrona delegando la llamada bloqueante a un hilo aparte.
@@ -57,7 +71,7 @@ class TwitterClient(TwitterPort):
         tweet_id = await asyncio.to_thread(self._publish_sync, text)
 
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return tweet_id
 
@@ -70,6 +84,6 @@ class TwitterClient(TwitterPort):
         print(f"[TwitterClient] Tweet published with ID: {tweet_id}")
 
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return tweet_id

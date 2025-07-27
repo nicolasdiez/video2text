@@ -18,7 +18,7 @@ class YouTubeTranscriptionClient(TranscriptionPort):
         self.default_language = default_language
 
         # Logging
-        print(f"[{self.__class__.__name__}] __init__ finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
 
     async def transcribe(self, video_id: str, language: Optional[str] = None) -> str:
@@ -40,6 +40,6 @@ class YouTubeTranscriptionClient(TranscriptionPort):
         print(f"[YouTubeTranscriptionClient] Video: {video_id} transcript created successfully.")
         
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
         
         return full_text

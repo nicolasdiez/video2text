@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from application.services.pipeline_service import PipelineService
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/pipeline", tags=["pipeline"])
+router = APIRouter(prefix="", tags=["pipeline"])
 
 # creamos esta variable global pipeline_service, que es donde inyectaremos la instancia de PipelineService con los adapters desde main.py
 pipeline_service: PipelineService  # será inyectada desde main.py

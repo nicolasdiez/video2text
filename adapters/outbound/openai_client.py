@@ -17,7 +17,7 @@ class OpenAIClient(OpenAIPort):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         
         # Logging
-        print(f"[{self.__class__.__name__}] __init__ finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
 
     async def generate_tweets(self, prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
@@ -28,7 +28,7 @@ class OpenAIClient(OpenAIPort):
         clean = await asyncio.to_thread(self._call_and_process, prompt, max_sentences, model)
 
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return clean
 
@@ -60,6 +60,6 @@ class OpenAIClient(OpenAIPort):
         clean = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return clean

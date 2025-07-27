@@ -1,3 +1,6 @@
+# create virtual environment
+python -m venv video2text-venv
+
 # activate virtual environment
 source video2text-venv/Scripts/activate
 
@@ -11,8 +14,8 @@ pip install -r requirements.txt
 # google cloud console
 https://console.cloud.google.com/apis/
 
-# auto-generated swagger by FastAPI
+# auto-generated swagger by FastAPI (if shown then server is running properly)
 http://localhost:8000/docs
 
-# testing curl for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
-curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":10,"max_sentences":5}'
+# curl test for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
+curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
