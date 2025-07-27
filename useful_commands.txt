@@ -13,3 +13,6 @@ https://console.cloud.google.com/apis/
 
 # auto-generated swagger by FastAPI
 http://localhost:8000/docs
+
+# testing curl for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
+curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":10,"max_sentences":5}'

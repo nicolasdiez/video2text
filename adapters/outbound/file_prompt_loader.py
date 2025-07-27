@@ -15,7 +15,7 @@ class FilePromptLoader(PromptLoaderPort):
         self.prompts_dir = prompts_dir
         
         # Logging
-        print(f"[{self.__class__.__name__}] __init__ finished OK")
+        print(f"[{self.__class__.__name__}] __init__ Finished OK")
 
 
     async def load_prompt(self, prompt_file_name: str) -> str:
@@ -27,7 +27,7 @@ class FilePromptLoader(PromptLoaderPort):
         print(f"[FilePromptLoader] Prompt loaded successfully from file: {prompt_file_name}")
         
         # Logging
-        print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
         
         return content
     
@@ -35,5 +35,5 @@ class FilePromptLoader(PromptLoaderPort):
     def _read_file(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
             # Logging
-            print(f"[{inspect.currentframe().f_code.co_name}] finished OK")
+            print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
             return f.read()
