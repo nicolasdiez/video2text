@@ -1,12 +1,15 @@
 # activate virtual environment
 source video2text-venv/Scripts/activate
 
-# install dependencies from file
+# freeze project dependencies into file
+python -m pip freeze > requirements.txt
+
+# install project dependencies from file
 source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
-# freeze dependencies into file
-python -m pip freeze > requirements.txt
-
 # google cloud console
 https://console.cloud.google.com/apis/
+
+# auto-generated swagger by FastAPI
+http://localhost:8000/docs

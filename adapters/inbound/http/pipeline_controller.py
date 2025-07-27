@@ -15,12 +15,13 @@ class RunRequest(BaseModel):
     max_videos: int = 10
     max_tweets: int = 5
 
-@router.post("/run/{channel_id}")
+@router.post("/pipelines/fetch-videos-generate-tweets/run/{channel_id}")
 async def run_pipeline(channel_id: str, body: RunRequest):
     """
     Lanza el pipeline para el canal indicado:
       - channel_id: YouTube channel ID
       - prompt_file: path al prompt base
+      - max_videos: videos máximos a recuperar del channel_id
       - max_tweets: tweets máximos a generar
     """
 

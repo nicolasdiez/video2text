@@ -3,6 +3,8 @@
 import os
 import asyncio
 
+import uvicorn      # servidor de aplicaciones ligero y de alto rendimiento
+
 from fastapi import FastAPI
 
 # importo pipeline_controller para inyectarle más adelante la instancia de PipelineService con todos los adaptadores creados
@@ -60,3 +62,6 @@ app = FastAPI(
 )
 
 app.include_router(pipeline_controller.router)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)       # En PRO --> reload=False
