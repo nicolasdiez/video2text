@@ -65,5 +65,5 @@ app.include_router(pipeline_controller.router)
 
 if __name__ == "__main__":
 
-    # wrap ASGI server start-up under if __name__ == "__main__":, so the run() doesnt double-execute
+    # wrap ASGI server start-up under if __name__ == "__main__":, so the run doesnt double-execute
     uvicorn.run("main:app", host="0.0.0.0", port=8000)       # En PRO --> reload=False

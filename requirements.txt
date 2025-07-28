@@ -9,6 +9,7 @@ click==8.2.1
 colorama==0.4.6
 defusedxml==0.7.1
 distro==1.9.0
+dnspython==2.7.0
 dotenv==0.9.9
 etils==1.12.2
 fastapi==0.116.1
@@ -54,6 +55,7 @@ pyasn1_modules==0.4.2
 pydantic==2.11.7
 pydantic_core==2.33.2
 Pygments==2.19.2
+pymongo==4.13.2
 pyparsing==3.2.3
 python-dotenv==1.1.1
 PyYAML==6.0.2
