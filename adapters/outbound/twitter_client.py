@@ -78,7 +78,7 @@ class TwitterClient(TwitterPort):
 
     def _publish_sync(self, text: str) -> str:
 
-        # Aquí se llama al método bloqueante create_tweet(...) de tweepy
+        # Llamar al método bloqueante create_tweet() de tweepy --> al haberlo wrappeado con await asyncio.to_thread() no bloquea el event loop
         resp = self.client.create_tweet(text=text)
         tweet_id = resp.data["id"]
         print(f"[TwitterClient] Tweet published with ID: {tweet_id}")
