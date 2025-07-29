@@ -1,3 +1,5 @@
+# domain/entities/video.py
+
 from dataclasses import dataclass, field
 from typing import Optional, List
 from datetime import datetime
