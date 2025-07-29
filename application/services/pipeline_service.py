@@ -1,7 +1,10 @@
 # application/services/pipeline_service.py
+
 # recordatorio hexagonal --> todo lo que vive en /application (negocio) solo debe importar y usar Ports (no Adapters)
 
-from domain.ports.video_source_port import VideoSourcePort, VideoMetadata
+# Los Adapters los inyectaremos en la instancia pipeline_service (creada en el controller) desde main.py
+
+from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.outbound.transcription_port import TranscriptionPort
 from domain.ports.outbound.openai_port import OpenAIPort
 from domain.ports.outbound.twitter_port import TwitterPort

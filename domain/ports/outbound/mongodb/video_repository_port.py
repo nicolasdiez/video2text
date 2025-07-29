@@ -1,4 +1,4 @@
-# application/ports/outbound/video_repository.py
+# domain/ports/outbound/mongodb/video_repository_port.py
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
