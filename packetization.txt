@@ -51,3 +51,8 @@ video2text/
 │   └── db.py          # inicializa AsyncIOMotorClient y exporta `db`
 │
 └── main.py            # arranca FastAPI, registra routers de adapters/inbound/http/
+
+
+# domain --> reglas de negocio inmutables (entiedades y contratos/puertos)
+# application --> casos de uso, flujos, orquestadores y lógica de procesos
+# adapters --> implementaciones concretas de los puertos
