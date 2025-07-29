@@ -7,7 +7,7 @@ import inspect  # para trazas logging con print
 from typing import Optional
 from youtube_transcript_api import YouTubeTranscriptApi
 
-from domain.ports.transcription_port import TranscriptionPort
+from domain.ports.outbound.transcription_port import TranscriptionPort
 
 class YouTubeTranscriptionClient(TranscriptionPort):
     """

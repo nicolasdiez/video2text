@@ -5,7 +5,7 @@ import asyncio
 import tweepy
 import inspect  # para trazas logging con print
 
-from domain.ports.twitter_port import TwitterPort
+from domain.ports.outbound.twitter_port import TwitterPort
 from functools import wraps
 
 DEBUG = os.getenv("APP_DEBUG", "false").lower() == "true"

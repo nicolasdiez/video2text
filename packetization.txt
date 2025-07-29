@@ -5,20 +5,22 @@ video2text/
 │   │   ├── channel.py
 │   │   ├── video.py
 │   │   ├── tweet_generation.py
-│   │   ├── tweet.py
-│   │   └── tweet_published.py
+│   │   └── tweet.py
 │   └── ports/
-│       ├── user_repository.py
-│       ├── channel_repository.py
-│       ├── video_repository.py
-│       ├── tweet_generation_repository.py
-│       ├── tweet_published_repository.py
-│       ├── tweet_repository.py
-│       ├── video_source_port.py
-│       ├── transcription_port.py
-│       ├── openai_port.py
-│       ├── prompt_loader_port.py
-│       └── twitter_port.py
+│       ├── inbound/
+│       │   └─
+│       └── outbound/
+│           ├── mongodb/
+│           │   ├── user_repository.py
+│           │   ├── channel_repository.py
+│           │   ├── video_repository.py
+│           │   ├── tweet_generation_repository.py
+│           │   ├── tweet_repository.py
+│           ├── video_source_port.py
+│           ├── transcription_port.py
+│           ├── openai_port.py
+│           ├── prompt_loader_port.py
+│           └── twitter_port.py
 │
 ├── adapters/
 │   ├── inbound/
@@ -29,8 +31,7 @@ video2text/
 │       │   ├── channel_repository.py
 │       │   ├── video_repository.py
 │       │   ├── tweet_repository.py
-│       │   ├── tweet_generation_repository.py
-│       │   └── tweet_published_repository.py
+│       │   └── tweet_generation_repository.py
 │       ├── youtube_video_client.py
 │       ├── transcription_client.py
 │       ├── file_prompt_loader.py
@@ -43,16 +44,16 @@ video2text/
 │       ├── channel_service.py
 │       ├── video_service.py
 │       ├── tweet_generation_service.py
-│       ├── published_tweet_service.py
 │       └── pipeline_service.py
 │
 ├── infrastructure/
 │   ├── config.py      # carga .env y Settings
-│   └── db.py          # inicializa AsyncIOMotorClient y exporta `db`
+│   └── monogdb.py     # inicializa AsyncIOMotorClient y exporta `db`
 │
 └── main.py            # arranca FastAPI, registra routers de adapters/inbound/http/
 
 
-# domain --> reglas de negocio inmutables (entiedades y contratos/puertos)
-# application --> casos de uso, flujos, orquestadores y lógica de procesos
-# adapters --> implementaciones concretas de los puertos
+
+# domain        --> reglas de negocio inmutables (entidades y contratos/puertos)
+# application   --> casos de uso, flujos, orquestadores y lógica de procesos
+# adapters      --> implementaciones concretas de los puertos

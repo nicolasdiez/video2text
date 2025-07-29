@@ -6,7 +6,7 @@ import asyncio
 import inspect  # para trazas logging con print
 
 from openai import OpenAI
-from domain.ports.openai_port import OpenAIPort
+from domain.ports.outbound.openai_port import OpenAIPort
 
 class OpenAIClient(OpenAIPort):
     """

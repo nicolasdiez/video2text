@@ -1,38 +1,58 @@
 # application/ports/outbound/video_repository.py
 
 from abc import ABC, abstractmethod
-from typing import List
-from datetime import datetime
-from domain.entities.video import VideoMetadata
-from domain.entities.video import TranscriptSegment
+from typing import List, Optional
+from domain.entities.video import Video
+
 
 class VideoRepositoryPort(ABC):
     @abstractmethod
-    async def save_video(
+    async def save_video(self, video: Video) -> str:
+        """
+        Persist a new video.
+        Returns the generated video ID.
+        """
+        ...
+
+    @abstractmethod
+    async def find_by_id(self, video_id: str) -> Optional[Video]:
+        """
+        Retrieve a single video by its ID.
+        """
+        ...
+
+    @abstractmethod
+    async def find_by_channel(
         self,
         channel_id: str,
-        video_metadata: VideoMetadata,
-        transcript: str,
-        transcript_segments: List[TranscriptSegment],
-        transcript_fetched_at: datetime,
-        tweets_generated: bool,
-        created_at: datetime,
-        updated_at: datetime
-    ) -> str:
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Video]:
         """
-        Inserta un documento en la colección 'videos' con la forma:
-        {
-          channelId: ObjectId, 
-          youtubeVideoId: str, 
-          title: str, 
-          url: str,
-          transcript: str,
-          transcriptSegments: [{ start, duration, text }, …],
-          transcriptFetchedAt: datetime,
-          tweetsGenerated: bool,
-          createdAt: datetime,
-          updatedAt: datetime
-        }
-        Devuelve el _id (string) del documento insertado.
+        List videos for a given channel, with optional pagination.
+        """
+        ...
+
+    @abstractmethod
+    async def find_videos_pending_tweets(
+        self,
+        limit: int = 50
+    ) -> List[Video]:
+        """
+        List videos that haven't had tweets generated yet.
+        """
+        ...
+
+    @abstractmethod
+    async def update_video(self, video: Video) -> None:
+        """
+        Update an existing video.
+        """
+        ...
+
+    @abstractmethod
+    async def delete_video(self, video_id: str) -> None:
+        """
+        Delete a video by its ID.
         """
         ...

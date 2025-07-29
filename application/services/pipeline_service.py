@@ -2,10 +2,10 @@
 # recordatorio hexagonal --> todo lo que vive en /application (negocio) solo debe importar y usar Ports (no Adapters)
 
 from domain.ports.video_source_port import VideoSourcePort, VideoMetadata
-from domain.ports.transcription_port import TranscriptionPort
-from domain.ports.openai_port import OpenAIPort
-from domain.ports.twitter_port import TwitterPort
-from domain.ports.prompt_loader_port import PromptLoaderPort
+from domain.ports.outbound.transcription_port import TranscriptionPort
+from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.outbound.twitter_port import TwitterPort
+from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 
 from typing import List
 
@@ -67,6 +67,6 @@ class PipelineService:
                 # 3.4 Depuración: imprimir cada tweet
                 print(f"Tweet: {t_idx} - {tweet_text}")
 
-                # 3.5 Publicar en Twitter
-                tweet_id = await self.twitter.publish(tweet_text)
-                print(f"Publicado en Twitter con ID: {tweet_id}")
+                # 3.5 Publicar en Twitter --> a partir de ahora hay que guardar en la collection tweets
+                # tweet_id = await self.twitter.publish(tweet_text)
+                # print(f"Publicado en Twitter con ID: {tweet_id}")

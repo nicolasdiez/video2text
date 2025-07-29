@@ -4,7 +4,7 @@ import inspect  # para trazas logging con print
 from typing import List
 from googleapiclient.discovery import build
 
-from domain.ports.video_source_port import VideoSourcePort, VideoMetadata
+from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 
 
 # Usar un DTO  explícito que cumple con VideoMetadata del puerto

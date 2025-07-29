@@ -4,7 +4,7 @@ import os
 import asyncio
 import inspect  # para trazas logging con print
 
-from domain.ports.prompt_loader_port import PromptLoaderPort
+from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 
 class FilePromptLoader(PromptLoaderPort):
     """

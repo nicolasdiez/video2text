@@ -7,16 +7,14 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
-from domain.ports.outbound.mongodb.tweet_generation_repository_port import (
-    TweetGenerationRepositoryPort
-)
+from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 
-# Reuso la conexión _db definida en el adaptador de videos
-from adapters.outbound.mongodb.video_repository import _db
+# Importa sólo la instancia de DB, no la configuración
+from infrastructure.mongodb import db
 
 
 class MongoTweetGenerationRepository(TweetGenerationRepositoryPort):
-    def __init__(self, db: AsyncIOMotorDatabase = _db):
+    def __init__(self, db: AsyncIOMotorDatabase = db):
         self._coll = db.get_collection("tweet_generations")
 
     async def save(self, tweet_generation: TweetGeneration) -> str:

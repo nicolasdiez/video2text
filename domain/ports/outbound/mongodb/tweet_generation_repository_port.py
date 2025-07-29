@@ -1,24 +1,21 @@
-# application/ports/outbound/tweet_generation_repository.py
-
-from abc import ABC, abstractmethod
+from typing import Optional, List
 from domain.entities.tweet_generation import TweetGeneration
 
-class TweetGenerationRepositoryPort(ABC):
-    @abstractmethod
-    async def save_generation(self, generation: TweetGeneration) -> str:
+class TweetGenerationRepositoryPort:
+    async def save(self, tweet_generation: TweetGeneration) -> str:
         """
-        Inserta un documento en 'tweet_generations' con la forma:
-        {
-          userId: ObjectId,
-          videoId: ObjectId,
-          openaiRequest: {
-            prompt: str,
-            model: str,
-            temperature: float,
-            maxTokens: int
-          },
-          generatedAt: datetime
-        }
-        Devuelve el _id (string) del documento creado.
+        Persiste un registro de generación de tweet y devuelve el nuevo _id como cadena.
+        """
+        ...
+
+    async def find_by_id(self, tg_id: str) -> Optional[TweetGeneration]:
+        """
+        Recupera una generación de tweet por su _id.
+        """
+        ...
+
+    async def find_by_video_id(self, video_id: str) -> List[TweetGeneration]:
+        """
+        Lista todas las generaciones de tweet asociadas a un mismo video.
         """
         ...
