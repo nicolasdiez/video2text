@@ -1,4 +1,4 @@
-# adapters/outbound/mongo/tweet_generation_repository.py
+# adapters/outbound/mongodb/tweet_generation_repository.py
 
 from datetime import datetime
 from typing import List, Optional

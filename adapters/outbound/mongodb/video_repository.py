@@ -1,4 +1,4 @@
-# adapters/outbound/mongo/video_repository.py
+# adapters/outbound/mongodb/video_repository.py
 
 from datetime import datetime
 from typing import List, Optional
