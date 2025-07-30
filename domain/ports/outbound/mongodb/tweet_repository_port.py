@@ -1,4 +1,4 @@
-# application/ports/outbound/tweet_repository_port.py
+# domain/ports/outbound/mongodb/tweet_repository_port.py
 
 from abc import ABC, abstractmethod
 from typing import List, Optional

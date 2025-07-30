@@ -6,15 +6,13 @@ from infrastructure.mongodb import ping_mongo, db, _sync_client, _motor_client
 
 def test_sync_ping():
     """
-    Prueba síncrona usando PyMongo.
-    Lanza excepción si algo falla.
+    Prueba síncrona usando PyMongo. Lanza excepción si algo falla.
     """
     ping_mongo()
 
 async def test_async_list_collections():
     """
-    Prueba asíncrona usando Motor.
-    Lista las colecciones existentes.
+    Prueba asíncrona usando Motor. Lista las colecciones existentes.
     """
     names = await db.list_collection_names()
     print("✅ Colecciones encontradas:", names)
