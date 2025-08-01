@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="1810" dy="1755" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3420" dy="2713" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -10,32 +10,38 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="6GBo-MGXtRTwtD-Rmwj8-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-22" value="run_for_channel ()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="6GBo-MGXtRTwtD-Rmwj8-8">
+          <mxGeometry x="-0.0854" y="-3" relative="1" as="geometry">
+            <mxPoint y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-3" value="pipeline_controller.py" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="180" y="240" width="130" height="50" as="geometry" />
+          <mxGeometry x="30" y="240" width="130" height="50" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-4" target="6GBo-MGXtRTwtD-Rmwj8-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-14" value="POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="6GBo-MGXtRTwtD-Rmwj8-5" vertex="1" connectable="0">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-14" value="POST /pipelines/fetch-videos-generate-tweets/run/{user_id}" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="6GBo-MGXtRTwtD-Rmwj8-5" vertex="1" connectable="0">
           <mxGeometry x="0.16" y="1" relative="1" as="geometry">
             <mxPoint x="-28" y="-14" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-4" value="API" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-250" y="235" width="30" height="60" as="geometry" />
+          <mxGeometry x="-360" y="235" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-9" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="460" y="-110" />
+              <mxPoint x="450" y="-9" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-11" edge="1">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-15" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;exitX=0.912;exitY=-0.027;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-11" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="480" y="20" />
+              <mxPoint x="494" y="95" />
             </Array>
+            <mxPoint x="500" y="255.00000000000023" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-16" edge="1">
@@ -47,21 +53,20 @@
             <mxPoint x="550" y="340" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-21" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="460" y="410" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-33" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="6GBo-MGXtRTwtD-Rmwj8-21" edge="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-6" value="PipelineService" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="390" y="240" width="120" height="50" as="geometry" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-6" value="PipelineTweetGenerationService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="330" y="240" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-9" target="fER5kQKjIwSkImDIx6LC-14">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-9" value="FilePromptLoader" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" y="-130" width="130" height="40" as="geometry" />
+          <mxGeometry x="560" y="-29" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-11" value="YouTubeVideoClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" width="130" height="40" as="geometry" />
+          <mxGeometry x="560" y="75" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-11" target="6GBo-MGXtRTwtD-Rmwj8-17" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -72,10 +77,10 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" y="100" width="160" height="40" as="geometry" />
+          <mxGeometry x="560" y="170" width="160" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-17" value="Google API YouTube" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="840" y="-10" width="70" height="60" as="geometry" />
+          <mxGeometry x="840" y="65" width="70" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-20" target="6GBo-MGXtRTwtD-Rmwj8-28" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -86,32 +91,110 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-21" target="6GBo-MGXtRTwtD-Rmwj8-30" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" y="390" width="130" height="40" as="geometry" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterClient" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="745" y="635" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;TranscriptApi&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="833.5" y="90" width="83" height="60" as="geometry" />
+          <mxGeometry x="833.5" y="160" width="83" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-28" value="OpenAI API" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="840" y="245" width="83" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-30" value="X API v2" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="833.5" y="380" width="83" height="60" as="geometry" />
+          <mxGeometry x="963.5" y="625" width="83" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-34" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;b&gt;users&lt;/b&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; username: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Email o nombre de usuario&lt;/div&gt;&lt;div&gt;&amp;nbsp; openaiApiKey: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // (opcional) si es por usuario&lt;/div&gt;&lt;div&gt;&amp;nbsp; twitterCredentials: {&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; accessToken: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; accessSecret: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; screenName: String&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Nombre visible en Twitter&lt;/div&gt;&lt;div&gt;&amp;nbsp; },&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;html=1;align=left;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="-340" y="552.5" width="330" height="210" as="geometry" />
+          <mxGeometry x="-420" y="1050" width="330" height="210" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-35" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;channels&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&amp;nbsp;// FK → users._id&lt;/div&gt;&lt;div&gt;&amp;nbsp; youtubeChannelId: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// e.g. &quot;UC_xxx&quot;&lt;/div&gt;&lt;div&gt;&amp;nbsp; title: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; pollingInterval: Number,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // En minutos (opcional)&lt;/div&gt;&lt;div&gt;&amp;nbsp; lastPolledAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="50" y="552.5" width="310" height="210" as="geometry" />
+          <mxGeometry x="-10" y="1060" width="310" height="210" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-36" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;videos&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; channelId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // FK → channels._id&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Redundante, pero útil para consultas&lt;/div&gt;&lt;div&gt;&amp;nbsp; youtubeVideoId: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// e.g. &quot;Qa3ThE9mv8c&quot;&lt;/div&gt;&lt;div&gt;&amp;nbsp; title: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; url: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; transcript: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Texto plano unificado&lt;/div&gt;&lt;div&gt;&amp;nbsp; transcriptSegments: [&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// (opcional) si guardas por fragmentos&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; { start: Number, duration: Number, text: String }&lt;/div&gt;&lt;div&gt;&amp;nbsp; ],&lt;/div&gt;&lt;div&gt;&amp;nbsp; transcriptFetchedAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; tweetsGenerated: Boolean,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Flag para control rápido&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="610" y="510" width="370" height="295" as="geometry" />
+          <mxGeometry x="420" y="1050" width="370" height="295" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-37" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;tweet_generations&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; videoId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // FK → videos._id&lt;/div&gt;&lt;div&gt;&amp;nbsp; openaiRequest: {&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;prompt: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;model: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;temperature: Number,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp;maxTokens: Number&lt;/div&gt;&lt;div&gt;&amp;nbsp; },&lt;/div&gt;&lt;div&gt;&amp;nbsp; generatedAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="1050" y="510" width="290" height="220" as="geometry" />
+          <mxGeometry x="916.5" y="1070" width="290" height="220" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-38" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;tweets&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; videoId: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; generationId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// FK → tweet_generations._id&lt;/div&gt;&lt;div&gt;&amp;nbsp; text: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; index: Number,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // Posición dentro de la generación (opcional)&lt;/div&gt;&lt;div&gt;&amp;nbsp; published: Boolean,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// True si ya fue publicado&lt;/div&gt;&lt;div&gt;&amp;nbsp; publishedAt: Date,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // Fecha de publicación en X&lt;/div&gt;&lt;div&gt;&amp;nbsp; twitterStatusId: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // ID del tweet en X&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="1390" y="497.5" width="390" height="245" as="geometry" />
+          <mxGeometry x="1270" y="1100" width="390" height="245" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-4" value="mongoDB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="-159" width="70" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-5" value="MongoChannelRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="-134" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="fER5kQKjIwSkImDIx6LC-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="375" y="-114" />
+            </Array>
+            <mxPoint x="470" y="230" as="sourcePoint" />
+            <mxPoint x="570" y="-120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-5" target="fER5kQKjIwSkImDIx6LC-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-8" value="find_by_user_id (user_id)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="fER5kQKjIwSkImDIx6LC-7">
+          <mxGeometry x="-0.0193" y="1" relative="1" as="geometry">
+            <mxPoint y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-14" value="/prompts" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;shadow=0;dashed=0;shape=mxgraph.ios7.icons.folder;" vertex="1" parent="1">
+          <mxGeometry x="875" y="-34" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-16" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="370" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="fER5kQKjIwSkImDIx6LC-16">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="390" />
+            </Array>
+            <mxPoint x="480" y="289.97" as="sourcePoint" />
+            <mxPoint x="580" y="489.97" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-16" target="fER5kQKjIwSkImDIx6LC-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="810" y="389.23" as="sourcePoint" />
+            <mxPoint x="1210" y="389.23" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-19" value="save (tweet)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="fER5kQKjIwSkImDIx6LC-18">
+          <mxGeometry x="-0.0193" y="1" relative="1" as="geometry">
+            <mxPoint x="-310" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PipelineTweetPublicationService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="390" y="630" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="290" y="390" as="sourcePoint" />
+            <mxPoint x="370" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-23" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 11px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;POST /pipelines/publish-tweets/run/{user_id}&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-50" y="410" width="320" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-24" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="745" y="545" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.855;entryY=1;entryDx=0;entryDy=-4.35;entryPerimeter=0;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-24" target="fER5kQKjIwSkImDIx6LC-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="559" as="sourcePoint" />
+            <mxPoint x="1455" y="100" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1170" y="564" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fER5kQKjIwSkImDIx6LC-26" value="save (tweet)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="fER5kQKjIwSkImDIx6LC-25">
+          <mxGeometry x="-0.0193" y="1" relative="1" as="geometry">
+            <mxPoint x="-310" y="-9" as="offset" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

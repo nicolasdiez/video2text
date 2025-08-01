@@ -17,11 +17,17 @@ class MongoTweetRepository(TweetRepositoryPort):
         self._coll = database.get_collection("tweets")
 
     async def save(self, tweet: Tweet) -> str:
+        """
+        Insert a new tweet document and return by its id.
+        """
         doc = self._entity_to_doc(tweet)
         result = await self._coll.insert_one(doc)
         return str(result.inserted_id)
 
     async def find_by_id(self, tweet_id: str) -> Optional[Tweet]:
+        """
+        Fetch one tweet by its id.
+        """
         doc = await self._coll.find_one({"_id": ObjectId(tweet_id)})
         return self._doc_to_entity(doc) if doc else None
 
