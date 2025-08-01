@@ -13,6 +13,9 @@ class OpenAIRequest:
 
 @dataclass
 class TweetGeneration:
+    """
+    Domain entity representing a tweet generation process (i.e. a call to OpenAI API to retrieve generated tweets=sentences)
+    """
     id: Optional[str] = None
     user_id: str
     video_id: str                       # FK → videos._id

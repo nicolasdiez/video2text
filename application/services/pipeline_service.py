@@ -36,6 +36,10 @@ class PipelineService:
         self.openai         = openai_client
         self.twitter        = twitter_client
 
+    # TODO 01-08-2025: 
+    # [pipeline_controller] modify controller route so it receives a userId as input, not a channelId
+    # [pipeline service] fetch channels from mongoDB which the userId is subscribed to
+    # [pipeline service] modify pipeline so tweets are not published, but stored in mongoDB instead
 
     async def run_for_channel(self, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
 
@@ -70,6 +74,6 @@ class PipelineService:
                 # 3.4 Depuración: imprimir cada tweet
                 print(f"Tweet: {t_idx} - {tweet_text}")
 
-                # 3.5 Publicar en Twitter --> a partir de ahora hay que guardar en la collection tweets
+                # 3.5 Publicar en Twitter --> a partir de ahora hay que guardar en la collection {tweets}
                 # tweet_id = await self.twitter.publish(tweet_text)
                 # print(f"Publicado en Twitter con ID: {tweet_id}")

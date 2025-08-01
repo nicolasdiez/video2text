@@ -12,7 +12,7 @@ class Tweet:
     generation_id: str                          # FK → tweet_generations._id
     text: str
     index: Optional[int] = None                 # Posición dentro de la generación
-    published: bool = False                     # True si ya fue publicado en X
-    published_at: Optional[datetime] = None     # Fecha de publicación en X
-    twitter_status_id: Optional[str] = None     # ID del tweet en X
+    published: bool = False                     # True if already published in X
+    published_at: Optional[datetime] = None     # Publication day in X
+    twitter_status_id: Optional[str] = None     # ID of the tweet in X
     created_at: datetime = field(default_factory=datetime.utcnow)
