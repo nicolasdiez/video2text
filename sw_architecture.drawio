@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="3420" dy="2713" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1924" dy="1836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -160,11 +160,6 @@
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="810" y="389.23" as="sourcePoint" />
             <mxPoint x="1210" y="389.23" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-19" value="save (tweet)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="fER5kQKjIwSkImDIx6LC-18">
-          <mxGeometry x="-0.0193" y="1" relative="1" as="geometry">
-            <mxPoint x="-310" y="-9" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PipelineTweetPublicationService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
