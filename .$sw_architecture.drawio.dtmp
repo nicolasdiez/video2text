@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="3679" dy="2867" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2505" dy="2168" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -23,7 +23,7 @@
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-14" value="POST /pipelines/fetch-videos-generate-tweets/run/{&lt;font style=&quot;color: rgb(255, 51, 51);&quot;&gt;user_id&lt;/font&gt;}" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="6GBo-MGXtRTwtD-Rmwj8-5" vertex="1" connectable="0">
           <mxGeometry x="0.16" y="1" relative="1" as="geometry">
-            <mxPoint x="-28" y="-14" as="offset" />
+            <mxPoint x="-29" y="-9" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-4" value="API" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -116,7 +116,7 @@
           <mxGeometry x="916.5" y="1070" width="290" height="220" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-38" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;tweets&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; videoId: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; generationId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// FK → tweet_generations._id&lt;/div&gt;&lt;div&gt;&amp;nbsp; text: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; index: Number,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // Posición dentro de la generación (opcional)&lt;/div&gt;&lt;div&gt;&amp;nbsp; published: Boolean,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// True si ya fue publicado&lt;/div&gt;&lt;div&gt;&amp;nbsp; publishedAt: Date,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // Fecha de publicación en X&lt;/div&gt;&lt;div&gt;&amp;nbsp; twitterStatusId: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // ID del tweet en X&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="1270" y="1100" width="390" height="245" as="geometry" />
+          <mxGeometry x="1270" y="1100" width="430" height="245" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-4" value="mongoDB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
           <mxGeometry x="1110" y="-159" width="70" height="90" as="geometry" />
