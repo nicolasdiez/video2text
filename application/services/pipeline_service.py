@@ -70,10 +70,10 @@ class PipelineService:
             )
             print(f"[PipelineService] {len(tweets)} tweets sugeridos para video {video.videoId}")
 
+            # 3.4 Publicar en Twitter --> a partir de ahora hay que guardar en la collection {tweets}
             for t_idx, tweet_text in enumerate(tweets, start=1):
-                # 3.4 Depuración: imprimir cada tweet
+                # Depuración: imprimir cada tweet
                 print(f"Tweet: {t_idx} - {tweet_text}")
 
-                # 3.5 Publicar en Twitter --> a partir de ahora hay que guardar en la collection {tweets}
                 # tweet_id = await self.twitter.publish(tweet_text)
                 # print(f"Publicado en Twitter con ID: {tweet_id}")
