@@ -1,4 +1,4 @@
-# application/controllers/pipeline_controller.py
+# adapters/inbound/http/pipeline_controller.py
 
 from fastapi import APIRouter, HTTPException
 from application.services.pipeline_service import PipelineService
