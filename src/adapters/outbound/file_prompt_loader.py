@@ -11,7 +11,7 @@ class FilePromptLoader(PromptLoaderPort):
     Implementación de PromptLoaderPort que lee el propmt desde el sistema de archivos.
     """
     
-    def __init__(self, prompts_dir: str = "prompts"):
+    def __init__(self, prompts_dir: str = "../prompts"):
         self.prompts_dir = prompts_dir
         
         # Logging

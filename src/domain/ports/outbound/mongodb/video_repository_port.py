@@ -7,7 +7,7 @@ from domain.entities.video import Video
 
 class VideoRepositoryPort(ABC):
     @abstractmethod
-    async def save_video(self, video: Video) -> str:
+    async def save(self, video: Video) -> str:
         """
         Persist a new video.
         Returns the generated video ID.
@@ -44,14 +44,14 @@ class VideoRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def update_video(self, video: Video) -> None:
+    async def update(self, video: Video) -> None:
         """
         Update an existing video.
         """
         ...
 
     @abstractmethod
-    async def delete_video(self, video_id: str) -> None:
+    async def delete(self, video_id: str) -> None:
         """
         Delete a video by its ID.
         """
