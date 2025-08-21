@@ -5,12 +5,11 @@ from abc import ABC, abstractmethod
 class IngestionPipelinePort(ABC):
     """
     Inbound port for the ingestion pipeline.
-    Defines the contract to fetch channels for a user,
-    process new videos, generate tweets, and persist them.
+    Defines the contract to fetch channels for a user, process new videos, generate tweets, and persist them.
     """
 
     @abstractmethod
-    async def run_for_user(self, user_id: str) -> None:
+    async def run_for_user(self, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
         """
         Execute the ingestion pipeline for the given user_id:
           1) retrieve channels linked to user_id

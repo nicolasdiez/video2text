@@ -23,6 +23,17 @@ class MongoTweetRepository(TweetRepositoryPort):
         doc = self._entity_to_doc(tweet)
         result = await self._coll.insert_one(doc)
         return str(result.inserted_id)
+    
+    async def save_all(self, tweets: List[Tweet]) -> List[str]:
+        """
+        Batch insert multiple Tweet entities and return their IDs as strings.
+        """
+        if not tweets:
+            return []
+
+        docs = [self._entity_to_doc(tweet) for tweet in tweets]
+        result = await self._coll.insert_many(docs)
+        return [str(_id) for _id in result.inserted_ids]
 
     async def find_by_id(self, tweet_id: str) -> Optional[Tweet]:
         """
@@ -32,6 +43,9 @@ class MongoTweetRepository(TweetRepositoryPort):
         return self._doc_to_entity(doc) if doc else None
 
     async def find_by_generation_id(self, generation_id: str) -> List[Tweet]:
+        """
+        Fetch all tweets associated to a given tweet generation.
+        """
         cursor = self._coll.find({"generationId": ObjectId(generation_id)})
         items: List[Tweet] = []
         async for doc in cursor:
@@ -39,6 +53,9 @@ class MongoTweetRepository(TweetRepositoryPort):
         return items
 
     async def update(self, tweet: Tweet) -> None:
+        """
+        Updates an existing tweet.
+        """
         doc = self._entity_to_doc(tweet)
         await self._coll.update_one(
             {"_id": ObjectId(tweet.id)},
