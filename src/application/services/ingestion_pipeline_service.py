@@ -54,7 +54,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
     async def run_for_user(self, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
         
-         # 1. Load prompt base from file (without blocking thread)
+        # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
         print(f"[IngestionPipelineService] Base prompt loaded (base prompt file: {prompt_file}")
 
@@ -73,7 +73,7 @@ class IngestionPipelineService(IngestionPipelinePort):
             for video_meta in videos_meta:
 
                 # 6. Map DTO VideoMetadata → to domain entity Video
-                video = await self.video_repo.find_by_id(videos_meta.videoId)
+                video = await self.video_repo.find_by_id(video_meta.videoId)
                 if not video:
                     video = Video(
                         id=None,
@@ -90,8 +90,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     video.id = saved_id
                     print(f"[IngestionPipelineService] Video {len(video.id)} saved in collection 'videos'")
 
-
-                # 7. If the video has no transcription yet, fetch it and update the record
+                # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
                     transcript = await self.transcription_client.transcribe(video.id, language=['es'])
                     print(f"[PipelineService] Transcription received (video {video.id}), {len(transcript)} characters")
@@ -108,7 +107,6 @@ class IngestionPipelineService(IngestionPipelinePort):
                     # 9. Generate complete prompt
                     prompt = f"{base_prompt.strip()}\n{video.transcript}"
                     print(f"[IngestionPipelineService] Prompt generated (base prompt + transcript)")
-
 
                     # 10. Generate raw texts for the video
                     model="gpt-3.5-turbo"
