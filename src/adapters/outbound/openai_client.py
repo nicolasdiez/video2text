@@ -20,7 +20,7 @@ class OpenAIClient(OpenAIPort):
         print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
 
-    async def generate_tweets(self, prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
+    async def generate_tweets(self, prompt: str, max_sentences: int = 3, model: str = "gpt-3.5-turbo") -> list[str]:
         
         if not self.api_key:
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")

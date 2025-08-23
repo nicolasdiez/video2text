@@ -8,27 +8,34 @@ class TweetRepositoryPort(ABC):
     @abstractmethod
     async def save(self, tweet: Tweet) -> str:
         """
-        Persiste un Tweet y devuelve el nuevo _id como cadena.
+        Insert a new tweet document and return by its id.
+        """
+        ...
+
+    @abstractmethod
+    async def save_all(self, tweets: List[Tweet]) -> List[str]:
+        """
+        Batch insert multiple Tweet entities and return their IDs as strings.
         """
         ...
 
     @abstractmethod
     async def find_by_id(self, tweet_id: str) -> Optional[Tweet]:
         """
-        Recupera un Tweet por su _id.
+        Fetch one tweet by its id.
         """
         ...
 
     @abstractmethod
     async def find_by_generation_id(self, generation_id: str) -> List[Tweet]:
         """
-        Lista todos los Tweets asociados a una generación de tweets.
+        Fetch all tweets associated to a given tweet generation.
         """
         ...
 
     @abstractmethod
     async def update(self, tweet: Tweet) -> None:
         """
-        Actualiza un Tweet existente.
+        Updates an existing tweet.
         """
         ...

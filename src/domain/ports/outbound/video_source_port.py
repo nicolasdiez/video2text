@@ -1,4 +1,4 @@
-# domain/ports/video_source_port.py
+# src/domain/ports/video_source_port.py
 
 from abc import ABC, abstractmethod
 from typing import List, Protocol

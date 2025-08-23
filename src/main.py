@@ -6,17 +6,22 @@ import asyncio
 import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gateway Interface server)
 
 from fastapi import FastAPI
+from infrastructure.mongodb import db
 
 # importo pipeline_controller para inyectarle más adelante la instancia de PipelineService con todos los adaptadores creados
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
 
-from adapters.outbound.youtube_video_client import YouTubeVideoClient
-from adapters.outbound.transcription_client import YouTubeTranscriptionClient
 from adapters.outbound.file_prompt_loader import FilePromptLoader
+from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
+from adapters.outbound.youtube_video_client import YouTubeVideoClient
+from adapters.outbound.mongodb.video_repository import MongoVideoRepository
+from adapters.outbound.transcription_client import YouTubeTranscriptionClient
 from adapters.outbound.openai_client import OpenAIClient
-from adapters.outbound.twitter_client import TwitterClient
+from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
+from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 
-from application.services.pipeline_service import PipelineService 
+from application.services.pipeline_service import PipelineService
+from application.services.ingestion_pipeline_service import IngestionPipelineService 
 
 
 # Cargar credenciales del entorno
@@ -29,30 +34,46 @@ TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
 TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
 
 
-# Instanciar los adaptadores concretos
-video_source   = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
-transcriber    = YouTubeTranscriptionClient(default_language="es")
-prompt_loader  = FilePromptLoader(prompts_dir="prompts")
-openai_client  = OpenAIClient(api_key=OPENAI_API_KEY)
-twitter_client = TwitterClient(
-    api_key            = TWITTER_API_KEY,
-    api_secret         = TWITTER_API_SECRET,
-    access_token       = TWITTER_ACCESS_TOKEN,
-    access_token_secret= TWITTER_ACCESS_TOKEN_SECRET,
-    bearer_token       = TWITTER_BEARER_TOKEN
+# Instanciar los adaptadores concretos para IngestionPipelineService
+prompt_loader           = FilePromptLoader(prompts_dir="prompts")
+channel_repo            = MongoChannelRepository(database=db)
+video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
+video_repo              = MongoVideoRepository(database=db)
+transcription_client    = YouTubeTranscriptionClient(default_language="es")
+openai_client           = OpenAIClient(api_key=OPENAI_API_KEY)
+tweet_generation_repo   = MongoTweetGenerationRepository(database=db)
+tweet_repo              = MongoTweetRepository(database=db)
+#twitter_client = TwitterClient(
+#    api_key            = TWITTER_API_KEY,
+#    api_secret         = TWITTER_API_SECRET,
+#    access_token       = TWITTER_ACCESS_TOKEN,
+#    access_token_secret= TWITTER_ACCESS_TOKEN_SECRET,
+#    bearer_token       = TWITTER_BEARER_TOKEN
+#)
+
+# Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
+#pipeline_service_instance = PipelineService(
+#    video_source   = video_source,
+#    transcriber    = transcriber,
+#    prompt_loader  = prompt_loader,
+#    openai_client  = openai_client,
+#    twitter_client = twitter_client,
+#)
+
+# Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
+ingestion_pipeline_service_instance = IngestionPipelineService(
+    prompt_loader           = prompt_loader,
+    channel_repo            = channel_repo,
+    video_source            = video_source,
+    video_repo              = video_repo,
+    transcription_client    = transcription_client,
+    openai_client           = openai_client,
+    tweet_generation_repo   = tweet_generation_repo,
+    tweet_repo              = tweet_repo,
 )
 
-# Crear la instancia del PipelineService con las implementaciones concretas de los adaptadores (inyectar Adapters en los Ports de PipelineService)
-pipeline_service_instance = PipelineService(
-    video_source   = video_source,
-    transcriber    = transcriber,
-    prompt_loader  = prompt_loader,
-    openai_client  = openai_client,
-    twitter_client = twitter_client,
-)
-
-# Inyectar la instancia de PipelineService (ya con todos los Adapters) en la variable pipeline_service (PipelineService) del pipeline controller 
-pipeline_controller.pipeline_service = pipeline_service_instance
+# Inyectar la instancia de IngestionPipelineService (ya con todos los Adapters) en la variable ingestion_pipeline_service del pipeline controller 
+pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_instance
 
 # Montar FastAPI y registrar el router de pipeline
 app = FastAPI(

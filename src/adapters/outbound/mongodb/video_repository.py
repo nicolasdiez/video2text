@@ -16,7 +16,7 @@ class MongoVideoRepository(VideoRepositoryPort):
     def __init__(self, database=None):
         self._coll = (database or db).get_collection("videos")
 
-    async def save_video(self, video: Video) -> str:
+    async def save(self, video: Video) -> str:
         doc = self._entity_to_doc(video)
         result = await self._coll.insert_one(doc)
         return str(result.inserted_id)
@@ -41,13 +41,13 @@ class MongoVideoRepository(VideoRepositoryPort):
         cursor = self._coll.find({"tweetsGenerated": False}).limit(limit)
         return [self._doc_to_entity(doc) async for doc in cursor]
 
-    async def update_video(self, video: Video) -> None:
+    async def update(self, video: Video) -> None:
         doc = self._entity_to_doc(video)
         await self._coll.update_one(
             {"_id": ObjectId(video.id)}, {"$set": doc}
         )
 
-    async def delete_video(self, video_id: str) -> None:
+    async def delete(self, video_id: str) -> None:
         await self._coll.delete_one({"_id": ObjectId(video_id)})
 
     def _doc_to_entity(self, doc: dict) -> Video:

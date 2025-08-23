@@ -3,6 +3,7 @@
 import asyncio
 from datetime import datetime
 from typing import List
+import inspect  # para trazas logging con print
 
 from src.domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
 from src.domain.ports.outbound.prompt_loader_port import PromptLoaderPort
@@ -37,8 +38,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         channel_repo: ChannelRepositoryPort,
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
-        transcription_service: TranscriptionPort,
-        openai_service: OpenAIPort,
+        transcription_client: TranscriptionPort,
+        openai_client: OpenAIPort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
     ):
@@ -46,36 +47,40 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.channel_repo = channel_repo
         self.video_source = video_source
         self.video_repo = video_repo
-        self.transcription_service = transcription_service
-        self.openai_service = openai_service
+        self.transcription_client = transcription_client
+        self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
+    async def run_for_user(self, user_id: str, channel_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
         
          # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
-        print(f"[IngestionPipelineService] Prompt cargado: {prompt_file}")
+        print(f"[IngestionPipelineService] Base prompt loaded (base prompt file: {prompt_file}")
 
         # 2. Fetch all channels the user is subscribed to
         channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
+        print(f"[IngestionPipelineService] {len(channels)} channels retrieved for user {user_id}")
 
         # 3. Process each channel independently
         for channel in channels:
+
             # 4. Fetch new videos for this channel
-            videos_metadata: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos)
+            videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos)
+            print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.title}")
 
             # 5. Process each video independently
-            for video_metadata in videos_metadata:
-                # 6. Map DTO VideoMetadata → domain entity Video
-                video = await self.video_repo.find_by_id(video_metadata.id)
+            for video_meta in videos_meta:
+
+                # 6. Map DTO VideoMetadata → to domain entity Video
+                video = await self.video_repo.find_by_id(videos_meta.videoId)
                 if not video:
                     video = Video(
                         id=None,
                         channel_id=channel.id,
-                        youtube_video_id=video_metadata.videoId,
-                        title=video_metadata.title,
-                        url=video_metadata.url,
+                        youtube_video_id=video_meta.videoId,
+                        title=video_meta.title,
+                        url=video_meta.url,
                         transcript=None,
                         transcript_fetched_at=None,
                         created_at=datetime.utcnow(),
@@ -83,60 +88,78 @@ class IngestionPipelineService(IngestionPipelinePort):
                     )
                     saved_id = await self.video_repo.save(video)
                     video.id = saved_id
+                    print(f"[IngestionPipelineService] Video {len(video.id)} saved in collection 'videos'")
+
 
                 # 7. If the video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
-                    transcript = await self.transcription_service.transcribe(video.id, language=['es'])
-                    print(f"[PipelineService] Transcripción recibida (video {video.id}), {len(transcript)} caracteres")
+                    transcript = await self.transcription_client.transcribe(video.id, language=['es'])
+                    print(f"[PipelineService] Transcription received (video {video.id}), {len(transcript)} characters")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
+                    video.updated_at = datetime.utcnow()
                     # persist the updated video entity
                     await self.video_repo.update(video)
+                    print(f"[IngestionPipelineService] Transcription saved for video {video.id}")
 
-                # 8. Generate complete prompt
-                prompt = f"{base_prompt.strip()}\n{video.transcript}"
+                # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
+                if not video.tweets_generated:
 
-                # 9. Generate raw texts for the video
-                model="gpt-3.5-turbo"
-                raw_tweets_text: List[str] = await self.openai_service.generate_tweets(
-                    prompt=prompt,
-                    max_sentences=max_tweets,
-                    model=model)
-                tweet_generation_ts = datetime.utcnow()
+                    # 9. Generate complete prompt
+                    prompt = f"{base_prompt.strip()}\n{video.transcript}"
+                    print(f"[IngestionPipelineService] Prompt generated (base prompt + transcript)")
 
-                print(f"[IngestionPipelineService] {len(tweets)} tweets generados para video {video.id}")
-                
-                # 10. Persist tweet generation metadata
-                openai_req = OpenAIRequest(
-                    prompt=prompt,
-                    model=model,
-                    # TO DO:
-                    # temperature=self.openai_service.default_temperature,
-                    # max_tokens=self.openai_service.default_max_tokens
-                )
-                generation = TweetGeneration(
-                    id=None,
-                    user_id=user_id,
-                    video_id=video.id,
-                    openai_request=openai_req,
-                    generated_at = tweet_generation_ts
-                )
-                generation_id = await self.tweet_generation_repo.save(generation)                
 
-                # 11. Map DTO raw_tweets_text (List[str]) → domain entity Tweet
-                tweets: List[Tweet] = [
-                    Tweet(
+                    # 10. Generate raw texts for the video
+                    model="gpt-3.5-turbo"
+                    raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
+                        prompt=prompt,
+                        max_sentences=max_tweets,
+                        model=model)
+                    tweet_generation_ts = datetime.utcnow()
+                    print(f"[IngestionPipelineService] {len(raw_tweets_text)} tweets generated for video {video.id}")
+                    
+                    # 11. Persist tweet generation metadata
+                    openai_req = OpenAIRequest(
+                        prompt=prompt,
+                        model=model,
+                        # TO DO:
+                        # temperature=self.openai_service.default_temperature,
+                        # max_tokens=self.openai_service.default_max_tokens
+                    )
+                    generation = TweetGeneration(
                         id=None,
                         user_id=user_id,
                         video_id=video.id,
-                        generation_id=generation_id,
-                        text=text,
-                        index=index,
-                        published=False,
-                        created_at=tweet_generation_ts
+                        openai_request=openai_req,
+                        generated_at = tweet_generation_ts
                     )
-                    for index, text in enumerate(raw_tweets_text, start=1)
-                ]
+                    generation_id = await self.tweet_generation_repo.save(generation)
+                    print(f"[IngestionPipelineService] Tweet generation (id: {len(generation_id)}) saved in collection 'tweet_generations'")
 
-                # 12. Batch save Tweet entities
-                await self.tweet_repo.save_all(tweets)
+                    # 12. Map DTO raw_tweets_text List[str] → to domain entity Tweet
+                    tweets: List[Tweet] = [
+                        Tweet(
+                            id=None,
+                            user_id=user_id,
+                            video_id=video.id,
+                            generation_id=generation_id,
+                            text=text,
+                            index=index,
+                            published=False,
+                            created_at=tweet_generation_ts
+                        )
+                        for index, text in enumerate(raw_tweets_text, start=1)
+                    ]
+
+                    # 13. Batch save Tweet entities
+                    await self.tweet_repo.save_all(tweets)
+                    print(f"[IngestionPipelineService] {len(tweets)} tweets saved in collection 'tweets'")
+
+                    # 14. Update video entity
+                    video.tweets_generated = True
+                    video.updated_at = datetime.utcnow()
+                    await self.video_repo.update(video)
+
+        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+

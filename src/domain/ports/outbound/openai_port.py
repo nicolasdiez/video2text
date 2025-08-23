@@ -1,4 +1,4 @@
-# domain/ports/openai_port.py
+# src/domain/ports/openai_port.py
 
 from abc import ABC, abstractmethod
 
