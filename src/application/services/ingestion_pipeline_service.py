@@ -52,7 +52,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, channel_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
+    async def run_for_user(self, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
         
          # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
@@ -127,14 +127,14 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # temperature=self.openai_service.default_temperature,
                         # max_tokens=self.openai_service.default_max_tokens
                     )
-                    generation = TweetGeneration(
+                    tweet_generation = TweetGeneration(
                         id=None,
                         user_id=user_id,
                         video_id=video.id,
                         openai_request=openai_req,
                         generated_at = tweet_generation_ts
                     )
-                    generation_id = await self.tweet_generation_repo.save(generation)
+                    generation_id = await self.tweet_generation_repo.save(tweet_generation)
                     print(f"[IngestionPipelineService] Tweet generation (id: {len(generation_id)}) saved in collection 'tweet_generations'")
 
                     # 12. Map DTO raw_tweets_text List[str] → to domain entity Tweet

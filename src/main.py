@@ -72,7 +72,7 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     tweet_repo              = tweet_repo,
 )
 
-# Inyectar la instancia de IngestionPipelineService (ya con todos los Adapters) en la variable ingestion_pipeline_service del pipeline controller 
+# Inyectar la instancia de IngestionPipelineService (ya con todos los Adapters) en la variable ingestion_pipeline_servicedel pipeline controller 
 pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_instance
 
 # Montar FastAPI y registrar el router de pipeline
