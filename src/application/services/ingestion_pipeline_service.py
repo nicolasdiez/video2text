@@ -4,15 +4,16 @@ import asyncio
 from datetime import datetime
 from typing import List
 
-from src.domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from src.domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
+from src.domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from src.domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from src.domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
-from src.domain.ports.outbound.video_source_port import VideoSourcePort
+from src.domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from src.domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from src.domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from src.domain.ports.outbound.transcription_port import TranscriptionPort
 from src.domain.ports.outbound.openai_port import OpenAIPort
+
 from src.domain.entities.video import Video
 from src.domain.entities.channel import Channel
 from src.domain.entities.tweet import Tweet
@@ -62,50 +63,50 @@ class IngestionPipelineService(IngestionPipelinePort):
         # 3. Process each channel independently
         for channel in channels:
             # 4. Fetch new videos for this channel
-            videos: List[Video] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos)
+            videos_metadata: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos)
 
             # 5. Process each video independently
-            for video in videos:
-                # 6. Save video in MongoDB (if doesnt exist yet)
-                video = await self.video_repo.find_by_id(video.id)
+            for video_metadata in videos_metadata:
+                # 6. Map DTO VideoMetadata → domain entity Video
+                video = await self.video_repo.find_by_id(video_metadata.id)
                 if not video:
                     video = Video(
                         id=None,
-                        video_id=video.id,
                         channel_id=channel.id,
-                        title=video.title,
-                        url=video.url,
+                        youtube_video_id=video_metadata.videoId,
+                        title=video_metadata.title,
+                        url=video_metadata.url,
                         transcript=None,
                         transcript_fetched_at=None,
                         created_at=datetime.utcnow(),
-                        updated_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
                     )
                     saved_id = await self.video_repo.save(video)
                     video.id = saved_id
 
                 # 7. If the video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
-                    transcript = await self.transcription_service.transcribe(video.videoId, language=['es'])
-                    print(f"[PipelineService] Transcripción recibida (video {video.videoId}), {len(transcript)} caracteres")
+                    transcript = await self.transcription_service.transcribe(video.id, language=['es'])
+                    print(f"[PipelineService] Transcripción recibida (video {video.id}), {len(transcript)} caracteres")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
                     # persist the updated video entity
-                    await self.video_repo.update_video(video)
+                    await self.video_repo.update(video)
 
                 # 8. Generate complete prompt
                 prompt = f"{base_prompt.strip()}\n{video.transcript}"
 
-                # 9. Generate tweet texts for the video
+                # 9. Generate raw texts for the video
                 model="gpt-3.5-turbo"
-                tweets: List[Tweet] = await self.openai_service.generate_tweets(
+                raw_tweets_text: List[str] = await self.openai_service.generate_tweets(
                     prompt=prompt,
                     max_sentences=max_tweets,
                     model=model)
-                tweets_generation_ts = datetime.utcnow()
+                tweet_generation_ts = datetime.utcnow()
 
                 print(f"[IngestionPipelineService] {len(tweets)} tweets generados para video {video.id}")
                 
-                # 9.1 Persist tweet generation metadata
+                # 10. Persist tweet generation metadata
                 openai_req = OpenAIRequest(
                     prompt=prompt,
                     model=model,
@@ -118,20 +119,24 @@ class IngestionPipelineService(IngestionPipelinePort):
                     user_id=user_id,
                     video_id=video.id,
                     openai_request=openai_req,
-                    generated_at = tweets_generation_ts
+                    generated_at = tweet_generation_ts
                 )
                 generation_id = await self.tweet_generation_repo.save(generation)                
 
-                # 10. Build tweet records for batch saving
-                tweet_records = [
-                    {
-                        "user_id": user_id,
-                        "video_id": video.id,
-                        "text": tweet.text,
-                        "createdat": tweets_generation_ts,
-                    }
-                    for tweet in tweets
+                # 11. Map DTO raw_tweets_text (List[str]) → domain entity Tweet
+                tweets: List[Tweet] = [
+                    Tweet(
+                        id=None,
+                        user_id=user_id,
+                        video_id=video.id,
+                        generation_id=generation_id,
+                        text=text,
+                        index=index,
+                        published=False,
+                        created_at=tweet_generation_ts
+                    )
+                    for index, text in enumerate(raw_tweets_text, start=1)
                 ]
 
-                # 11. Save all generated tweets in MongoDB
-                await self.tweet_repo.save_all(tweet_records)
+                # 12. Batch save Tweet entities
+                await self.tweet_repo.save_all(tweets)
