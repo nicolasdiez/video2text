@@ -60,7 +60,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
         # 2. Fetch all channels the user is subscribed to
         channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
-        print(f"[IngestionPipelineService] {len(channels)} channels retrieved for user {user_id}")
+        print(f"[IngestionPipelineService] {len(channels)} channels retrieved for user {user_id} from collection 'channels'")
 
         # 3. Process each channel independently
         for channel in channels:

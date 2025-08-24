@@ -19,10 +19,10 @@ class RunRequest(BaseModel):
 async def run_pipeline(user_id: str, body: RunRequest):
     """
     Lanza el pipeline para el canal indicado:
-      - channel_id: YouTube channel ID
+      - user_id: User ID
       - prompt_file: path al prompt base
-      - max_videos: videos máximos a recuperar del channel_id
-      - max_tweets: tweets máximos a generar
+      - max_videos: videos máximos a recuperar de cada channel
+      - max_tweets: tweets máximos a generar de cada video
     """
 
     try:

@@ -180,7 +180,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PublishingPipelineService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+        <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PublishingPipelineService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
           <mxGeometry x="390" y="630" width="200" height="50" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20" edge="1">

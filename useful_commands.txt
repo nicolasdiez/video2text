@@ -19,3 +19,6 @@ http://localhost:8000/docs
 
 # curl test for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
 curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
+
+# curl test for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
+curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
