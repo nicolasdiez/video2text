@@ -99,7 +99,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     video.updated_at = datetime.utcnow()
                     # persist the updated video entity
                     await self.video_repo.update(video)
-                    print(f"[IngestionPipelineService] Transcription saved for video {video.id}")
+                    print(f"[IngestionPipelineService] Transcription saved for video {video.id} in collection 'videos'")
 
                 # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
                 if not video.tweets_generated:
