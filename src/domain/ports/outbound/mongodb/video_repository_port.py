@@ -22,6 +22,13 @@ class VideoRepositoryPort(ABC):
         ...
 
     @abstractmethod
+    async def find_by_youtube_video_id(self, youtube_video_id: str) -> Optional[Video]:
+        """
+        Fetch one video by its YouTube video identifier.
+        """
+        ...
+
+    @abstractmethod
     async def find_by_channel(
         self,
         channel_id: str,

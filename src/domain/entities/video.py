@@ -10,7 +10,7 @@ class TranscriptSegment:
     duration: float
     text: str
 
-@dataclass
+@dataclass(kw_only=True)
 class Video:
     id: Optional[str] = None
     user_id: Optional[str] = None       # Redundante, pero útil para consultas

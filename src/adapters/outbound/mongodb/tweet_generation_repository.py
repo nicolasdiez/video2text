@@ -10,11 +10,11 @@ from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 
 # Importa sólo la instancia de DB, no la configuración
-from infrastructure.mongodb import db
+# from infrastructure.mongodb import db
 
 
 class MongoTweetGenerationRepository(TweetGenerationRepositoryPort):
-    def __init__(self, db: AsyncIOMotorDatabase = db):
+    def __init__(self, db: AsyncIOMotorDatabase):
         self._coll = db.get_collection("tweet_generations")
 
     async def save(self, tweet_generation: TweetGeneration) -> str:

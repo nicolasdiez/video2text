@@ -11,7 +11,7 @@ class OpenAIRequest:
     temperature: float
     max_tokens: int
 
-@dataclass
+@dataclass(kw_only=True)
 class TweetGeneration:
     """
     Domain entity representing a tweet generation process (i.e. a call to OpenAI API to retrieve generated tweets=sentences)

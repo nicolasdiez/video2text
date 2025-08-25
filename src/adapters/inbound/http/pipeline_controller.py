@@ -15,7 +15,7 @@ class RunRequest(BaseModel):
     max_videos: int = 2
     max_tweets: int = 3
 
-@router.post("/pipelines/ingestion/run/{used_id}")
+@router.post("/pipelines/ingestion/run/{user_id}")
 async def run_pipeline(user_id: str, body: RunRequest):
     """
     Lanza el pipeline para el canal indicado:

@@ -14,7 +14,10 @@ from infrastructure.mongodb import db
 
 class MongoVideoRepository(VideoRepositoryPort):
     def __init__(self, database=None):
-        self._coll = (database or db).get_collection("videos")
+        if database is not None:
+            self._coll = database.get_collection("videos")
+        else:
+            self._coll = db.get_collection("videos")
 
     async def save(self, video: Video) -> str:
         doc = self._entity_to_doc(video)
@@ -23,6 +26,13 @@ class MongoVideoRepository(VideoRepositoryPort):
 
     async def find_by_id(self, video_id: str) -> Optional[Video]:
         doc = await self._coll.find_one({"_id": ObjectId(video_id)})
+        return self._doc_to_entity(doc) if doc else None
+    
+    async def find_by_youtube_video_id(self, youtube_video_id: str) -> Optional[Video]:
+        """
+        Fetch one video by its YouTube video identifier.
+        """
+        doc = await self._coll.find_one({"youtubeVideoId": youtube_video_id})
         return self._doc_to_entity(doc) if doc else None
 
     async def find_by_channel(

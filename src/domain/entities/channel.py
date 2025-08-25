@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-@dataclass
+@dataclass(kw_only=True)
 class Channel:
     """
     Domain entity representing a YouTube channel subscription.

@@ -10,7 +10,7 @@ class TwitterCredentials:
     access_token_secret: str
     screen_name: str                   # nombre visible en Twitter
 
-@dataclass
+@dataclass(kw_only=True)
 class User:
     id: Optional[str] = None
     username: str                                                       # email o nombre de usuario

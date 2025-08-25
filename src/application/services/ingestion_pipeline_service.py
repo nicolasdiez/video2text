@@ -5,20 +5,20 @@ from datetime import datetime
 from typing import List
 import inspect  # para trazas logging con print
 
-from src.domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
-from src.domain.ports.outbound.prompt_loader_port import PromptLoaderPort
-from src.domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
-from src.domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
-from src.domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
-from src.domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
-from src.domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
-from src.domain.ports.outbound.transcription_port import TranscriptionPort
-from src.domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
+from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
+from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
+from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
+from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
+from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
+from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
+from domain.ports.outbound.transcription_port import TranscriptionPort
+from domain.ports.outbound.openai_port import OpenAIPort
 
-from src.domain.entities.video import Video
-from src.domain.entities.channel import Channel
-from src.domain.entities.tweet import Tweet
-from src.domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
+from domain.entities.video import Video
+from domain.entities.channel import Channel
+from domain.entities.tweet import Tweet
+from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
 
 class IngestionPipelineService(IngestionPipelinePort):
@@ -72,8 +72,8 @@ class IngestionPipelineService(IngestionPipelinePort):
             # 5. Process each video independently
             for video_meta in videos_meta:
 
-                # 6. Map DTO VideoMetadata → to domain entity Video
-                video = await self.video_repo.find_by_id(video_meta.videoId)
+                # 6. Map DTO VideoMetadata → to domain entity Video, and persist
+                video = await self.video_repo.find_by_youtube_video_id(video_meta.videoId)
                 if not video:
                     video = Video(
                         id=None,
@@ -88,18 +88,18 @@ class IngestionPipelineService(IngestionPipelinePort):
                     )
                     saved_id = await self.video_repo.save(video)
                     video.id = saved_id
-                    print(f"[IngestionPipelineService] Video {len(video.id)} saved in collection 'videos'")
+                    print(f"[IngestionPipelineService] Video {video.id} saved in collection 'videos'")
 
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
-                    transcript = await self.transcription_client.transcribe(video.id, language=['es'])
-                    print(f"[PipelineService] Transcription received (video {video.id}), {len(transcript)} characters")
+                    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['es'])
+                    print(f"[PipelineService] Transcription received (video_id {video.id}, youtube_video_id {video.youtube_video_id}) with {len(transcript)} characters")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
                     video.updated_at = datetime.utcnow()
                     # persist the updated video entity
                     await self.video_repo.update(video)
-                    print(f"[IngestionPipelineService] Transcription saved for video {video.id} in collection 'videos'")
+                    print(f"[IngestionPipelineService] Transcription saved for video_id {video.id} in collection 'videos'")
 
                 # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
                 if not video.tweets_generated:

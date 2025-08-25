@@ -38,7 +38,7 @@ video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
 video_repo              = MongoVideoRepository(database=db)
 transcription_client    = YouTubeTranscriptionClient(default_language="es")
 openai_client           = OpenAIClient(api_key=OPENAI_API_KEY)
-tweet_generation_repo   = MongoTweetGenerationRepository(database=db)
+tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
 tweet_repo              = MongoTweetRepository(database=db)
 #twitter_client = TwitterClient(
 #    api_key            = TWITTER_API_KEY,
