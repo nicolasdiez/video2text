@@ -300,7 +300,7 @@ def call_llm(generator, prompt: str) -> str:
 # Example usage
 if __name__ == "__main__":
 
-    channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # Example channel ID (Google Developers)
+    channel_id = "UCJQQVLyM6wtPleV4wFBK06g"  # VisPol (UCTqb7oZzCYpzOhPenq6AOyQ - SolFon)
 
     videos = get_videos_from_channel(channel_id)
     

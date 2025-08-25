@@ -2,9 +2,20 @@
   "_id":       { "$oid": "68ab76d1b671ea0a87414143" },
   "userId":    { "$oid": "64e8b0f3a1b2c3d4e5f67891" },
   "youtubeChannelId": "UCJQQVLyM6wtPleV4wFBK06g",
-  "title":             "Mi Canal de Pruebas",
+  "title":             "VisualPolitik",
   "pollingInterval":   15,
   "lastPolledAt":      null,
   "createdAt":         { "$date": "2025-08-01T10:30:00Z" },
   "updatedAt":         { "$date": "2025-08-24T21:59:00Z" }
+}
+
+{
+  "_id":       { "$oid": "68acbb73f16fc39963baa907" },
+  "userId":    { "$oid": "64e8b0f3a1b2c3d4e5f67891" },
+  "youtubeChannelId": "UCTqb7oZzCYpzOhPenq6AOyQ",
+  "title":             "@solofonseca",
+  "pollingInterval":   18,
+  "lastPolledAt":      null,
+  "createdAt":         { "$date": "2025-08-25T21:37:00Z" },
+  "updatedAt":         { "$date": "2025-08-25T21:37:00Z" }
 }

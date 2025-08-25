@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from infrastructure.mongodb import db
 
 # importo pipeline_controller para inyectarle más adelante la instancia de IngestionPipelineService con todos los adaptadores creados
+# importing the whole ingestion_pipeline_service.py module in order to be able to use its ingestion_pipeline_service variable
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
 from application.services.ingestion_pipeline_service import IngestionPipelineService 
 
