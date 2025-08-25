@@ -8,8 +8,9 @@ import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gat
 from fastapi import FastAPI
 from infrastructure.mongodb import db
 
-# importo pipeline_controller para inyectarle más adelante la instancia de PipelineService con todos los adaptadores creados
+# importo pipeline_controller para inyectarle más adelante la instancia de IngestionPipelineService con todos los adaptadores creados
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
+from application.services.ingestion_pipeline_service import IngestionPipelineService 
 
 from adapters.outbound.file_prompt_loader import FilePromptLoader
 from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
@@ -20,10 +21,6 @@ from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 
-from application.services.pipeline_service import PipelineService
-from application.services.ingestion_pipeline_service import IngestionPipelineService 
-
-
 # Cargar credenciales del entorno
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
 OPENAI_API_KEY              = os.getenv("OPENAI_API_KEY")
@@ -33,8 +30,7 @@ TWITTER_ACCESS_TOKEN        = os.getenv("X_API_ACCESS_TOKEN")
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
 TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
 
-
-# Instanciar los adaptadores concretos para IngestionPipelineService
+# Instanciar los adaptadores concretos para construir IngestionPipelineService
 prompt_loader           = FilePromptLoader(prompts_dir="prompts")
 channel_repo            = MongoChannelRepository(database=db)
 video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
@@ -72,14 +68,14 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     tweet_repo              = tweet_repo,
 )
 
-# Inyectar la instancia de IngestionPipelineService (ya con todos los Adapters) en la variable ingestion_pipeline_servicedel pipeline controller 
+# Inyectar la instancia de IngestionPipelineService (ya con todos los Adapters) en la variable ingestion_pipeline_service del pipeline controller 
 pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_instance
 
 # Montar FastAPI y registrar el router de pipeline
 app = FastAPI(
-    title       = "YouTube→Tweet Pipeline",
+    title       = "Ingestion and Publication Pipelines",
     version     = "1.0.0",
-    description = "Recupera videos de YouTube, genera tweets con OpenAI y los publica en Twitter."
+    description = ""
 )
 
 app.include_router(pipeline_controller.router)
