@@ -8,8 +8,8 @@ from typing import Optional
 class OpenAIRequest:
     prompt: str
     model: str
-    temperature: float
-    max_tokens: int
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
 
 @dataclass(kw_only=True)
 class TweetGeneration:
