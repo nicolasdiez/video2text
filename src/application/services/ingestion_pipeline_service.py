@@ -112,7 +112,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                     # 10. Generate raw texts for the video
                     model="gpt-3.5-turbo"
-                    raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]
+                    raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                     #raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                     #    prompt=prompt,
                     #    max_sentences=max_tweets,
