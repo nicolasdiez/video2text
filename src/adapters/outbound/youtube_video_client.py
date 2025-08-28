@@ -15,7 +15,7 @@ class YouTubeVideo(VideoMetadata):
         self.videoId = videoId
         self.title = title
         self.url = url
-        # TODO: incluir fecha de publicación e idioma (para pasarselo al TranscriptionService)
+        # TODO: incluir fecha de publicación, e idioma (para pasarselo al TranscriptionService)
 
 
 class YouTubeVideoClient(VideoSourcePort):

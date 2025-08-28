@@ -35,6 +35,17 @@ class MongoVideoRepository(VideoRepositoryPort):
         doc = await self._coll.find_one({"youtubeVideoId": youtube_video_id})
         return self._doc_to_entity(doc) if doc else None
 
+    async def find_by_youtube_video_id_and_user_id(self, youtube_video_id: str, user_id: str) -> Optional[Video]:
+        """
+        Fetch one video by its YouTube video ID and user ID.
+        """
+        query = {
+            "youtubeVideoId": youtube_video_id,
+            "userId": ObjectId(user_id)
+        }
+        doc = await self._coll.find_one(query)
+        return self._doc_to_entity(doc) if doc else None
+
     async def find_by_channel(
         self, channel_id: str, limit: int = 50, offset: int = 0
     ) -> List[Video]:

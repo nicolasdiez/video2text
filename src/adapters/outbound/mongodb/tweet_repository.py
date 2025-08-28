@@ -69,10 +69,10 @@ class MongoTweetRepository(TweetRepositoryPort):
             video_id=str(doc["videoId"]),
             generation_id=str(doc["generationId"]),
             text=doc["text"],
-            index=doc.get("index"),
+            index_in_generation=doc.get("indexInGeneration"),
             published=doc.get("published", False),
             published_at=doc.get("publishedAt"),
-            twitter_status_id=doc.get("twitterStatusId"),
+            twitter_id=doc.get("twitterId"),
             created_at=doc.get("createdAt", datetime.utcnow())
         )
 
@@ -82,10 +82,10 @@ class MongoTweetRepository(TweetRepositoryPort):
             "videoId": ObjectId(tweet.video_id),
             "generationId": ObjectId(tweet.generation_id),
             "text": tweet.text,
-            "index": tweet.index,
+            "indexInGeneration": tweet.index_in_generation,
             "published": tweet.published,
             "publishedAt": tweet.published_at,
-            "twitterStatusId": tweet.twitter_status_id,
+            "twitterId": tweet.twitter_id,
             "createdAt": tweet.created_at,
         }
         # Elimina campos con valor None

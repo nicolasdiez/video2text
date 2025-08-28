@@ -13,6 +13,7 @@ from infrastructure.mongodb import db
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
 from application.services.ingestion_pipeline_service import IngestionPipelineService 
 
+from adapters.outbound.mongodb.user_repository import MongoUserRepository
 from adapters.outbound.file_prompt_loader import FilePromptLoader
 from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
@@ -32,6 +33,7 @@ TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
 TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
 
 # Instanciar los adaptadores concretos para construir IngestionPipelineService
+user_repo               = MongoUserRepository(database=db)
 prompt_loader           = FilePromptLoader(prompts_dir="prompts")
 channel_repo            = MongoChannelRepository(database=db)
 video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
@@ -59,6 +61,7 @@ tweet_repo              = MongoTweetRepository(database=db)
 
 # Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
+    user_repo               = user_repo,
     prompt_loader           = prompt_loader,
     channel_repo            = channel_repo,
     video_source            = video_source,

@@ -52,8 +52,11 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
+    async def run_for_user(self, user_id: str, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
         
+        # 0. Validate that user_id actually exists on the system repo
+
+
         # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
         print(f"[IngestionPipelineService] Base prompt loaded (base prompt file: {prompt_file}")
@@ -73,8 +76,7 @@ class IngestionPipelineService(IngestionPipelinePort):
             for video_meta in videos_meta:
 
                 # 6. Map DTO VideoMetadata → to domain entity Video, and persist
-                # TODO: find by youtube_id and by user_id
-                video = await self.video_repo.find_by_youtube_video_id(video_meta.videoId)
+                video = await self.video_repo.find_by_youtube_video_id_and_user_id(video_meta.videoId, user_id=user_id)
                 if not video:
                     video = Video(
                         id=None,
@@ -146,14 +148,14 @@ class IngestionPipelineService(IngestionPipelinePort):
                             video_id=video.id,
                             generation_id=generation_id,
                             text=text,
-                            index=index,
+                            index_in_generation=index,
                             published=False,
                             created_at=tweet_generation_ts
                         )
                         for index, text in enumerate(raw_tweets_text, start=1)
                     ]
 
-                    # 13. Batch save Tweet entities
+                    # 13. Save Tweet entities (in batch)
                     await self.tweet_repo.save_all(tweets)
                     print(f"[IngestionPipelineService] {len(tweets)} tweets saved in collection 'tweets'")
 
