@@ -6,6 +6,7 @@ from typing import List
 import inspect  # para trazas logging con print
 
 from domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
+from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
@@ -34,6 +35,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
     def __init__(
         self,
+        user_repo: UserRepositoryPort,
         prompt_loader: PromptLoaderPort,
         channel_repo: ChannelRepositoryPort,
         video_source: VideoSourcePort,
@@ -43,6 +45,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
     ):
+        self.user_repo = user_repo
         self.prompt_loader = prompt_loader
         self.channel_repo = channel_repo
         self.video_source = video_source
@@ -52,10 +55,12 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
+    async def run_for_user(self, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
         
-        # 0. Validate that user_id actually exists on the system repo
-
+        # 0. Validate that user_id actually exists on the repo
+        user = await self.user_repo.find_by_id(user_id)
+        if user is None:
+            raise LookupError(f"User {user_id} not found")
 
         # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)

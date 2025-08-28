@@ -18,7 +18,7 @@ class RunRequest(BaseModel):
 @router.post("/pipelines/ingestion/run/{user_id}")
 async def run_pipeline(user_id: str, body: RunRequest):
     """
-    Lanza el pipeline para el canal indicado:
+    Lanza el pipeline para el user indicado:
       - user_id: User ID
       - prompt_file: path al prompt base
       - max_videos: videos máximos a recuperar de cada channel
@@ -26,7 +26,18 @@ async def run_pipeline(user_id: str, body: RunRequest):
     """
 
     try:
-        await ingestion_pipeline_service.run_for_user (user_id = user_id, prompt_file = body.prompt_file, max_videos = body.max_videos, max_tweets = body.max_tweets)
+        await ingestion_pipeline_service.run_for_user(
+            user_id = user_id, 
+            prompt_file = body.prompt_file, 
+            max_videos = body.max_videos, 
+            max_tweets = body.max_tweets
+        )
         return {"status": "success"}
+    
+    # User not found
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
+    # Generic server error
     except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(status_code=500, detail=str(e))
