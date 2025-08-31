@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="1695" dy="1697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2053" dy="1915" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -95,8 +95,8 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="772" y="169" width="160" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-17" value="Google API YouTube" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="1070" y="60" width="70" height="60" as="geometry" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-17" value="Google YouTube API" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1070" y="55" width="80" height="70" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-20" target="6GBo-MGXtRTwtD-Rmwj8-28" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -112,13 +112,13 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="757" y="803" width="130" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;TranscriptApi&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="1045.5" y="159" width="83" height="60" as="geometry" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;Transcript API&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1045.5" y="153.5" width="94.5" height="71" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-28" value="OpenAI API" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1094" y="235" width="83" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-30" value="X API v2" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-30" value="X v2 API" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1084" y="793" width="83" height="60" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-34" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;b&gt;users&lt;/b&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; username: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // Email o nombre de usuario&lt;/div&gt;&lt;div&gt;&amp;nbsp; openaiApiKey: String,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // (opcional) si es por usuario&lt;/div&gt;&lt;div&gt;&amp;nbsp; twitterCredentials: {&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; accessToken: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; accessSecret: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp; screenName: String&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;// Nombre visible en Twitter&lt;/div&gt;&lt;div&gt;&amp;nbsp; },&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;html=1;align=left;whiteSpace=wrap;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
@@ -193,8 +193,8 @@
         <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PublishingPipelineService" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="314" y="689" width="200" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-21" value="POST /pipelines/publication/run/{user_id}&lt;div&gt;&lt;font style=&quot;text-align: right; color: rgb(255, 255, 255);&quot;&gt;&lt;span style=&quot;text-align: center;&quot;&gt;&amp;nbsp;&lt;br&gt;publish_pending_for_user(user_id: str, limit: int)&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20" edge="1">
-          <mxGeometry x="0.565" y="74" relative="1" as="geometry">
+        <mxCell id="fER5kQKjIwSkImDIx6LC-21" value="POST /pipelines/publication/run/{user_id}&lt;div&gt;&lt;font style=&quot;text-align: right; color: rgb(255, 255, 255);&quot;&gt;&lt;span style=&quot;text-align: center;&quot;&gt;&amp;nbsp;&lt;br&gt;publish_pending_for_user (user_id: str, limit: int)&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20" edge="1">
+          <mxGeometry x="0.54" y="54" relative="1" as="geometry">
             <mxPoint x="290" y="390" as="sourcePoint" />
             <mxPoint x="370" y="390" as="targetPoint" />
             <mxPoint as="offset" />
@@ -270,7 +270,7 @@
         <mxCell id="mtawYaKO-lGH9iTYJ4dF-17" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="752" y="694" width="140" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)&amp;nbsp;-&amp;gt; List[Tweet]" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4">
           <mxGeometry x="-0.5853" y="9" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1315" y="714" />
