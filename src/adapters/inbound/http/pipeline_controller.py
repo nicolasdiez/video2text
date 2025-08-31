@@ -33,11 +33,9 @@ async def run_pipeline(user_id: str, body: RunRequest):
             max_tweets = body.max_tweets
         )
         return {"status": "success"}
-    
     # User not found
     except LookupError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    
     # Generic server error
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

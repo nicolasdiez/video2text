@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="3582" dy="2781" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1422" dy="1531" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -18,12 +18,9 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-3" value="pipeline_controller.py" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="30" y="240" width="130" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-4" target="6GBo-MGXtRTwtD-Rmwj8-3" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-14" value="POST /pipelines/ingestion/run/{&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;user_id&lt;/font&gt;}" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="6GBo-MGXtRTwtD-Rmwj8-5" vertex="1" connectable="0">
-          <mxGeometry x="0.16" y="1" relative="1" as="geometry">
-            <mxPoint x="-29" y="-9" as="offset" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-5" value="POST /pipelines/ingestion/run/{user_id}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-4" target="6GBo-MGXtRTwtD-Rmwj8-3" edge="1">
+          <mxGeometry x="-0.037" y="15" relative="1" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-4" value="API" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -105,7 +102,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterClient" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;" parent="1" vertex="1">
-          <mxGeometry x="745" y="635" width="130" height="40" as="geometry" />
+          <mxGeometry x="684" y="635" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;TranscriptApi&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1045.5" y="159" width="83" height="60" as="geometry" />
@@ -156,7 +153,7 @@
             <mxPoint y="-9" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-14" value="/prompts" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;shadow=0;dashed=0;shape=mxgraph.ios7.icons.folder;" parent="1" vertex="1">
+        <mxCell id="fER5kQKjIwSkImDIx6LC-14" value="&lt;span&gt;/prompts&lt;/span&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;shadow=0;dashed=0;shape=mxgraph.ios7.icons.folder;" parent="1" vertex="1">
           <mxGeometry x="1080" y="-130" width="80" height="50" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-16" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -181,7 +178,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-20" value="PublishingPipelineService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;" parent="1" vertex="1">
-          <mxGeometry x="390" y="630" width="200" height="50" as="geometry" />
+          <mxGeometry x="340" y="630" width="200" height="50" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -213,6 +210,23 @@
             </Array>
             <mxPoint x="550" y="300" as="sourcePoint" />
             <mxPoint x="770" y="476" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-9" value="find_by_id (user_id: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-7" target="fER5kQKjIwSkImDIx6LC-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-7" value="MongoUserRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="-220" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-8" value="validate user" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="mtawYaKO-lGH9iTYJ4dF-7">
+          <mxGeometry x="0.6788" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="265" />
+              <mxPoint x="530" y="-200" />
+            </Array>
+            <mxPoint x="500" y="209" as="sourcePoint" />
+            <mxPoint x="720" y="-156" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
