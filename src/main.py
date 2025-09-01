@@ -8,9 +8,10 @@ import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gat
 from fastapi import FastAPI
 from infrastructure.mongodb import db
 
-# importo pipeline_controller para inyectarle más adelante la instancia de IngestionPipelineService con todos los adaptadores creados
-# importing the whole ingestion_pipeline_service.py module in order to be able to use its ingestion_pipeline_service variable
+# import pipeline_controller to later inject the IngestionPipelineService instance with all the created adapters into pipeline_controller.ingestion_pipeline_service
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
+
+# import the whole ingestion_pipeline_service.py module in order to be able to use its ingestion_pipeline_service variable
 from application.services.ingestion_pipeline_service import IngestionPipelineService 
 
 from adapters.outbound.mongodb.user_repository import MongoUserRepository
@@ -23,7 +24,7 @@ from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 
-# Cargar credenciales del entorno
+# Load env variables
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
 OPENAI_API_KEY              = os.getenv("OPENAI_API_KEY")
 TWITTER_API_KEY             = os.getenv("X_API_KEY")
