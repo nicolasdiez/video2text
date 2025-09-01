@@ -1,10 +1,10 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="1869" dy="1803" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2564" dy="2226" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-1" value="ingestion_pipeline_service&lt;div&gt;&lt;br&gt;&lt;div&gt;(prompt_loader,&lt;/div&gt;&lt;div&gt;channel_repo,&lt;/div&gt;&lt;div&gt;video_source,&lt;/div&gt;&lt;div&gt;video_repo,&lt;/div&gt;&lt;div&gt;transcription_client,&lt;/div&gt;&lt;div&gt;openai_client,&lt;/div&gt;&lt;div&gt;tweet_generation_repo,&lt;/div&gt;&lt;div&gt;tweet_repo)&lt;/div&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-2" target="6GBo-MGXtRTwtD-Rmwj8-3">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-1" value="ingestion_pipeline_service&lt;div&gt;&lt;br&gt;&lt;div&gt;(prompt_loader,&lt;/div&gt;&lt;div&gt;channel_repo,&lt;/div&gt;&lt;div&gt;video_source,&lt;/div&gt;&lt;div&gt;video_repo,&lt;/div&gt;&lt;div&gt;transcription_client,&lt;/div&gt;&lt;div&gt;openai_client,&lt;/div&gt;&lt;div&gt;tweet_generation_repo,&lt;/div&gt;&lt;div&gt;tweet_repo)&lt;/div&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-2" target="6GBo-MGXtRTwtD-Rmwj8-3" edge="1">
           <mxGeometry x="-0.2048" y="-5" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -54,7 +54,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-23" value="generate tweets from transcript" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" target="6GBo-MGXtRTwtD-Rmwj8-20" edge="1" source="6GBo-MGXtRTwtD-Rmwj8-6">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-23" value="generate tweets from transcript" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="6GBo-MGXtRTwtD-Rmwj8-20" edge="1">
           <mxGeometry x="0.3158" y="15" relative="1" as="geometry">
             <mxPoint x="510" y="275" as="sourcePoint" />
             <mxPoint x="550" y="340" as="targetPoint" />
@@ -185,7 +185,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-18" value="get not published tweets of the user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="mtawYaKO-lGH9iTYJ4dF-17">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-18" value="get not published tweets of the user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="mtawYaKO-lGH9iTYJ4dF-17" edge="1">
           <mxGeometry x="0.1429" y="14" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -194,7 +194,7 @@
           <mxGeometry x="314" y="689" width="200" height="50" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-21" value="POST /pipelines/publication/run/{user_id}&lt;div&gt;&lt;font style=&quot;text-align: right; color: rgb(255, 255, 255);&quot;&gt;&lt;span style=&quot;text-align: center;&quot;&gt;&amp;nbsp;&lt;br&gt;publish_pending_for_user (user_id: str, limit: int)&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-3" target="fER5kQKjIwSkImDIx6LC-20" edge="1">
-          <mxGeometry x="0.54" y="54" relative="1" as="geometry">
+          <mxGeometry x="0.54" y="34" relative="1" as="geometry">
             <mxPoint x="290" y="390" as="sourcePoint" />
             <mxPoint x="370" y="390" as="targetPoint" />
             <mxPoint as="offset" />
@@ -205,15 +205,15 @@
             <mxPoint x="-17" y="-22" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-5" value="save (tweet_generation)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-3" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-5" value="save (tweet_generation)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-3" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.6025" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-3" value="MongoTweetGenerationRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-3" value="MongoTweetGenerationRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="790" y="330" width="205" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-4" value="save tweet generation metadata" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="mtawYaKO-lGH9iTYJ4dF-3">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-4" value="save tweet generation metadata" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="mtawYaKO-lGH9iTYJ4dF-3" edge="1">
           <mxGeometry x="0.3425" y="10" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="580" y="265" />
@@ -224,15 +224,15 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-9" value="find_by_id (user_id: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-7" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-9" value="find_by_id (user_id: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-7" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.0099" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-7" value="MongoUserRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-7" value="MongoUserRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="730" y="-220" width="130" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-8" value="validate user" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="mtawYaKO-lGH9iTYJ4dF-7">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-8" value="validate user" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="mtawYaKO-lGH9iTYJ4dF-7" edge="1">
           <mxGeometry x="0.6788" y="10" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="530" y="265" />
@@ -243,10 +243,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-14" value="MongoUserRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-14" value="MongoUserRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="784" y="609" width="130" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-15" value="validate user" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="mtawYaKO-lGH9iTYJ4dF-14">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-15" value="validate user" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="mtawYaKO-lGH9iTYJ4dF-14" edge="1">
           <mxGeometry x="0.5304" y="9" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="560" y="714" />
@@ -257,7 +257,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-16" value="find_by_id (user_id: str)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-14" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-16" value="find_by_id (user_id: str)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-14" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.5853" y="9" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1315" y="630" />
@@ -267,10 +267,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-17" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-17" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="779" y="694" width="140" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)&amp;nbsp;-&amp;gt; List[Tweet]" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)&amp;nbsp;-&amp;gt; List[Tweet]" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.6239" y="14" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1315" y="714" />
@@ -280,10 +280,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-20" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;prompts&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;// FK → users._id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp; channelId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // FK → channels._id&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; text: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#e51400;strokeColor=#B20000;fontColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-20" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;{&lt;/span&gt;&lt;b&gt;prompts&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;{&lt;/div&gt;&lt;div&gt;&amp;nbsp; _id: ObjectId,&lt;/div&gt;&lt;div&gt;&amp;nbsp; userId: ObjectId,&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;// FK → users._id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp; channelId: ObjectId,&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; // FK → channels._id&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; text: String,&lt;/div&gt;&lt;div&gt;&amp;nbsp; createdAt: Date,&lt;/div&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#e51400;strokeColor=#B20000;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1890" y="1120" width="310" height="185" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-21" value="En&amp;nbsp;IngestionPipelineService recupero prompt por userId y por channelId" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-21" value="En&amp;nbsp;IngestionPipelineService recupero prompt por userId y por channelId" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1930" y="1070" width="250" height="30" as="geometry" />
         </mxCell>
       </root>

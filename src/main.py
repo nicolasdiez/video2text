@@ -42,21 +42,14 @@ transcription_client    = YouTubeTranscriptionClient(default_language="es")
 openai_client           = OpenAIClient(api_key=OPENAI_API_KEY)
 tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
 tweet_repo              = MongoTweetRepository(database=db)
-#twitter_client = TwitterClient(
+
+# TODO: Instanciar los adaptadores concretos para construir PublishingPipelineService
+#   twitter_client = TwitterClient(
 #    api_key            = TWITTER_API_KEY,
 #    api_secret         = TWITTER_API_SECRET,
 #    access_token       = TWITTER_ACCESS_TOKEN,
 #    access_token_secret= TWITTER_ACCESS_TOKEN_SECRET,
 #    bearer_token       = TWITTER_BEARER_TOKEN
-#)
-
-# Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
-#pipeline_service_instance = PipelineService(
-#    video_source   = video_source,
-#    transcriber    = transcriber,
-#    prompt_loader  = prompt_loader,
-#    openai_client  = openai_client,
-#    twitter_client = twitter_client,
 #)
 
 # Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
