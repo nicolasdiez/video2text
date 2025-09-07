@@ -10,13 +10,13 @@ router = APIRouter(prefix="", tags=["pipeline"])
 ingestion_pipeline_service: IngestionPipelineService  # será inyectada desde main.py
 
 # DTO para cargar el body de la request
-class RunRequest(BaseModel):
+class IngestionRequest(BaseModel):
     prompt_file: str = "shortsentences-from-transcript.txt"
     max_videos: int = 2
     max_tweets: int = 3
 
 @router.post("/pipelines/ingestion/run/{user_id}")
-async def run_pipeline(user_id: str, body: RunRequest):
+async def run_pipeline(user_id: str, body: IngestionRequest):
     """
     Lanza el pipeline para el user indicado:
       - user_id: User ID

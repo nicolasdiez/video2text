@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="2564" dy="2226" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1661" dy="1676" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -73,9 +73,14 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-6" value="IngestionPipelineService" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="330" y="240" width="180" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-15" value="load_prompt (prompt_file: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-9" target="fER5kQKjIwSkImDIx6LC-14" edge="1">
-          <mxGeometry y="15" relative="1" as="geometry">
+        <mxCell id="fER5kQKjIwSkImDIx6LC-15" value="load_prompt (prompt_file: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-9" target="YeQcEhxph-pK-XzqHGoJ-1" edge="1">
+          <mxGeometry x="0.0233" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
+            <mxPoint x="1080" y="-105" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1050" y="-105" />
+              <mxPoint x="1050" y="-105" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-9" value="FilePromptLoader" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -160,9 +165,6 @@
           <mxGeometry x="-0.0193" y="1" relative="1" as="geometry">
             <mxPoint y="-9" as="offset" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="fER5kQKjIwSkImDIx6LC-14" value="&lt;span&gt;/prompts&lt;/span&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;shadow=0;dashed=0;shape=mxgraph.ios7.icons.folder;" parent="1" vertex="1">
-          <mxGeometry x="1080" y="-130" width="80" height="50" as="geometry" />
         </mxCell>
         <mxCell id="fER5kQKjIwSkImDIx6LC-16" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="809" y="421" width="140" height="40" as="geometry" />
@@ -285,6 +287,33 @@
         </mxCell>
         <mxCell id="mtawYaKO-lGH9iTYJ4dF-21" value="En&amp;nbsp;IngestionPipelineService recupero prompt por userId y por channelId" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1930" y="1070" width="250" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-1" value="/prompts" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.concepts.folder;" vertex="1" parent="1">
+          <mxGeometry x="1075" y="-145" width="75" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-2" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="779" y="893" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-3" value="update (tweet: Tweet)&amp;nbsp;-&amp;gt; None" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="YeQcEhxph-pK-XzqHGoJ-2" target="fER5kQKjIwSkImDIx6LC-4">
+          <mxGeometry x="-0.6514" y="13" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1315" y="913" />
+            </Array>
+            <mxPoint x="892" y="907" as="sourcePoint" />
+            <mxPoint x="1315" y="240" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-4" value="update tweet metadata" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="fER5kQKjIwSkImDIx6LC-20" target="YeQcEhxph-pK-XzqHGoJ-2">
+          <mxGeometry x="0.4881" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="714" />
+              <mxPoint x="560" y="912" />
+            </Array>
+            <mxPoint as="offset" />
+            <mxPoint x="510" y="803" as="sourcePoint" />
+            <mxPoint x="780" y="912" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

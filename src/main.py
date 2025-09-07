@@ -33,7 +33,7 @@ TWITTER_ACCESS_TOKEN        = os.getenv("X_API_ACCESS_TOKEN")
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
 TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
 
-# Instanciar los adaptadores concretos para construir IngestionPipelineService
+# Instanciar adaptadores concretos para construir IngestionPipelineService
 user_repo               = MongoUserRepository(database=db)
 prompt_loader           = FilePromptLoader(prompts_dir="prompts")
 channel_repo            = MongoChannelRepository(database=db)
@@ -53,7 +53,7 @@ tweet_repo              = MongoTweetRepository(database=db)
 #    bearer_token       = TWITTER_BEARER_TOKEN
 #)
 
-# Crear la instancia del PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
+# Crear instancia de PipelineService con las implementaciones concretas de los ports (es decir, inyectar Adapters en los Ports de PipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
     user_repo               = user_repo,
     prompt_loader           = prompt_loader,
