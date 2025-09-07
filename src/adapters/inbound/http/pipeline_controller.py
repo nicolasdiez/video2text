@@ -15,12 +15,12 @@ publishing_pipeline_service: PublishingPipelineService
 # DTO for ingestion
 class IngestionRequest(BaseModel):
     prompt_file: str = "shortsentences-from-transcript.txt"
-    max_videos: int = 2
-    max_tweets: int = 3
+    max_videos_to_fetch_per_channel: int = 2
+    max_tweets_to_generate_per_video: int = 3
 
 # DTO for publishing
 class PublishingRequest(BaseModel):
-    max_tweets_to_fetch: int = 5
+    max_tweets_to_fetch: int = 10
     max_tweets_to_publish: int = 5
 
 
@@ -34,7 +34,7 @@ async def run_ingestion_pipeline(
     Lanza el pipeline de ingestion para el user indicado:
       - user_id: User ID
       - prompt_file: path al prompt base
-      - max_videos: videos máximos a recuperar de cada channel
+      - max_videos_to_fetch_per_channel: videos máximos a recuperar de cada channel
       - max_tweets: tweets máximos a generar de cada video
     """
 
@@ -42,8 +42,8 @@ async def run_ingestion_pipeline(
         await service.run_for_user(
             user_id = user_id, 
             prompt_file = body.prompt_file, 
-            max_videos = body.max_videos, 
-            max_tweets = body.max_tweets
+            max_videos = body.max_videos_to_fetch_per_channel, 
+            max_tweets = body.max_tweets_to_generate_per_video
         )
         return {"status": "success"}
     # User not found

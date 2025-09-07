@@ -55,12 +55,13 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, prompt_file: str, max_videos: int = 2, max_tweets: int = 3) -> None:
+    async def run_for_user(self, user_id: str, prompt_file: str, max_videos_to_fetch_per_channel: int = 2, max_tweets_to_generate_per_video: int = 3) -> None:
         
         # 0. Validate that user_id actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
             raise LookupError(f"User {user_id} not found")
+        print(f"[IngestionPipelineService] User found: {user_id}")
 
         # 1. Load prompt base from file (without blocking thread)
         base_prompt = await self.prompt_loader.load_prompt(prompt_file)
@@ -74,7 +75,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         for channel in channels:
 
             # 4. Fetch new videos for this channel
-            videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos)
+            videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_per_channel)
             print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.title}")
 
             # 5. Process each video independently
@@ -122,7 +123,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                     #raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                     #    prompt=prompt,
-                    #    max_sentences=max_tweets,
+                    #    max_sentences=max_tweets_to_generate_per_video,
                     #    model=model)
                     tweet_generation_ts = datetime.utcnow()
                     print(f"[IngestionPipelineService] {len(raw_tweets_text)} tweets generated for video {video.id}")
@@ -155,7 +156,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                             text=text,
                             index_in_generation=index,
                             published=False,
-                            created_at=tweet_generation_ts
+                            created_at=tweet_generation_ts,
+                            updated_at=tweet_generation_ts
                         )
                         for index, text in enumerate(raw_tweets_text, start=1)
                     ]
