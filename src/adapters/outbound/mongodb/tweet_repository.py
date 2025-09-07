@@ -7,7 +7,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.tweet import Tweet
-from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
+from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort, SortOrder
 
 from infrastructure.mongodb import db
 
@@ -51,6 +51,22 @@ class MongoTweetRepository(TweetRepositoryPort):
         async for doc in cursor:
             items.append(self._doc_to_entity(doc))
         return items
+    
+    async def find_unpublished_by_user(self, user_id: str, limit: int = 50, order: SortOrder = SortOrder.oldest_first) -> List[Tweet]:
+            """
+            Fetch unpublished tweets for a given user, up to `limit`,
+            ordered by createdAt. `order` can be "oldest_first" or "newest_first".
+            """
+            # Determine sort direction
+            sort_dir = 1 if order == SortOrder.oldest_first else -1
+
+            cursor = (
+                self._coll
+                .find({"userId": ObjectId(user_id), "published": False})
+                .sort("createdAt", sort_dir)
+                .limit(limit)
+            )
+            return [self._doc_to_entity(doc) async for doc in cursor]
 
     async def update(self, tweet: Tweet) -> None:
         """
@@ -73,7 +89,8 @@ class MongoTweetRepository(TweetRepositoryPort):
             published=doc.get("published", False),
             published_at=doc.get("publishedAt"),
             twitter_id=doc.get("twitterId"),
-            created_at=doc.get("createdAt", datetime.utcnow())
+            created_at=doc.get("createdAt", datetime.utcnow()),
+            updated_at=doc.get("updatedAt", datetime.utcnow())
         )
 
     def _entity_to_doc(self, tweet: Tweet) -> dict:
@@ -87,6 +104,7 @@ class MongoTweetRepository(TweetRepositoryPort):
             "publishedAt": tweet.published_at,
             "twitterId": tweet.twitter_id,
             "createdAt": tweet.created_at,
+            "updatedAt": tweet.updated_at,
         }
         # Elimina campos con valor None
         return {k: v for k, v in doc.items() if v is not None}

@@ -3,6 +3,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from domain.entities.tweet import Tweet
+from enum import Enum
+
+class SortOrder(str, Enum):
+    oldest_first = "oldest_first"
+    newest_first = "newest_first"
 
 class TweetRepositoryPort(ABC):
     @abstractmethod
@@ -32,6 +37,13 @@ class TweetRepositoryPort(ABC):
         Fetch all tweets associated to a given tweet generation.
         """
         ...
+
+    @abstractmethod
+    async def find_unpublished_by_user(self, user_id: str, limit: int = 50, order: SortOrder = SortOrder.oldest_first) -> List[Tweet]:
+        """
+        Fetch unpublished tweets for a given user, up to `limit`, 
+        ordered by createdAt. `order` can be "oldest_first" or "newest_first".
+        """
 
     @abstractmethod
     async def update(self, tweet: Tweet) -> None:
