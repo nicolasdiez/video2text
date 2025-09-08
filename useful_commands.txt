@@ -22,3 +22,6 @@ curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/U
 
 # curl test for POST /pipelines/ingestion/run/{user_id}
 curl -X POST "http://localhost:8000/pipelines/ingestion/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_tweets":2}'
+
+# curl test for POST /pipelines/publishing/run/{user_id}
+curl -X POST "http://localhost:8000/pipelines/publishing/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"max_tweets_to_fetch": 10, "max_tweets_to_publish": 5}'
