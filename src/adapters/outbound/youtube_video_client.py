@@ -69,7 +69,7 @@ class YouTubeVideoClient(VideoSourcePort):
 
         # Logging
         print(f"[YouTubeVideoClient] Canal: {channel_id}")
-        print(f"[YouTubeVideoClient] Solicitados max: {max_videos}, Obtenidos: {len(videos)}")
+        print(f"[YouTubeVideoClient] Videos solicitados max: {max_videos}, Videos obtenidos: {len(videos)}")
         print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return videos
