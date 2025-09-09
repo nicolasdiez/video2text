@@ -3,10 +3,18 @@
 import os
 import asyncio
 
+# WebServer
 import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gateway Interface server)
 
+# Fast API framework
 from fastapi import FastAPI
+
+# Mongo DB
 from infrastructure.mongodb import db
+
+# APScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from contextlib import asynccontextmanager
 
 # import pipeline_controller to later inject the IngestionPipelineService/PublishingPipelineService instances with all the created adapters into pipeline_controller.ingestion_pipeline_service/publishing_pipeline_service
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
@@ -83,17 +91,49 @@ publishing_pipeline_service_instance = PublishingPipelineService(
 # Inject the instance of PublishingPipelineService (with all the Adapters) into the pipeline controller 
 pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_instance
 
+# APScheduler instance
+scheduler = AsyncIOScheduler()
 
-# Start FastAPI and register pipeline route
+# Lifespan context manager replaces deprecated @app.on_event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- Startup ---
+    # Schedule periodic ingestion
+    scheduler.add_job(
+        lambda: asyncio.create_task(
+            ingestion_pipeline_service_instance.run_for_user("USER_ID")
+        ),
+        "interval",
+        hours=6
+    )
+    # Schedule periodic publishing
+    scheduler.add_job(
+        lambda: asyncio.create_task(
+            publishing_pipeline_service_instance.run_for_user("USER_ID")
+        ),
+        "interval",
+        hours=6
+    )
+    scheduler.start()
+    print("[Main] APScheduler started")
+
+    yield  # Application runs here
+
+    # --- Shutdown ---
+    scheduler.shutdown()
+    print("[Main] APScheduler stopped")
+
+# Start FastAPI application
 app = FastAPI(
     title       = "Ingestion and Publication Pipelines",
     version     = "1.0.0",
     description = ""
 )
 
+# Register routes
 app.include_router(pipeline_controller.router)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     # wrap ASGI server start-up under if __name__ == "__main__":, so the run doesnt double-execute
     uvicorn.run("main:app", host="0.0.0.0", port=8000)       # En PRO --> reload=False
