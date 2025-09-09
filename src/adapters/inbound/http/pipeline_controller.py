@@ -42,8 +42,8 @@ async def run_ingestion_pipeline(
         await service.run_for_user(
             user_id = user_id, 
             prompt_file = body.prompt_file, 
-            max_videos = body.max_videos_to_fetch_per_channel, 
-            max_tweets = body.max_tweets_to_generate_per_video
+            max_videos_to_fetch_per_channel = body.max_videos_to_fetch_per_channel, 
+            max_tweets_to_generate_per_video = body.max_tweets_to_generate_per_video
         )
         return {"status": "success"}
     # User not found

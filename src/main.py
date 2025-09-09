@@ -94,26 +94,28 @@ pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_in
 # APScheduler instance
 scheduler = AsyncIOScheduler()
 
-# Lifespan context manager replaces deprecated @app.on_event
+# Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # --- Startup ---
-    # Schedule periodic ingestion
-    scheduler.add_job(
-        lambda: asyncio.create_task(
-            ingestion_pipeline_service_instance.run_for_user("USER_ID")
-        ),
-        "interval",
-        hours=6
-    )
-    # Schedule periodic publishing
-    scheduler.add_job(
-        lambda: asyncio.create_task(
-            publishing_pipeline_service_instance.run_for_user("USER_ID")
-        ),
-        "interval",
-        hours=6
-    )
+    # Inline async function for ingestion
+    async def ingestion_job():
+        await ingestion_pipeline_service_instance.run_for_user(
+            user_id="64e8b0f3a1b2c3d4e5f67891",
+            prompt_file="shortsentences-from-transcript.txt",
+            max_videos_to_fetch_per_channel=2,
+            max_tweets_to_generate_per_video=3
+        )
+
+    # Inline async function for publishing
+    async def publishing_job():
+        await publishing_pipeline_service_instance.run_for_user(
+            user_id="64e8b0f3a1b2c3d4e5f67891",
+            max_tweets_to_fetch=10,
+            max_tweets_to_publish=5
+        )
+
+    scheduler.add_job(ingestion_job, "interval", minutes=1)
+    scheduler.add_job(publishing_job, "interval", minutes=2)
     scheduler.start()
     print("[Main] APScheduler started")
 
@@ -127,7 +129,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title       = "Ingestion and Publication Pipelines",
     version     = "1.0.0",
-    description = ""
+    description = "",
+    lifespan    = lifespan   # start the scheduler
 )
 
 # Register routes

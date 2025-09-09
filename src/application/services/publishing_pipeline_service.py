@@ -54,10 +54,10 @@ class PublishingPipelineService(PublishingPipelinePort):
 
         # 3. Determine how many tweets to publish
         tweets_to_publish = tweets[:max_tweets_to_publish]
+        print(f"[PublishingPipelineService] Starting to publish {len(tweets_to_publish)} tweets (out of max {max_tweets_to_publish})")
 
         # 4. Publish and update only those tweets
         for index, tweet in enumerate(tweets_to_publish, start=1):
-            print(f"[PublishingPipelineService] Starting to publish {len(tweets_to_publish)} tweets (out of max {max_tweets_to_publish})")
             tweet_id = await self.twitter_client.publish(tweet.text)
             print(f"[PublishingPipelineService] Tweet {index}/{len(tweets_to_publish)} published successfully with tweet_id {tweet_id}")
             now = datetime.utcnow()

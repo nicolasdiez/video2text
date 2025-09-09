@@ -76,7 +76,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
             # 4. Fetch new videos for this channel
             videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_per_channel)
-            print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.title}")
+            print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.youtube_channel_id} ({channel.title})")
 
             # 5. Process each video independently
             for video_meta in videos_meta:
@@ -103,7 +103,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
                     transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['es'])
-                    print(f"[PipelineService] Transcription received (video {video.id}, youtube_video_id {video.youtube_video_id}) with {len(transcript)} characters")
+                    print(f"[PipelineService] Transcription received (video: {video.id}, youtube_video_id: {video.youtube_video_id}) with {len(transcript)} characters")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
                     video.updated_at = datetime.utcnow()
