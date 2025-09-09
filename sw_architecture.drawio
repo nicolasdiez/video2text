@@ -334,6 +334,9 @@
         <mxCell id="YeQcEhxph-pK-XzqHGoJ-8" value="base prompt + transcript" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
           <mxGeometry x="810" y="245" width="180" height="40" as="geometry" />
         </mxCell>
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-9" value="pensar donde añadir el idioma de publicación del tweet, quizá en {channels}" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1420" width="270" height="30" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
