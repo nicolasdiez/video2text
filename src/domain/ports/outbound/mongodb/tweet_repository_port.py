@@ -8,6 +8,7 @@ from enum import Enum
 class SortOrder(str, Enum):
     oldest_first = "oldest_first"
     newest_first = "newest_first"
+    random = "random"
 
 class TweetRepositoryPort(ABC):
     @abstractmethod

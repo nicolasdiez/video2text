@@ -54,15 +54,25 @@ class MongoTweetRepository(TweetRepositoryPort):
     
     async def find_unpublished_by_user(self, user_id: str, limit: int = 50, order: SortOrder = SortOrder.oldest_first) -> List[Tweet]:
             """
-            Fetch unpublished tweets for a given user, up to `limit`,
-            ordered by createdAt. `order` can be "oldest_first" or "newest_first".
+            Fetch unpublished tweets for a given user, up to `limit`, ordered by createdAt or randomly. 
+            `order` can be "oldest_first", "newest_first", or "random".
             """
-            # Determine sort direction
-            sort_dir = 1 if order == SortOrder.oldest_first else -1
+            query = {"userId": ObjectId(user_id), "published": False}
 
+            if order == SortOrder.random:
+                # Use aggregation pipeline with 2 steps --> query with $match and random selection with $sample
+                pipeline = [
+                    {"$match": query},
+                    {"$sample": {"size": limit}}
+                ]
+                cursor = self._coll.aggregate(pipeline)
+                return [self._doc_to_entity(doc) async for doc in cursor]
+
+            # Determine sort direction for oldest/newest
+            sort_dir = 1 if order == SortOrder.oldest_first else -1
             cursor = (
                 self._coll
-                .find({"userId": ObjectId(user_id), "published": False})
+                .find(query)
                 .sort("createdAt", sort_dir)
                 .limit(limit)
             )

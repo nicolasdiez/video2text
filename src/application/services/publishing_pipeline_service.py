@@ -17,7 +17,7 @@ class PublishingPipelineService(PublishingPipelinePort):
     Orchestrates the publishing pipeline:
       1. Validate user exists
       2. Fetch unpublished tweets (up to max_tweets_to_fetch)
-      3. Publish up to max_tweets_to_publish of them
+      3. Publish unpublished tweets (up to max_tweets_to_publish)
       4. Update metadata only for those actually published
     """
 
