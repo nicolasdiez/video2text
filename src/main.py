@@ -27,6 +27,7 @@ from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
 from adapters.outbound.transcription_client import YouTubeTranscriptionClient
+from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
@@ -51,6 +52,7 @@ channel_repo            = MongoChannelRepository(database=db)
 video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
 video_repo              = MongoVideoRepository(database=db)
 transcription_client    = YouTubeTranscriptionClient(default_language="es")
+prompt_repo             = MongoPromptRepository(database=db)
 openai_client           = OpenAIClient(api_key=OPENAI_API_KEY)
 tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
 tweet_repo              = MongoTweetRepository(database=db)
@@ -63,6 +65,7 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     video_source            = video_source,
     video_repo              = video_repo,
     transcription_client    = transcription_client,
+    prompt_repo             = prompt_repo,
     openai_client           = openai_client,
     tweet_generation_repo   = tweet_generation_repo,
     tweet_repo              = tweet_repo,
@@ -99,18 +102,15 @@ USER_ID = "64e8b0f3a1b2c3d4e5f67891"
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
     # Inline async function for ingestion
     async def ingestion_job():
         user = await user_repo.find_by_id(USER_ID)
         if not user:
             print(f"[Main] User {USER_ID} not found")
             return
-    
-        await ingestion_pipeline_service_instance.run_for_user(
-            user_id=USER_ID,
-            prompt_file="shortsentences-from-transcript.txt",
-            max_tweets_to_generate_per_video=3
-        )
+        
+        await ingestion_pipeline_service_instance.run_for_user(user_id=USER_ID)
 
     # Inline async function for publishing
     async def publishing_job():

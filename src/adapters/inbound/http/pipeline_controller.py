@@ -13,34 +13,14 @@ ingestion_pipeline_service: IngestionPipelineService
 publishing_pipeline_service: PublishingPipelineService
 
 
-# DTO for ingestion
-class IngestionRequest(BaseModel):
-    prompt_file: str = "shortsentences-from-transcript.txt"
-    max_videos_to_fetch_per_channel: int = 2
-    max_tweets_to_generate_per_video: int = 3
-
-
 @router.post("/pipelines/ingestion/run/{user_id}")
-async def run_ingestion_pipeline(
-    user_id: str, 
-    body: IngestionRequest,
-    service: IngestionPipelineService = Depends(lambda: ingestion_pipeline_service),
-    ):
+async def run_ingestion_pipeline(user_id: str, service: IngestionPipelineService = Depends(lambda: ingestion_pipeline_service)):
     """
     Lanza el pipeline de ingestion para el user indicado:
       - user_id: User ID
-      - prompt_file: path al prompt base
-      - max_videos_to_fetch_per_channel: videos máximos a recuperar de cada channel
-      - max_tweets: tweets máximos a generar de cada video
     """
-
     try:
-        await service.run_for_user(
-            user_id = user_id, 
-            prompt_file = body.prompt_file, 
-            max_videos_to_fetch_per_channel = body.max_videos_to_fetch_per_channel, 
-            max_tweets_to_generate_per_video = body.max_tweets_to_generate_per_video
-        )
+        await service.run_for_user(user_id = user_id)
         return {"status": "success"}
     # User not found
     except LookupError as e:
@@ -51,10 +31,11 @@ async def run_ingestion_pipeline(
 
 
 @router.post("/pipelines/publishing/run/{user_id}")
-async def run_publishing_pipeline(
-    user_id: str,
-    service: PublishingPipelineService = Depends(lambda: publishing_pipeline_service),
-):
+async def run_publishing_pipeline(user_id: str, service: PublishingPipelineService = Depends(lambda: publishing_pipeline_service)):
+    """
+    Lanza el pipeline de publicación para el user indicado:
+      - user_id: User ID
+    """
     try:
         await service.run_for_user(user_id=user_id)
         return {"status": "success"}

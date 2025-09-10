@@ -11,15 +11,19 @@ from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
+from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.outbound.openai_port import OpenAIPort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
-from domain.ports.outbound.openai_port import OpenAIPort
 
 from domain.entities.video import Video
 from domain.entities.channel import Channel
+from domain.entities.prompt import Prompt
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
+
+from application.services.prompt_composer_service import PromptComposerService
 
 
 class IngestionPipelineService(IngestionPipelinePort):
@@ -41,6 +45,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
         transcription_client: TranscriptionPort,
+        prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
@@ -51,21 +56,19 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.video_source = video_source
         self.video_repo = video_repo
         self.transcription_client = transcription_client
+        self.prompt_repo = prompt_repo
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
+        self.prompt_composer = PromptComposerService()
 
-    async def run_for_user(self, user_id: str, prompt_file: str, max_tweets_to_generate_per_video: int = 3) -> None:
+    async def run_for_user(self, user_id: str) -> None:
         
-        # 0. Validate that user_id actually exists on the repo
+        # 1. Validate that user actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
             raise LookupError(f"User {user_id} not found")
         print(f"[IngestionPipelineService] User found: {user_id}")
-
-        # 1. Load prompt base from file (without blocking thread)
-        base_prompt = await self.prompt_loader.load_prompt(prompt_file)
-        print(f"[IngestionPipelineService] Base prompt loaded (base prompt file: {prompt_file}")
 
         # 2. Fetch all channels the user is subscribed to
         channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
@@ -115,23 +118,29 @@ class IngestionPipelineService(IngestionPipelinePort):
                 # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
                 if not video.tweets_generated:
 
-                    # 9. Generate complete prompt
-                    prompt = f"{base_prompt.strip()}\n{video.transcript}"
-                    print(f"[IngestionPipelineService] Prompt generated (base prompt + transcript)")
+                    # 9. Retrieve Prompt entity for this user and channel
+                    prompt_entity = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
+                    if not prompt_entity:
+                        print(f"[IngestionPipelineService] No prompt found for user {user_id} and channel {channel.id}, skipping video {video.id}")
+                        continue
 
-                    # 10. Generate raw texts for the video
+                    # 10. Compose full prompt (text + language + max tweets + transcript)
+                    full_prompt = self.prompt_composer.compose_full_prompt(prompt=prompt_entity, transcript=video.transcript)
+                    print(f"[IngestionPipelineService] Full prompt composed for video {video.id}")
+
+                    # 11. Generate raw texts for the video
                     model="gpt-3.5-turbo"
                     raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
-                    #raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
-                    #    prompt=prompt,
-                    #    max_sentences=max_tweets_to_generate_per_video,
+                    # raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
+                    #   prompt=full_prompt,
+                    #    max_sentences=prompt_entity.max_tweets_to_generate_per_video,
                     #    model=model)
                     tweet_generation_ts = datetime.utcnow()
                     print(f"[IngestionPipelineService] {len(raw_tweets_text)} tweets generated for video {video.id}")
                     
-                    # 11. Persist tweet generation metadata
+                    # 12. Persist tweet generation metadata
                     openai_req = OpenAIRequest(
-                        prompt=prompt,
+                        prompt=full_prompt,
                         model=model,
                         # TO DO:
                         # temperature=self.openai_service.default_temperature,
@@ -147,7 +156,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     generation_id = await self.tweet_generation_repo.save(tweet_generation)
                     print(f"[IngestionPipelineService] Tweet generation {generation_id} saved in collection 'tweet_generations'")
 
-                    # 12. Map DTO raw_tweets_text List[str] → to domain entity Tweet
+                    # 13. Map DTO raw_tweets_text List[str] → to domain entity Tweet
                     tweets: List[Tweet] = [
                         Tweet(
                             id=None,
@@ -163,11 +172,11 @@ class IngestionPipelineService(IngestionPipelinePort):
                         for index, text in enumerate(raw_tweets_text, start=1)
                     ]
 
-                    # 13. Save Tweet entities (in batch)
+                    # 14. Save Tweet entities (in batch)
                     await self.tweet_repo.save_all(tweets)
                     print(f"[IngestionPipelineService] {len(tweets)} tweets saved in collection 'tweets'")
 
-                    # 14. Update video entity
+                    # 15. Update video entity
                     video.tweets_generated = True
                     video.updated_at = datetime.utcnow()
                     await self.video_repo.update(video)

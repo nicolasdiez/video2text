@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="1546" dy="1606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1695" dy="1697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -302,7 +302,7 @@
           <mxGeometry x="790" y="1174" width="660" height="215" as="geometry" />
         </mxCell>
         <mxCell id="mtawYaKO-lGH9iTYJ4dF-21" value="En&amp;nbsp;IngestionPipelineService recupero prompt por userId y por channelId" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="941" y="1140" width="250" height="30" as="geometry" />
+          <mxGeometry x="900" y="1144" width="449" height="30" as="geometry" />
         </mxCell>
         <mxCell id="YeQcEhxph-pK-XzqHGoJ-1" value="/prompts" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.concepts.folder;" vertex="1" parent="1">
           <mxGeometry x="952" y="-145" width="75" height="60" as="geometry" />
@@ -334,8 +334,8 @@
         <mxCell id="YeQcEhxph-pK-XzqHGoJ-8" value="base prompt + transcript" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
           <mxGeometry x="687" y="245" width="180" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="YeQcEhxph-pK-XzqHGoJ-9" value="pensar donde añadir el idioma de publicación del tweet, quizá en {channels}" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="931" y="1090" width="270" height="30" as="geometry" />
+        <mxCell id="YeQcEhxph-pK-XzqHGoJ-9" value="Pensar donde añadir el idioma de publicación del tweet, quizá en {channels}" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1120" width="429" height="30" as="geometry" />
         </mxCell>
         <mxCell id="YeQcEhxph-pK-XzqHGoJ-10" value="Entities created and onfigured by the user ---&amp;gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" vertex="1" parent="1">
           <mxGeometry x="-490" y="1240" width="420" height="30" as="geometry" />
