@@ -55,7 +55,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
 
-    async def run_for_user(self, user_id: str, prompt_file: str, max_videos_to_fetch_per_channel: int = 2, max_tweets_to_generate_per_video: int = 3) -> None:
+    async def run_for_user(self, user_id: str, prompt_file: str, max_tweets_to_generate_per_video: int = 3) -> None:
         
         # 0. Validate that user_id actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
@@ -75,7 +75,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         for channel in channels:
 
             # 4. Fetch new videos for this channel
-            videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_per_channel)
+            max_videos_to_fetch_from_channel = channel.max_videos_to_fetch_from_channel
+            videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_from_channel)
             print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.youtube_channel_id} ({channel.title})")
 
             # 5. Process each video independently

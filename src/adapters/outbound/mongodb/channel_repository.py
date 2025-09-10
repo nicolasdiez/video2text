@@ -74,6 +74,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
             youtube_channel_id=doc["youtubeChannelId"],
             title=doc["title"],
             polling_interval=doc.get("pollingInterval"),
+            max_videos_to_fetch_from_channel=doc.get("maxVideosToFetchFromChannel"),
             last_polled_at=doc.get("lastPolledAt"),
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
@@ -88,6 +89,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
             "youtubeChannelId": channel.youtube_channel_id,
             "title": channel.title,
             "pollingInterval": channel.polling_interval,
+            "maxVideosToFetchFromChannel": channel.max_videos_to_fetch_from_channel,
             "lastPolledAt": channel.last_polled_at,
             "createdAt": channel.created_at,
             "updatedAt": channel.updated_at,

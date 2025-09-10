@@ -7,6 +7,7 @@ from typing import List
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort, SortOrder
+from domain.entities.user import FetchSortOrder
 from domain.ports.outbound.twitter_port import TwitterPort
 
 from domain.entities.tweet import Tweet
@@ -33,9 +34,7 @@ class PublishingPipelineService(PublishingPipelinePort):
 
     async def run_for_user(
         self,
-        user_id: str,
-        max_tweets_to_fetch: int = 10,
-        max_tweets_to_publish: int = 5
+        user_id: str
     ) -> None:
         
         # 1. Validate that user_id actually exists on the repo
@@ -45,14 +44,16 @@ class PublishingPipelineService(PublishingPipelinePort):
         print(f"[PublishingPipelineService] User found: {user_id}")
 
         # 2. Fetch unpublished tweets
+        max_tweets_to_fetch = user.max_tweets_to_fetch
         tweets: List[Tweet] = await self.tweet_repo.find_unpublished_by_user(
             user_id=user_id,
             limit=max_tweets_to_fetch,
-            order=SortOrder.oldest_first
+            order=FetchSortOrder.oldest_first
         )
         print(f"[PublishingPipelineService] Fetched {len(tweets)} unpublished tweets (out of max {max_tweets_to_fetch})")
 
         # 3. Determine how many tweets to publish
+        max_tweets_to_publish = user.max_tweets_to_publish
         tweets_to_publish = tweets[:max_tweets_to_publish]
         print(f"[PublishingPipelineService] Starting to publish {len(tweets_to_publish)} tweets (out of max {max_tweets_to_publish})")
 

@@ -13,7 +13,7 @@ class PublishingPipelinePort(ABC):
     """
 
     @abstractmethod
-    async def run_for_user(self, user_id: str, max_tweets_to_fetch: int = 10, max_tweets_to_publish: int = 5) -> None:
+    async def run_for_user(self, user_id: str) -> None:
         """
         Execute the publishing pipeline for the given user_id:
           1) check user exists

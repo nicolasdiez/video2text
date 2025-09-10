@@ -6,7 +6,7 @@ from typing import Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.user import User, TwitterCredentials
+from domain.entities.user import User, TwitterCredentials, FetchSortOrder
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from infrastructure.mongodb import db
 
@@ -49,10 +49,15 @@ class MongoUserRepository(UserRepositoryPort):
             )
 
         return User(
-            id=str(doc["_id"]),
+      id=str(doc["_id"]),
             username=doc["username"],
             openai_api_key=doc.get("openaiApiKey"),
             twitter_credentials=twitter,
+            ingestion_polling_interval=doc.get("ingestionPollingInterval"),
+            publishing_polling_interval=doc.get("publishingPollingInterval"),
+            max_tweets_to_fetch=doc.get("maxTweetsToFetch"),
+            max_tweets_to_publish=doc.get("maxTweetsToPublish"),
+            fetch_sort_order=FetchSortOrder(doc["fetchSortOrder"]) if doc.get("fetchSortOrder") else None,
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
@@ -66,6 +71,11 @@ class MongoUserRepository(UserRepositoryPort):
                 "accessTokenSecret": user.twitter_credentials.access_token_secret,
                 "screenName": user.twitter_credentials.screen_name
             } if user.twitter_credentials else None,
+            "ingestionPollingInterval": user.ingestion_polling_interval,
+            "publishingPollingInterval": user.publishing_polling_interval,
+            "maxTweetsToFetch": user.max_tweets_to_fetch,
+            "maxTweetsToPublish": user.max_tweets_to_publish,
+            "fetchSortOrder": user.fetch_sort_order.value if user.fetch_sort_order else None,
             "createdAt": user.created_at,
             "updatedAt": user.updated_at,
         }

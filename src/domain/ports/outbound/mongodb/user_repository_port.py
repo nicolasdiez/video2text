@@ -6,6 +6,10 @@ from typing import Optional
 from domain.entities.user import User
 
 class UserRepositoryPort(ABC):
+    """
+    Outbound port for User persistence in MongoDB.
+    Handles CRUD operations for the User entity.
+    """
 
     @abstractmethod
     async def save(self, user: User) -> str:

@@ -94,25 +94,32 @@ pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_in
 # APScheduler instance
 scheduler = AsyncIOScheduler()
 
+USER_ID = "64e8b0f3a1b2c3d4e5f67891"
+
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inline async function for ingestion
     async def ingestion_job():
+        user = await user_repo.find_by_id(USER_ID)
+        if not user:
+            print(f"[Main] User {USER_ID} not found")
+            return
+    
         await ingestion_pipeline_service_instance.run_for_user(
-            user_id="64e8b0f3a1b2c3d4e5f67891",
+            user_id=USER_ID,
             prompt_file="shortsentences-from-transcript.txt",
-            max_videos_to_fetch_per_channel=2,
             max_tweets_to_generate_per_video=3
         )
 
     # Inline async function for publishing
     async def publishing_job():
-        await publishing_pipeline_service_instance.run_for_user(
-            user_id="64e8b0f3a1b2c3d4e5f67891",
-            max_tweets_to_fetch=10,
-            max_tweets_to_publish=5
-        )
+        user = await user_repo.find_by_id(USER_ID)
+        if not user:
+            print(f"[Main] User {USER_ID} not found")
+            return
+        
+        await publishing_pipeline_service_instance.run_for_user(user_id=USER_ID)
 
     scheduler.add_job(ingestion_job, "interval", minutes=1)
     scheduler.add_job(publishing_job, "interval", minutes=2)

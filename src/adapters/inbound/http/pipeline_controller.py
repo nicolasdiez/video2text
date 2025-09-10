@@ -12,16 +12,12 @@ router = APIRouter(prefix="", tags=["pipeline"])
 ingestion_pipeline_service: IngestionPipelineService
 publishing_pipeline_service: PublishingPipelineService
 
+
 # DTO for ingestion
 class IngestionRequest(BaseModel):
     prompt_file: str = "shortsentences-from-transcript.txt"
     max_videos_to_fetch_per_channel: int = 2
     max_tweets_to_generate_per_video: int = 3
-
-# DTO for publishing
-class PublishingRequest(BaseModel):
-    max_tweets_to_fetch: int = 10
-    max_tweets_to_publish: int = 5
 
 
 @router.post("/pipelines/ingestion/run/{user_id}")
@@ -57,15 +53,10 @@ async def run_ingestion_pipeline(
 @router.post("/pipelines/publishing/run/{user_id}")
 async def run_publishing_pipeline(
     user_id: str,
-    body: PublishingRequest,
     service: PublishingPipelineService = Depends(lambda: publishing_pipeline_service),
 ):
     try:
-        await service.run_for_user(
-            user_id=user_id,
-            max_tweets_to_fetch = body.max_tweets_to_fetch,
-            max_tweets_to_publish=body.max_tweets_to_publish,
-        )
+        await service.run_for_user(user_id=user_id)
         return {"status": "success"}
     except LookupError as e:
         raise HTTPException(status_code=404, detail=str(e))
