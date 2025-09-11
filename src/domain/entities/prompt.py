@@ -12,7 +12,7 @@ class Prompt:
     id: Optional[str] = None
     user_id: str                      # FK → users._id
     channel_id: str                   # FK → channels._id
-    text: str
+    text: str                         # the actual base prompt text
     language_of_the_text: str         # ISO 639-2 code
     language_to_generate_tweets: str  # ISO 639-2 code
     max_tweets_to_generate_per_video: int

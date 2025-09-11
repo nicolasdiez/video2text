@@ -6,10 +6,9 @@ from typing import List
 
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
-from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort, SortOrder
-from domain.entities.user import FetchSortOrder
+from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.twitter_port import TwitterPort
-
+from domain.entities.user import FetchSortOrder
 from domain.entities.tweet import Tweet
 
 
@@ -37,13 +36,13 @@ class PublishingPipelineService(PublishingPipelinePort):
         user_id: str
     ) -> None:
         
-        # 1. Validate that user_id actually exists on the repo
+        # 1. Validate that user actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
             raise LookupError(f"User '{user_id}' not found")
         print(f"[PublishingPipelineService] User found: {user_id}")
 
-        # 2. Fetch unpublished tweets
+        # 2. Fetch unpublished tweets of the user
         max_tweets_to_fetch = user.max_tweets_to_fetch
         tweets: List[Tweet] = await self.tweet_repo.find_unpublished_by_user(
             user_id=user_id,
