@@ -57,6 +57,33 @@ class MongoPromptRepository(PromptRepositoryPort):
 
         return prompts[0]
 
+    async def update(self, prompt: Prompt) -> None:
+        """
+        Update an existing Prompt document by its id.
+        - Preserves createdAt.
+        - Refreshes updatedAt to now.
+        - Raises LookupError if the document does not exist.
+        """
+        if not prompt.id:
+            raise ValueError("Prompt id is required for update")
+
+        # Build doc from entity
+        update_doc = self._to_document(prompt)
+
+        # Never override createdAt when updating
+        update_doc.pop("createdAt", None)
+
+        # set updatedAt
+        update_doc["updatedAt"] = datetime.utcnow()
+
+        result = await self._collection.update_one(
+            {"_id": ObjectId(prompt.id)},
+            {"$set": update_doc}
+        )
+
+        if result.matched_count == 0:
+            raise LookupError(f"Prompt {prompt.id} not found for update")
+
     async def delete(self, prompt_id: str) -> None:
         await self._collection.delete_one({"_id": ObjectId(prompt_id)})
 
@@ -74,6 +101,10 @@ class MongoPromptRepository(PromptRepositoryPort):
         )
 
     def _to_document(self, prompt: Prompt) -> dict:
+        """
+        Map Prompt entity to MongoDB document (without _id).
+        Omite None para no pisar campos con valores nulos accidentalmente.
+        """
         doc = {
             "userId": ObjectId(prompt.user_id),
             "channelId": ObjectId(prompt.channel_id),

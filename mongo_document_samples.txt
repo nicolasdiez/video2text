@@ -5,6 +5,7 @@
   "youtubeChannelId": "UCJQQVLyM6wtPleV4wFBK06g",
   "title":             "VisualPolitik",
   "pollingInterval":   15,
+  "maxVideosToFetchFromChannel": 5,
   "lastPolledAt":      null,
   "createdAt":         { "$date": "2025-08-01T10:30:00Z" },
   "updatedAt":         { "$date": "2025-08-24T21:59:00Z" }
@@ -15,6 +16,7 @@
   "youtubeChannelId": "UCTqb7oZzCYpzOhPenq6AOyQ",
   "title":             "@solofonseca",
   "pollingInterval":   18,
+  "maxVideosToFetchFromChannel": 5,
   "lastPolledAt":      null,
   "createdAt":         { "$date": "2025-08-25T21:37:00Z" },
   "updatedAt":         { "$date": "2025-08-25T21:37:00Z" }
@@ -34,7 +36,7 @@
   "publishingPollingInterval": 2,
   "maxTweetsToFetchFromDB": 4,
   "maxTweetsToPublish": 2,
-  "FetchSortOrder": "oldest_first",
+  "TweetFetchSortOrder": "oldest_first",
   "createdAt": {
     "$date": "2025-08-28T20:15:00Z"
   },

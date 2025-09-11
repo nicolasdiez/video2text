@@ -7,7 +7,8 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.tweet import Tweet
-from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort, SortOrder
+from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
+from domain.entities.user import TweetFetchSortOrder
 
 from infrastructure.mongodb import db
 
@@ -52,14 +53,14 @@ class MongoTweetRepository(TweetRepositoryPort):
             items.append(self._doc_to_entity(doc))
         return items
     
-    async def find_unpublished_by_user(self, user_id: str, limit: int = 50, order: SortOrder = SortOrder.oldest_first) -> List[Tweet]:
+    async def find_unpublished_by_user(self, user_id: str, limit: int = 50, order: TweetFetchSortOrder = TweetFetchSortOrder.oldest_first) -> List[Tweet]:
             """
             Fetch unpublished tweets for a given user, up to `limit`, ordered by createdAt or randomly. 
             `order` can be "oldest_first", "newest_first", or "random".
             """
             query = {"userId": ObjectId(user_id), "published": False}
 
-            if order == SortOrder.random:
+            if order == TweetFetchSortOrder.random:
                 # Use aggregation pipeline with 2 steps --> query with $match and random selection with $sample
                 pipeline = [
                     {"$match": query},
@@ -69,7 +70,7 @@ class MongoTweetRepository(TweetRepositoryPort):
                 return [self._doc_to_entity(doc) async for doc in cursor]
 
             # Determine sort direction for oldest/newest
-            sort_dir = 1 if order == SortOrder.oldest_first else -1
+            sort_dir = 1 if order == TweetFetchSortOrder.oldest_first else -1
             cursor = (
                 self._coll
                 .find(query)

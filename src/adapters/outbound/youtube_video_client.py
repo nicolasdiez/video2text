@@ -68,8 +68,8 @@ class YouTubeVideoClient(VideoSourcePort):
             videos.append(YouTubeVideo(videoId=vid_id, title=title, url=url))
 
         # Logging
-        print(f"[YouTubeVideoClient] Canal: {channel_id}")
-        print(f"[YouTubeVideoClient] Videos solicitados max: {max_videos}, Videos obtenidos: {len(videos)}")
+        print(f"[YouTubeVideoClient] Channel: {channel_id}")
+        print(f"[YouTubeVideoClient] Videos retrieved: {len(videos)} (out of max: {max_videos})")
         print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
         return videos

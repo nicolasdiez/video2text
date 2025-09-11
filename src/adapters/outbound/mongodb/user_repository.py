@@ -6,7 +6,7 @@ from typing import Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.user import User, TwitterCredentials, FetchSortOrder
+from domain.entities.user import User, TwitterCredentials, TweetFetchSortOrder
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from infrastructure.mongodb import db
 
@@ -57,7 +57,7 @@ class MongoUserRepository(UserRepositoryPort):
             publishing_polling_interval=doc.get("publishingPollingInterval"),
             max_tweets_to_fetch=doc.get("maxTweetsToFetch"),
             max_tweets_to_publish=doc.get("maxTweetsToPublish"),
-            fetch_sort_order=FetchSortOrder(doc["fetchSortOrder"]) if doc.get("fetchSortOrder") else None,
+            tweet_fetch_sort_order=TweetFetchSortOrder(doc["tweetFetchSortOrder"]) if doc.get("tweetFetchSortOrder") else None,
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
@@ -75,7 +75,7 @@ class MongoUserRepository(UserRepositoryPort):
             "publishingPollingInterval": user.publishing_polling_interval,
             "maxTweetsToFetch": user.max_tweets_to_fetch,
             "maxTweetsToPublish": user.max_tweets_to_publish,
-            "fetchSortOrder": user.fetch_sort_order.value if user.fetch_sort_order else None,
+            "tweetFetchSortOrder": user.tweet_fetch_sort_order.value if user.tweet_fetch_sort_order else None,
             "createdAt": user.created_at,
             "updatedAt": user.updated_at,
         }

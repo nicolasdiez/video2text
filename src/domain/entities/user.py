@@ -6,7 +6,7 @@ from typing import Optional
 from enum import Enum
 
 
-class FetchSortOrder(str, Enum):
+class TweetFetchSortOrder(str, Enum):
     oldest_first = "oldest_first"
     newest_first = "newest_first"
     random = "random"
@@ -30,7 +30,7 @@ class User:
     publishing_polling_interval: Optional[int] = None           # in minutes
     max_tweets_to_fetch: int = 10
     max_tweets_to_publish: int = 5
-    fetch_sort_order: Optional[FetchSortOrder] = None
+    tweet_fetch_sort_order: Optional[TweetFetchSortOrder] = None
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

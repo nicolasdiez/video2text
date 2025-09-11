@@ -68,7 +68,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
             raise LookupError(f"User {user_id} not found")
-        print(f"[IngestionPipelineService] User found: {user_id}")
+        print(f"[IngestionPipelineService] User found {user_id} (username: {user.username})")
 
         # 2. Fetch all channels the user is subscribed to
         channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
