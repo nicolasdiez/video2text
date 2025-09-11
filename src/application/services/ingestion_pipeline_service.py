@@ -107,7 +107,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
                     transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['es'])
-                    print(f"[PipelineService] Transcription received (video: {video.id}, youtube_video_id: {video.youtube_video_id}) with {len(transcript)} characters")
+                    print(f"[IngestionPipelineService] Transcription received with {len(transcript)} characters (video: {video.id}, youtube_video_id: {video.youtube_video_id})")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
                     video.updated_at = datetime.utcnow()

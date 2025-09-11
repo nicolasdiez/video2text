@@ -37,7 +37,7 @@ class YouTubeTranscriptionClient(TranscriptionPort):
         # Unir todos los segmentos en un solo string
         full_text = " ".join(segment["text"] for segment in transcript_list)
 
-        print(f"[YouTubeTranscriptionClient] Video transcription created successfully (youtube_video_id {video_id})")
+        print(f"[YouTubeTranscriptionClient] Video transcription created successfully (youtube_video_id: {video_id})")
         
         # Logging
         print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
