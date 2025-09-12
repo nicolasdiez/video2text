@@ -106,7 +106,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
-                    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['es'])
+                    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
                     print(f"[IngestionPipelineService] Transcription received with {len(transcript)} characters (video: {video.id}, youtube_video_id: {video.youtube_video_id})")
                     video.transcript = transcript
                     video.transcript_fetched_at = datetime.utcnow()
@@ -130,11 +130,11 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                     # 11. Generate raw texts for the video
                     model="gpt-3.5-turbo"
-                    raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
-                    # raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
-                    #   prompt=full_prompt,
-                    #    max_sentences=prompt_entity.max_tweets_to_generate_per_video,
-                    #    model=model)
+                    # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
+                    raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
+                        prompt=full_prompt,
+                        max_sentences=prompt_entity.max_tweets_to_generate_per_video,
+                        model=model)
                     tweet_generation_ts = datetime.utcnow()
                     print(f"[IngestionPipelineService] {len(raw_tweets_text)} tweets generated for video {video.id}")
                     
@@ -142,9 +142,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                     openai_req = OpenAIRequest(
                         prompt=full_prompt,
                         model=model,
-                        # TO DO:
-                        # temperature=self.openai_service.default_temperature,
-                        # max_tokens=self.openai_service.default_max_tokens
+                        # temperature=self.openai_service.default_temperature,  # TODO
+                        # max_tokens=self.openai_service.default_max_tokens     # TODO
                     )
                     tweet_generation = TweetGeneration(
                         id=None,

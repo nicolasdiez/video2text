@@ -40,11 +40,9 @@ class OpenAIClient(OpenAIPort):
         system_message = {
             "role": "system",
             "content": (
-                "You are a helpful assistant. "
-                "Summarize the following transcript into "
-                f"{max_sentences} independent, education-focused sentences "
-                "designed for Twitter. Output each sentence on its own line, "
-                "without numbering or bullet points."
+                "You are a helpful assistant."
+                "Summarize the following transcript into independent, education-focused sentences designed for Twitter." 
+                "Output each sentence on its own line, without numbering or bullet points."
             )
         }
         user_message = {"role": "user", "content": prompt}

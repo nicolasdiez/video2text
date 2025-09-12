@@ -32,9 +32,9 @@ class PromptComposerService:
         """
         parts = [
             prompt.text,
-            f"All sentences (tweets) must be written entirely in the following language (ISO-639-2): {prompt.language_to_generate_tweets}.",
-            f"Generate exactly {prompt.max_tweets_to_generate_per_video} sentences (tweets) based solely on the transcript provided below.",
-            "\nHere is the transcript (use only this content as your source):\n",
+            f" Important: All sentences (tweets) must be written entirely in the following language (ISO-639 Set 1): {prompt.language_to_generate_tweets}.",
+            f" Generate exactly {prompt.max_tweets_to_generate_per_video} sentences (tweets) based solely on the transcript provided below.",
+            f" Here is the transcript (use only this content as your source):",
             transcript
         ]
         return "\n".join(str(p) for p in parts if p)
