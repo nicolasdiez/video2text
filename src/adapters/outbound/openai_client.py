@@ -40,9 +40,14 @@ class OpenAIClient(OpenAIPort):
         system_message = {
             "role": "system",
             "content": (
-                "You are a helpful assistant."
-                "Summarize the following transcript into independent, education-focused sentences designed for Twitter." 
-                "Output each sentence on its own line, without numbering or bullet points."
+                f"You are a witty, insightful financial educator who writes engaging, human-sounding tweets "
+                f"that spark curiosity and conversation. Based on the transcript, create exactly {max_sentences} "
+                f"short, standalone tweets in Spanish (ESPAÑOL) that feel personal and relatable. "
+                f"Use a conversational tone, occasional emojis, and relevant hashtags. "
+                f"Each tweet should have a hook or insight that makes people want to reply or share. "
+                f"Do not number them — put each tweet on its own line."
+                f"You must reference specific details from the transcript, such as names, events, strategies, and outcomes. Avoid generic advice. Each tweet must clearly connect to the video's story."
+                f"Write as if you are live-tweeting the key moments of the story, with a mix of intrigue and insight. Use hooks that make readers curious about the full story."
             )
         }
         user_message = {"role": "user", "content": prompt}
@@ -50,7 +55,9 @@ class OpenAIClient(OpenAIPort):
         response = client.chat.completions.create(
             model=model,
             messages=[system_message, user_message],
-            temperature=0.7
+            temperature=0.9,            # 0.9 for more creativity
+            presence_penalty=0.3,       # Slightly positive (e.g., 0.3) to encourage varied ideas.
+            frequency_penalty=0.2       # Slightly positive (e.g., 0.2) to avoid repetitive phrasing.
         )
 
         raw_output = response.choices[0].message.content
