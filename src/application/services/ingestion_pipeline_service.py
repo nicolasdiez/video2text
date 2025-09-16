@@ -134,6 +134,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                         prompt=full_prompt,
                         max_sentences=prompt_entity.max_tweets_to_generate_per_video,
+                        output_language=prompt_entity.language_to_generate_tweets,
                         model=model)
                     tweet_generation_ts = datetime.utcnow()
                     print(f"[IngestionPipelineService] {len(raw_tweets_text)} tweets generated for video {video.id}")

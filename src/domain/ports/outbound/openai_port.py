@@ -8,7 +8,7 @@ class OpenAIPort(ABC):
     """
 
     @abstractmethod
-    async def generate_tweets(self, prompt: str, max_tweets: int, model: str) -> list[str]:
+    async def generate_tweets(self, prompt: str, max_tweets: int, output_language: str, model: str) -> list[str]:
         """
         Envía el prompt a un modelo de OpenAI y devuelve una lista de oraciones tweets limpias.
 
