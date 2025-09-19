@@ -14,7 +14,11 @@ class OpenAIClient(OpenAIPort):
     """
 
     def __init__(self, api_key: str | None = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        
+        # load api key
+        if not api_key:
+            raise RuntimeError("API key is required")
+        self.api_key = api_key
         
         # Logging
         print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")

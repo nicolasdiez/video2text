@@ -3,6 +3,9 @@
 import os
 import asyncio
 
+# env variables
+import config
+
 # WebServer
 import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gateway Interface server)
 
@@ -36,24 +39,15 @@ from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 from application.services.publishing_pipeline_service import PublishingPipelineService
 from adapters.outbound.twitter_client import TwitterClient
 
-# Load env variables
-YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
-OPENAI_API_KEY              = os.getenv("OPENAI_API_KEY")
-TWITTER_API_KEY             = os.getenv("X_API_KEY")
-TWITTER_API_SECRET          = os.getenv("X_API_SECRET")
-TWITTER_ACCESS_TOKEN        = os.getenv("X_API_ACCESS_TOKEN")
-TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
-TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
-
 # --- Ingestion adapters & service instantiation ---
 user_repo               = MongoUserRepository(database=db)
 prompt_loader           = FilePromptLoader(prompts_dir="prompts")
 channel_repo            = MongoChannelRepository(database=db)
-video_source            = YouTubeVideoClient(api_key=YOUTUBE_API_KEY)
+video_source            = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo              = MongoVideoRepository(database=db)
 transcription_client    = YouTubeTranscriptionClient(default_language="es")
 prompt_repo             = MongoPromptRepository(database=db)
-openai_client           = OpenAIClient(api_key=OPENAI_API_KEY)
+openai_client           = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
 tweet_repo              = MongoTweetRepository(database=db)
 
@@ -77,11 +71,11 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 # --- Publishing adapters & service instantiation ---
 twitter_client = TwitterClient(
-    api_key            = TWITTER_API_KEY,
-    api_secret         = TWITTER_API_SECRET,
-    access_token       = TWITTER_ACCESS_TOKEN,
-    access_token_secret= TWITTER_ACCESS_TOKEN_SECRET,
-    bearer_token       = TWITTER_BEARER_TOKEN
+    api_key            = config.TWITTER_API_KEY,
+    api_secret         = config.TWITTER_API_SECRET,
+    access_token       = config.TWITTER_ACCESS_TOKEN,
+    access_token_secret= config.TWITTER_ACCESS_TOKEN_SECRET,
+    bearer_token       = config.TWITTER_BEARER_TOKEN
 )
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)

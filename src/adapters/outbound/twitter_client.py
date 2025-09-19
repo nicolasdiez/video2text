@@ -33,22 +33,22 @@ class TwitterClient(TwitterPort):
         access_token_secret: str | None = None,
         bearer_token: str | None = None
     ):
-        # Carga credenciales desde parámetros o variables de entorno
-        self.api_key            = api_key            or os.getenv("X_API_KEY")
-        self.api_secret         = api_secret         or os.getenv("X_API_SECRET")
-        self.access_token       = access_token       or os.getenv("X_API_ACCESS_TOKEN")
-        self.access_token_secret= access_token_secret or os.getenv("X_API_ACCESS_TOKEN_SECRET")
-        self.bearer_token       = bearer_token       or os.getenv("X_API_BEARER_TOKEN")
-
         if not all([
-            self.api_key,
-            self.api_secret,
-            self.access_token,
-            self.access_token_secret,
-            self.bearer_token
+            api_key,
+            api_secret,
+            access_token,
+            access_token_secret,
+            bearer_token
         ]):
-            raise RuntimeError("Faltan credenciales de Twitter (X).")
-
+            raise RuntimeError("Twitter (X) credentials not defined.")
+        
+        # load credentials
+        self.api_key            = api_key
+        self.api_secret         = api_secret
+        self.access_token       = access_token
+        self.access_token_secret= access_token_secret
+        self.bearer_token       = bearer_token
+        
         # Instanciamos el cliente tweepy
         self.client = tweepy.Client(
             consumer_key        = self.api_key,

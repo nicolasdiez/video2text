@@ -26,9 +26,10 @@ class YouTubeVideoClient(VideoSourcePort):
     def __init__(self, api_key: str = None):
 
         # Recupera la API key de env var (si no se pasa en el constructor)
-        self.api_key = api_key or os.getenv("YOUTUBE_API_KEY")
         if not self.api_key:
-            raise RuntimeError("YOUTUBE_API_KEY no definido")
+            raise RuntimeError("YOUTUBE_API_KEY not defined")
+        self.api_key = api_key
+        
         
         # Construye el cliente de YouTube
         self.youtube = build(
