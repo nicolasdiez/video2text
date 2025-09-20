@@ -1,0 +1,41 @@
+COSAS QUE PUEDO IMPLEMENTAR EN LOCAL DESDE YA:
+
+1-Gestión de credenciales con variables de entorno
+Abstraer .env para que lea siempre de os.environ.
+En local cargaremos .env con python-dotenv, y en Azure las mismas variables vendrán de App Settings o Key Vault.
+
+2-Manejo de errores y reintentos
+Implementar try/except alrededor de las llamadas a la API.
+Añadir lógica de reintentos con backoff exponencial (ej. usando tenacity o tu propio wrapper).
+Esto servirá tanto en local como en cloud.
+
+3-Logging estructurado
+Sustituir print() por el módulo logging de Python.
+Definir niveles (INFO, ERROR, DEBUG) y formato JSON si quieres.
+En local veremos los logs en consola, y en Azure podré redirigirlos a Application Insights sin tocar el código.
+
+4-Congelar dependencias
+Usar requirements.txt o poetry.lock para fijar versiones.
+Esto evita sorpresas cuando despliegues en otro entorno.
+
+5-Diseño asíncrono y escalable
+Ya uso asyncio, esto es perfecto.
+Revisar que las funciones no bloqueen (ej. evita operaciones de I/O sin await).
+Esto prepara para que en Azure Functions o App Service la app escale mejor.
+
+6-Separación de configuración
+Centralizar toda la configuración en un módulo (config.py).
+Así, cambiar la fuente (local .env vs. Azure Key Vault) será solo un cambio en ese módulo.
+
+===============
+
+COSAS QUE REQUIEREN AZURE (pero que puedo dejar preparadas):
+
+1-Key Vault / Managed Identity
+No se puede probar sin cuenta, pero si el código ya lee de os.environ, el cambio será transparente.
+
+2-Application Insights
+Necesito un recurso en Azure, pero si uso logging, luego solo será añadir un handler.
+
+3-Pipelines programados
+En local puedo simular con cron o Schedule en Python, y luego migrar a Azure Functions con Timer Trigger.

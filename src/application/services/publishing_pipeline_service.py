@@ -4,6 +4,11 @@ import asyncio
 from datetime import datetime
 from typing import List
 
+# logging
+import inspect
+import logging
+
+
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
@@ -11,6 +16,8 @@ from domain.ports.outbound.twitter_port import TwitterPort
 from domain.entities.user import TweetFetchSortOrder
 from domain.entities.tweet import Tweet
 
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 class PublishingPipelineService(PublishingPipelinePort):
     """
@@ -40,7 +47,7 @@ class PublishingPipelineService(PublishingPipelinePort):
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
             raise LookupError(f"User '{user_id}' not found")
-        print(f"[IngestionPipelineService] User found {user_id} (username: {user.username})")
+        logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 2. Fetch unpublished tweets of the user
         max_tweets_to_fetch = user.max_tweets_to_fetch
@@ -49,17 +56,20 @@ class PublishingPipelineService(PublishingPipelinePort):
             limit=max_tweets_to_fetch,
             order=TweetFetchSortOrder.oldest_first
         )
-        print(f"[PublishingPipelineService] Fetched {len(tweets)} unpublished tweets (out of max {max_tweets_to_fetch})")
+        # print(f"[PublishingPipelineService] Fetched {len(tweets)} unpublished tweets (out of max {max_tweets_to_fetch})")
+        logger.info("Fetched %s unpublished tweets (out of max %s)", len(tweets), max_tweets_to_fetch, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 3. Determine how many tweets to publish
         max_tweets_to_publish = user.max_tweets_to_publish
         tweets_to_publish = tweets[:max_tweets_to_publish]
-        print(f"[PublishingPipelineService] Starting to publish {len(tweets_to_publish)} tweets (out of max {max_tweets_to_publish})")
+        # print(f"[PublishingPipelineService] Starting to publish {len(tweets_to_publish)} tweets (out of max {max_tweets_to_publish})")
+        logger.info("Starting to publish %s tweets (out of max %s)", len(tweets_to_publish), max_tweets_to_publish, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 4. Publish and update only those tweets
         for index, tweet in enumerate(tweets_to_publish, start=1):
             tweet_id = await self.twitter_client.publish(tweet.text)
-            print(f"[PublishingPipelineService] Tweet {index}/{len(tweets_to_publish)} published successfully with tweet_id {tweet_id}")
+            # print(f"[PublishingPipelineService] Tweet {index}/{len(tweets_to_publish)} published successfully with tweet_id {tweet_id}")
+            logger.info("Tweet %s/%s published successfully with tweet_id %s", index, len(tweets_to_publish), tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             now = datetime.utcnow()
 
             tweet.published = True
@@ -68,5 +78,5 @@ class PublishingPipelineService(PublishingPipelinePort):
             tweet.updated_at = now
 
             await self.tweet_repo.update(tweet)
-            print(f"[PublishingPipelineService] Tweet_id {tweet_id} updated in collection 'tweets'")
-
+            # print(f"[PublishingPipelineService] Tweet_id {tweet_id} updated in collection 'tweets'")
+            logger.info("Tweet_id %s updated in collection 'tweets'", tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

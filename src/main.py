@@ -3,8 +3,11 @@
 import os
 import asyncio
 
-# env variables
 import config
+
+# logger
+import logging
+import inspect
 
 # WebServer
 import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gateway Interface server)
@@ -34,6 +37,9 @@ from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
@@ -101,7 +107,8 @@ async def lifespan(app: FastAPI):
     async def ingestion_job():
         user = await user_repo.find_by_id(USER_ID)
         if not user:
-            print(f"[Main] User {USER_ID} not found")
+            # print(f"[Main] User {USER_ID} not found")
+            logger.info("User %s not found", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
             return
         await ingestion_pipeline_service_instance.run_for_user(user_id=USER_ID)
 
@@ -109,21 +116,24 @@ async def lifespan(app: FastAPI):
     async def publishing_job():
         user = await user_repo.find_by_id(USER_ID)
         if not user:
-            print(f"[Main] User {USER_ID} not found")
+            # print(f"[Main] User {USER_ID} not found")
+            logger.info("User %s not found", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
             return
         await publishing_pipeline_service_instance.run_for_user(user_id=USER_ID)
 
 
-    scheduler.add_job(ingestion_job, "interval", minutes=1)
+    scheduler.add_job(ingestion_job, "interval", minutes=0)
     scheduler.add_job(publishing_job, "interval", minutes=2)
     scheduler.start()
-    print("[Main] APScheduler started")
+    # print("[Main] APScheduler started")
+    logger.info("APScheduler started", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
 
     yield  # Application runs here
 
     # --- Shutdown ---
     scheduler.shutdown()
-    print("[Main] APScheduler stopped")
+    # print("[Main] APScheduler stopped")
+    logger.info("APScheduler stopped", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
 
 # Start FastAPI application
 app = FastAPI(

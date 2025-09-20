@@ -1,12 +1,18 @@
 # adapters/outbound/youtube_video_client.py
 
 import os
-import inspect  # para trazas logging con print
+
+# logging
+import inspect
+import logging
 
 from typing import List
 from googleapiclient.discovery import build
 
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 
 # Usar un DTO  explícito que cumple con VideoMetadata del puerto
@@ -26,7 +32,7 @@ class YouTubeVideoClient(VideoSourcePort):
     def __init__(self, api_key: str = None):
 
         # load api key
-        if not self.api_key:
+        if not api_key:
             raise RuntimeError("YOUTUBE_API_KEY not defined")
         self.api_key = api_key
         
@@ -39,7 +45,7 @@ class YouTubeVideoClient(VideoSourcePort):
         )
 
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 
     async def fetch_new_videos(self, channel_id: str, max_videos: int = 10) -> List[VideoMetadata]:
@@ -69,8 +75,11 @@ class YouTubeVideoClient(VideoSourcePort):
             videos.append(YouTubeVideo(videoId=vid_id, title=title, url=url))
 
         # Logging
-        print(f"[YouTubeVideoClient] Channel: {channel_id}")
-        print(f"[YouTubeVideoClient] Videos retrieved: {len(videos)} (out of max: {max_videos})")
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        # print(f"[YouTubeVideoClient] Channel: {channel_id}")
+        # print(f"[YouTubeVideoClient] Videos retrieved: {len(videos)} (out of max: {max_videos})")
+        # print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Channel retrieved (channel_id: %s)", channel_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("Videos retrieved: %s (out of max: %s)", len(videos), max_videos , extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return videos

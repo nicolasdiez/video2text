@@ -3,8 +3,12 @@
 import os
 import asyncio
 import inspect  # para trazas logging con print
+import logging  # para trazas logging con logger
 
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 class FilePromptLoader(PromptLoaderPort):
     """
@@ -15,7 +19,8 @@ class FilePromptLoader(PromptLoaderPort):
         self.prompts_dir = prompts_dir
         
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        #print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
 
 
     async def load_prompt(self, prompt_file_name: str) -> str:
@@ -24,10 +29,11 @@ class FilePromptLoader(PromptLoaderPort):
         """
         path = os.path.join(self.prompts_dir, prompt_file_name)
         content = await asyncio.to_thread(self._read_file, path)
-        print(f"[FilePromptLoader] Prompt loaded successfully from file: {prompt_file_name}")
         
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Prompt loaded successfully (prompt_file: %s)", prompt_file_name, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        #print(f"[FilePromptLoader] Prompt loaded successfully from file: {prompt_file_name}")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
         return content
     
@@ -35,5 +41,6 @@ class FilePromptLoader(PromptLoaderPort):
     def _read_file(self, path: str) -> str:
         with open(path, "r", encoding="utf-8") as f:
             # Logging
-            print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+            #print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+            logger.info("File read successfully (file_path: %s)", path, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             return f.read()

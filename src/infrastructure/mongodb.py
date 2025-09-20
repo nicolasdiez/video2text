@@ -4,9 +4,16 @@ import os
 from datetime import datetime
 import config
 
+# logging
+import inspect
+import logging
+
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo import MongoClient, errors
 from pymongo.server_api import ServerApi
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 # Build URIs
 _BASE = f"mongodb+srv://{config.MONGO_USER}:{config.MONGO_PASSWORD}@{config.MONGO_HOST}/{config.MONGO_DB}"
@@ -27,9 +34,11 @@ def ping_mongo() -> None:
     """
     try:
         _sync_client.admin.command("ping")
-        print("✅ Successfull ping to MongoDB Atlas")
+        # print("✅ Successfull ping to MongoDB Atlas")
+        logger.info("✅ Successfull ping to MongoDB Atlas", extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
     except errors.PyMongoError as e:
-        print(f"❌ Ping failed: {e}")
+        # print(f"❌ Ping failed: {e}")
+        logger.info("❌ Ping failed: %s", e, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
         raise
 
 # Uncomment following line to test ping when importing module:

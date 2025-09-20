@@ -3,7 +3,10 @@
 import os
 import asyncio
 import tweepy
-import inspect  # para trazas logging con print
+
+# logging
+import inspect
+import logging
 
 from domain.ports.outbound.twitter_port import TwitterPort
 from functools import wraps
@@ -14,10 +17,14 @@ def skip_if_debug(fn):
     @wraps(fn)
     async def wrapper(self, *args, **kwargs):
         if DEBUG:
-            print(f"[DEBUG] Se omitió TwitterClient publish con args={args}, kwargs={kwargs}")
+            # print(f"[DEBUG] Se omitió TwitterClient publish con args={args}, kwargs={kwargs}")
+            logger.info("[DEBUG] Se omitió TwitterClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
             return None
         return await fn(self, *args, **kwargs)
     return wrapper
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 
 class TwitterClient(TwitterPort):
@@ -59,7 +66,7 @@ class TwitterClient(TwitterPort):
         )
 
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 
     @skip_if_debug
@@ -71,7 +78,7 @@ class TwitterClient(TwitterPort):
         tweet_id = await asyncio.to_thread(self._publish_sync, text)
 
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return tweet_id
 
@@ -81,9 +88,10 @@ class TwitterClient(TwitterPort):
         # Llamar al método bloqueante create_tweet() de tweepy --> al haberlo wrappeado con await asyncio.to_thread() no bloquea el event loop
         resp = self.client.create_tweet(text=text)
         tweet_id = resp.data["id"]
-        print(f"[TwitterClient] Tweet published with ID: {tweet_id}")
-
+        
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        # print(f"[TwitterClient] Tweet published with ID: {tweet_id}")
+        logger.info("Tweet published with ID: %s", tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return tweet_id

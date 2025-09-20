@@ -3,10 +3,17 @@
 import os
 import re
 import asyncio
-import inspect  # para trazas logging con print
+
+# logging
+import inspect
+import logging
 
 from openai import OpenAI
 from domain.ports.outbound.openai_port import OpenAIPort
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
+
 
 class OpenAIClient(OpenAIPort):
     """
@@ -21,7 +28,7 @@ class OpenAIClient(OpenAIPort):
         self.api_key = api_key
         
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 
     async def generate_tweets(self, prompt: str, max_sentences: int = 3, output_language: str = "Spanish (ESPAÑOL)", model: str = "gpt-3.5-turbo") -> list[str]:
@@ -32,7 +39,7 @@ class OpenAIClient(OpenAIPort):
         clean = await asyncio.to_thread(self._call_and_process, prompt, max_sentences, output_language, model)
 
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return clean
 
@@ -102,6 +109,6 @@ class OpenAIClient(OpenAIPort):
         clean = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
         # Logging
-        print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return clean
