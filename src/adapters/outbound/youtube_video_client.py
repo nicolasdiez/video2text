@@ -78,7 +78,7 @@ class YouTubeVideoClient(VideoSourcePort):
         # print(f"[YouTubeVideoClient] Channel: {channel_id}")
         # print(f"[YouTubeVideoClient] Videos retrieved: {len(videos)} (out of max: {max_videos})")
         # print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
-        logger.info("Channel retrieved (channel_id: %s)", channel_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        # logger.info("Channel retrieved (channel_id: %s)", channel_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         logger.info("Videos retrieved: %s (out of max: %s)", len(videos), max_videos , extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 

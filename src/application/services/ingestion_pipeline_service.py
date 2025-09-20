@@ -82,9 +82,10 @@ class IngestionPipelineService(IngestionPipelinePort):
         logger.info("%s channels retrieved from 'channels'", len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 3. Process each channel independently
-        for channel in channels:
+        for index, channel in enumerate(channels, start=1):
 
             # 4. Fetch new videos for this channel
+            logger.info("Channel %s/%s - Fetching max %s videos from channel %s", index, len(channels), channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             max_videos_to_fetch_from_channel = channel.max_videos_to_fetch_from_channel
             videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_from_channel)
             # print(f"[IngestionPipelineService] {len(videos_meta)} videos retrieved from channel {channel.youtube_channel_id} ({channel.title})")

@@ -73,7 +73,7 @@ if ENVIRONMENT == "local":
     # Easy format to read in console
     console_handler = logging.StreamHandler(sys.stdout)
     formatter = ColoredFormatter(
-    "%(log_color)s%(levelname)-8s%(reset)s | %(asctime)s | %(module)s | %(message)s",
+    "%(log_color)s%(levelname)-5s%(reset)s | %(asctime)s | %(module)s | %(message)s",
     log_colors={
         "DEBUG": "cyan",
         "INFO": "green",

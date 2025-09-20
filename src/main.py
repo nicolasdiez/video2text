@@ -126,14 +126,14 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(publishing_job, "interval", minutes=2)
     scheduler.start()
     # print("[Main] APScheduler started")
-    logger.info("APScheduler started", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+    logger.info("APScheduler started")
 
     yield  # Application runs here
 
     # --- Shutdown ---
     scheduler.shutdown()
     # print("[Main] APScheduler stopped")
-    logger.info("APScheduler stopped", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+    logger.info("APScheduler stopped")
 
 # Start FastAPI application
 app = FastAPI(
