@@ -66,7 +66,7 @@ logger.handlers = []
 # hide all APScheduler logging
 logging.getLogger("apscheduler").setLevel(logging.CRITICAL + 1)
 
-# silence WARNING logging from APScheduler, only show ERROR and CRITICAL
+# silence WARNING logging from APScheduler (only show ERROR and CRITICAL)
 # logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
 if ENVIRONMENT == "local":

@@ -1,5 +1,7 @@
 # src/main.py
 
+# TODO: endpoints CRUD entities desde front, almacenar credenciales (app --> YOUTUBE, OPENAI, MONGO | user --> X),
+
 import os
 import asyncio
 
@@ -105,34 +107,36 @@ async def lifespan(app: FastAPI):
 
     # Inline async function for Ingestion
     async def ingestion_job():
-        user = await user_repo.find_by_id(USER_ID)
-        if not user:
-            # print(f"[Main] User {USER_ID} not found")
-            logger.info("User %s not found", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
-            return
-        await ingestion_pipeline_service_instance.run_for_user(user_id=USER_ID)
+        users = await user_repo.find_all()
+        for user in users:
+            user_id = str(user["_id"])
+            try:
+                await ingestion_pipeline_service_instance.run_for_user(user_id=user_id)
+                logger.info("Ingestion pipeline finished", extra={"user_id": user_id, "job": "ingestion"})
+            except Exception as e:
+                logger.error("Ingestion pipeline failed", extra={"user_id": user_id, "error": str(e)})
 
     # Inline async function for Publishing
     async def publishing_job():
-        user = await user_repo.find_by_id(USER_ID)
-        if not user:
-            # print(f"[Main] User {USER_ID} not found")
-            logger.info("User %s not found", USER_ID, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
-            return
-        await publishing_pipeline_service_instance.run_for_user(user_id=USER_ID)
+        users = await user_repo.find_all()
+        for user in users:
+            user_id = str(user["_id"])
+        try:
+            await publishing_pipeline_service_instance.run_for_user(user_id=user_id)
+            logger.info("Publishing pipeline finished", extra={"user_id": user_id, "job": "publishing"})
+        except Exception as e:
+            logger.error("Publishing pipeline failed", extra={"user_id": user_id, "error": str(e)})
 
 
     scheduler.add_job(ingestion_job, "interval", minutes=0)
     scheduler.add_job(publishing_job, "interval", minutes=2)
     scheduler.start()
-    # print("[Main] APScheduler started")
     logger.info("APScheduler started")
 
     yield  # Application runs here
 
     # --- Shutdown ---
     scheduler.shutdown()
-    # print("[Main] APScheduler stopped")
     logger.info("APScheduler stopped")
 
 # Start FastAPI application

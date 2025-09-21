@@ -38,10 +38,7 @@ class PublishingPipelineService(PublishingPipelinePort):
         self.tweet_repo = tweet_repo
         self.twitter_client = twitter_client
 
-    async def run_for_user(
-        self,
-        user_id: str
-    ) -> None:
+    async def run_for_user(self, user_id: str) -> None:
         
         # 1. Validate that user actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)

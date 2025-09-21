@@ -1,7 +1,7 @@
 # domain/ports/outbound/mongodb/user_repository_port.py
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from domain.entities.user import User
 
@@ -23,6 +23,11 @@ class UserRepositoryPort(ABC):
         """
         Recupera un User por su _id.
         """
+        ...
+
+    @abstractmethod
+    async def find_all(self) -> List[Dict[str, Any]]:
+        """Devuelve todos los usuarios"""
         ...
 
     @abstractmethod

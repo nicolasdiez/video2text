@@ -1,7 +1,7 @@
 # adapters/outbound/mongo/user_repository.py
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -23,6 +23,10 @@ class MongoUserRepository(UserRepositoryPort):
     async def find_by_id(self, user_id: str) -> Optional[User]:
         doc = await self._coll.find_one({"_id": ObjectId(user_id)})
         return self._doc_to_entity(doc) if doc else None
+    
+    async def find_all(self) -> List[Dict[str, Any]]:
+        cursor = self._coll.find({})
+        return await cursor.to_list(length=None)
 
     async def find_by_username(self, username: str) -> Optional[User]:
         doc = await self._coll.find_one({"username": username})
