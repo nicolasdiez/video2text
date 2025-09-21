@@ -7,7 +7,7 @@ class PublishingPipelinePort(ABC):
     Inbound port for the publishing pipeline.
     Defines the contract to:
       1) validate the user exists
-      2) fetch unpublished tweets up to max_tweets_to_fetch
+      2) fetch unpublished tweets up to max_tweets_to_fetch_from_db
       3) publish up to max_tweets_to_publish
       4) update the published tweets’ metadata in the database
     """
@@ -17,7 +17,7 @@ class PublishingPipelinePort(ABC):
         """
         Execute the publishing pipeline for the given user_id:
           1) check user exists
-          2) retrieve unpublished tweets (limit = max_tweets_to_fetch)
+          2) retrieve unpublished tweets (limit = max_tweets_to_fetch_from_db)
           3) publish tweets to Twitter (limit = max_tweets_to_publish)
           4) mark published tweets in the repository
         """

@@ -1,6 +1,10 @@
 # src/main.py
 
-# TODO: endpoints CRUD entities desde front, almacenar credenciales (app --> YOUTUBE, OPENAI, MONGO | user --> X),
+# TODO: 
+# - endpoints CRUD entities desde front
+# - almacenar credenciales (app --> YOUTUBE, OPENAI, MONGO | user --> X)
+# - meter los minutes del APScheduler desde en config file para cambiar dinamicamente o desde un entity
+# - definir un Dockerfile (construir imagen + subir a Azure Container Registry (ACR))
 
 import os
 import asyncio
@@ -82,11 +86,11 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 # --- Publishing adapters & service instantiation ---
 twitter_client = TwitterClient(
-    api_key            = config.TWITTER_API_KEY,
-    api_secret         = config.TWITTER_API_SECRET,
-    access_token       = config.TWITTER_ACCESS_TOKEN,
-    access_token_secret= config.TWITTER_ACCESS_TOKEN_SECRET,
-    bearer_token       = config.TWITTER_BEARER_TOKEN
+    api_key            = config.X_API_KEY,
+    api_secret         = config.X_API_SECRET,
+    access_token       = config.X_API_ACCESS_TOKEN,
+    access_token_secret= config.X_API_ACCESS_TOKEN_SECRET,
+    bearer_token       = config.X_API_BEARER_TOKEN
 )
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
@@ -102,7 +106,6 @@ pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_in
 # APScheduler instance
 scheduler = AsyncIOScheduler()
 
-USER_ID = "64e8b0f3a1b2c3d4e5f67891" #Nico
 
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
@@ -110,16 +113,19 @@ async def lifespan(app: FastAPI):
 
      # ===== TEMPORARY BLOCK =====
     # TODO: remove this when frontend/endpoints for user credential management are ready
+    USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
     bootstrap_user_id = USER_ID
     creds = TwitterCredentials(
-        api_key=config.TWITTER_API_KEY,
-        api_secret=config.TWITTER_API_SECRET,
-        access_token=config.TWITTER_ACCESS_TOKEN,
-        access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
-        bearer_token=config.TWITTER_BEARER_TOKEN,
-        oauth2_client_id=config.TWITTER_OAUTH2_CLIENT_ID,
-        oauth2_client_secret=config.TWITTER_OAUTH2_CLIENT_SECRET,
-        screen_name="nico"  # placeholder until real screen_name is fetched
+        api_key=config.X_API_KEY,
+        api_secret=config.X_API_SECRET,
+        access_token=config.X_API_ACCESS_TOKEN,
+        access_token_secret=config.X_API_ACCESS_TOKEN_SECRET,
+        bearer_token=config.X_API_BEARER_TOKEN,
+        oauth2_client_id=config.X_OAUTH2_CLIENT_ID,
+        oauth2_client_secret=config.X_OAUTH2_CLIENT_SECRET,
+        refresh_token=config.X_REFRESH_TOKEN,
+        refresh_token_expires_at=config.X_REFRESH_TOKEN_EXPIRES_AT,
+        screen_name=config.X_SCREEN_NAME
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
     logger.info("Temporary: Twitter credentials updated for bootstrap user")
@@ -131,10 +137,11 @@ async def lifespan(app: FastAPI):
         for user in users:
             user_id = str(user["_id"])
             try:
+                logger.info("Ingestion pipeline starting", extra={"user_id": user_id, "job": "ingestion"})
                 await ingestion_pipeline_service_instance.run_for_user(user_id=user_id)
                 logger.info("Ingestion pipeline finished", extra={"user_id": user_id, "job": "ingestion"})
             except Exception as e:
-                logger.error("Ingestion pipeline failed", extra={"user_id": user_id, "error": str(e)})
+                logger.error("Ingestion pipeline failed: %s", str(e), extra={"user_id": user_id, "error": str(e)})
 
     # Inline async function for Publishing
     async def publishing_job():
@@ -142,14 +149,15 @@ async def lifespan(app: FastAPI):
         for user in users:
             user_id = str(user["_id"])
         try:
+            logger.info("Publishing pipeline starting", extra={"user_id": user_id, "job": "publishing"})
             await publishing_pipeline_service_instance.run_for_user(user_id=user_id)
             logger.info("Publishing pipeline finished", extra={"user_id": user_id, "job": "publishing"})
         except Exception as e:
-            logger.error("Publishing pipeline failed", extra={"user_id": user_id, "error": str(e)})
+            logger.error("Publishing pipeline failed: %s", str(e), extra={"user_id": user_id, "error": str(e)})
 
 
     scheduler.add_job(ingestion_job, "interval", minutes=0)
-    scheduler.add_job(publishing_job, "interval", minutes=2)
+    scheduler.add_job(publishing_job, "interval", minutes=1)
     scheduler.start()
     logger.info("APScheduler started")
 

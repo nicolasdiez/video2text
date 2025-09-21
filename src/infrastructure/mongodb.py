@@ -1,4 +1,4 @@
-# infrastructure/mongodb.py
+# src/infrastructure/mongodb.py
 
 import os
 from datetime import datetime
@@ -34,12 +34,10 @@ def ping_mongo() -> None:
     """
     try:
         _sync_client.admin.command("ping")
-        # print("✅ Successfull ping to MongoDB Atlas")
-        logger.info("✅ Successfull ping to MongoDB Atlas", extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+        logger.info("✅ Successfull ping to MongoDB Atlas", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
     except errors.PyMongoError as e:
-        # print(f"❌ Ping failed: {e}")
-        logger.info("❌ Ping failed: %s", e, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+        logger.info("❌ Ping failed: %s", e, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
         raise
 
 # Uncomment following line to test ping when importing module:
-# ping_mongo()
+ping_mongo()

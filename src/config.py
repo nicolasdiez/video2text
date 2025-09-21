@@ -18,13 +18,18 @@ load_dotenv()
 # --- API Keys ---
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
 OPENAI_API_KEY              = os.getenv("OPENAI_API_KEY")
-TWITTER_API_KEY             = os.getenv("X_API_KEY")
-TWITTER_API_SECRET          = os.getenv("X_API_SECRET")
-TWITTER_ACCESS_TOKEN        = os.getenv("X_API_ACCESS_TOKEN")
-TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
-TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
-TWITTER_OAUTH2_CLIENT_ID    = os.getenv("X_OAUTH2_CLIENT_ID")       # identifica tu aplicación frente a Twitter/X
-TWITTER_OAUTH2_CLIENT_SECRET= os.getenv("X_OAUTH2_CLIENT_SECRET")   # identifica tu aplicación frente a Twitter/X --> se usa junto con el CLIENT_ID para intercambiar un authorization code por un access token
+# credentials related to THE APPLICATION ITSELF:
+X_API_KEY               = os.getenv("X_API_KEY")                    # OAuth 1.0 - Identifica mi aplicación frente a Twitter/X
+X_API_SECRET            = os.getenv("X_API_SECRET")                 # OAuth 1.0 - Identifica mi aplicación frente a Twitter/X
+X_API_BEARER_TOKEN      = os.getenv("X_API_BEARER_TOKEN")           # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X - se usa en OAuth 2.0 App-only (sin usuario, solo tu app). Sirve para llamadas que no requieren contexto de usuario (ej. buscar tweets públicos).
+X_OAUTH2_CLIENT_ID      = os.getenv("X_OAUTH2_CLIENT_ID")           # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X
+X_OAUTH2_CLIENT_SECRET  = os.getenv("X_OAUTH2_CLIENT_SECRET")       # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X --> se usa junto con el CLIENT_ID para intercambiar un authorization code por un access token
+# credentials related to THE USER of the application:
+X_API_ACCESS_TOKEN          = os.getenv("X_API_ACCESS_TOKEN")           # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X
+X_API_ACCESS_TOKEN_SECRET   = os.getenv("X_API_ACCESS_TOKEN_SECRET")    # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X
+X_REFRESH_TOKEN             = os.getenv("X_REFRESH_TOKEN")              # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
+X_REFRESH_TOKEN_EXPIRES_AT  = os.getenv("X_REFRESH_TOKEN_EXPIRES_AT")   # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
+X_SCREEN_NAME               = os.getenv("X_SCREEN_NAME")                # permite actuar en nombre de un usuario frente a Twitter/X
 
 # --- MongoDB ---
 MONGO_USER     = os.getenv("MONGO_USER")
@@ -32,7 +37,7 @@ MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
 MONGO_HOST     = os.getenv("MONGO_HOST")
 MONGO_DB       = os.getenv("MONGO_DB")
 
-# --- Encryption ---
+# --- Encryption (used to encrypt user-level X credentials) ---
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # --- Validations  ---
@@ -40,11 +45,11 @@ required_vars = {
     # APIs
     "YOUTUBE_API_KEY": YOUTUBE_API_KEY,
     "OPENAI_API_KEY": OPENAI_API_KEY,
-    "X_API_KEY": TWITTER_API_KEY,
-    "X_API_SECRET": TWITTER_API_SECRET,
-    "X_API_ACCESS_TOKEN": TWITTER_ACCESS_TOKEN,
-    "X_API_ACCESS_TOKEN_SECRET": TWITTER_ACCESS_TOKEN_SECRET,
-    "X_API_BEARER_TOKEN": TWITTER_BEARER_TOKEN,
+    "X_API_KEY": X_API_KEY,
+    "X_API_SECRET": X_API_SECRET,
+    "X_API_BEARER_TOKEN": X_API_BEARER_TOKEN,
+    "X_OAUTH2_CLIENT_ID": X_OAUTH2_CLIENT_ID,
+    "X_OAUTH2_CLIENT_SECRET": X_OAUTH2_CLIENT_SECRET,
     # Mongo
     "MONGO_USER": MONGO_USER,
     "MONGO_PASSWORD": MONGO_PASSWORD,
@@ -98,4 +103,7 @@ else:
     )
     json_handler.setFormatter(formatter)
     logger.addHandler(json_handler)
+
+# ===== DEBUG =====
+APP_DEBUG = os.getenv("APP_DEBUG")
 

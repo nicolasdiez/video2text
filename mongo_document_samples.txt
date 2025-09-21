@@ -40,15 +40,22 @@
   "username": "nico@ejemplo.com",
   "openaiApiKey": "",
   "twitterCredentials": {
+	"apiKey": "",
+	"apiSecret": "",
     "accessToken": "",
-    "accessSecret": "",
+    "accessTokenSecret": "",
+	"bearerToken": "",
+	"oauth2ClientId": "",
+	"oauth2ClientSecret": "",
+	"refreshToken": "",
+	"refreshTokenExpiresAt": "",
     "screenName": "nicolai"
   },
   "ingestionPollingInterval": 1,
   "publishingPollingInterval": 2,
-  "maxTweetsToFetchFromDB": 4,
+  "maxTweetsToFetchFromDB": 3,
   "maxTweetsToPublish": 2,
-  "TweetFetchSortOrder": "oldest_first",
+  "tweetFetchSortOrder": "random",
   "createdAt": {
     "$date": "2025-08-28T20:15:00Z"
   },

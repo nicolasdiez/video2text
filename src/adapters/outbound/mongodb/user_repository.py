@@ -56,6 +56,8 @@ class MongoUserRepository(UserRepositoryPort):
                     "bearerToken": encrypt_value(creds.bearer_token),
                     "oauth2ClientId": encrypt_value(creds.oauth2_client_id),
                     "oauth2ClientSecret": encrypt_value(creds.oauth2_client_secret),
+                    "refreshToken": encrypt_value(creds.refresh_token),
+                    "refreshTokenExpiresAt": encrypt_value(creds.refresh_token_expires_at),
                     "screenName": creds.screen_name,
                 },
                 "updatedAt": datetime.utcnow()
@@ -66,7 +68,7 @@ class MongoUserRepository(UserRepositoryPort):
         creds = doc.get("twitterCredentials")
         twitter = None
         if creds:
-            twitter = TwitterCredentials(
+            twitter_creds = TwitterCredentials(
                 api_key=decrypt_value(creds.get("apiKey")) if creds.get("apiKey") else "",
                 api_secret=decrypt_value(creds.get("apiSecret")) if creds.get("apiSecret") else "",
                 access_token=decrypt_value(creds.get("accessToken")) if creds.get("accessToken") else "",
@@ -83,10 +85,10 @@ class MongoUserRepository(UserRepositoryPort):
       id=str(doc["_id"]),
             username=doc["username"],
             openai_api_key=doc.get("openaiApiKey"),
-            twitter_credentials=twitter,
+            twitter_credentials=twitter_creds,
             ingestion_polling_interval=doc.get("ingestionPollingInterval"),
             publishing_polling_interval=doc.get("publishingPollingInterval"),
-            max_tweets_to_fetch=doc.get("maxTweetsToFetch"),
+            max_tweets_to_fetch_from_db=doc.get("maxTweetsToFetchFromDB"),
             max_tweets_to_publish=doc.get("maxTweetsToPublish"),
             tweet_fetch_sort_order=TweetFetchSortOrder(doc["tweetFetchSortOrder"]) if doc.get("tweetFetchSortOrder") else None,
             created_at=doc.get("createdAt", datetime.utcnow()),
@@ -111,7 +113,7 @@ class MongoUserRepository(UserRepositoryPort):
             } if user.twitter_credentials else None,
             "ingestionPollingInterval": user.ingestion_polling_interval,
             "publishingPollingInterval": user.publishing_polling_interval,
-            "maxTweetsToFetch": user.max_tweets_to_fetch,
+            "maxTweetsToFetchFromDB": user.max_tweets_to_fetch_from_db,
             "maxTweetsToPublish": user.max_tweets_to_publish,
             "tweetFetchSortOrder": user.tweet_fetch_sort_order.value if user.tweet_fetch_sort_order else None,
             "createdAt": user.created_at,

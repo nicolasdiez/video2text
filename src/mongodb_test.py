@@ -1,3 +1,7 @@
+# IMPORTANT!!!:
+# this is a snippet code, NOT part of the application code base. 
+# it is meant to be used only once --> to validate that mongoDB works properly
+
 import sys
 import asyncio
 import threading
@@ -23,7 +27,7 @@ async def test_async_list_collections():
     """
     names = await db.list_collection_names()
     # print("✅ Colecciones encontradas:", names)
-    logger.info("✅ Collections found:", names, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+    logger.info("✅ Collections found: %s", names, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
 def main():
@@ -34,11 +38,9 @@ def main():
         # 2) Ping asíncrono + listado
         asyncio.run(test_async_list_collections())
 
-        # print("🎉 Todas las pruebas de MongoDB pasaron correctamente.")
-        logger.info("🎉 All MongoDB tests passed successfully!", extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+        logger.info("🎉 All MongoDB tests passed successfully!", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
     except Exception as e:
-        # print("❌ Error en la prueba de MongoDB:", e)
-        logger.info("❌ Error ni MongoDB test: %s", e, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+        logger.info("❌ Error ni MongoDB test: %s", e, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
         sys.exit(1)
     finally:
         # 3) Cerramos clientes para evitar hilos colgando

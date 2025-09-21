@@ -14,6 +14,7 @@ class TweetFetchSortOrder(str, Enum):
 
 @dataclass
 class TwitterCredentials:
+    # credentials related to THE APPLICATION ITSELF:
     api_key: str
     api_secret: str
     access_token: str
@@ -35,7 +36,7 @@ class User:
 
     ingestion_polling_interval: Optional[int] = None            # in minutes
     publishing_polling_interval: Optional[int] = None           # in minutes
-    max_tweets_to_fetch: int = 10
+    max_tweets_to_fetch_from_db: int = 10
     max_tweets_to_publish: int = 5
     tweet_fetch_sort_order: Optional[TweetFetchSortOrder] = None
 

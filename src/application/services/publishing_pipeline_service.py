@@ -23,7 +23,7 @@ class PublishingPipelineService(PublishingPipelinePort):
     """
     Orchestrates the publishing pipeline:
       1. Validate user exists
-      2. Fetch unpublished tweets (up to max_tweets_to_fetch)
+      2. Fetch unpublished tweets (up to max_tweets_to_fetch_from_db)
       3. Publish unpublished tweets (up to max_tweets_to_publish)
       4. Update metadata only for those actually published
     """
@@ -47,14 +47,14 @@ class PublishingPipelineService(PublishingPipelinePort):
         logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 2. Fetch unpublished tweets of the user
-        max_tweets_to_fetch = user.max_tweets_to_fetch
+        max_tweets_to_fetch_from_db = user.max_tweets_to_fetch_from_db
         tweets: List[Tweet] = await self.tweet_repo.find_unpublished_by_user(
-            user_id=user_id,
-            limit=max_tweets_to_fetch,
-            order=TweetFetchSortOrder.oldest_first
+            user_id=user.id,
+            limit=max_tweets_to_fetch_from_db,
+            order=user.tweet_fetch_sort_order
         )
-        # print(f"[PublishingPipelineService] Fetched {len(tweets)} unpublished tweets (out of max {max_tweets_to_fetch})")
-        logger.info("Fetched %s unpublished tweets (out of max %s)", len(tweets), max_tweets_to_fetch, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        # print(f"[PublishingPipelineService] Fetched {len(tweets)} unpublished tweets (out of max {max_tweets_to_fetch_from_db})")
+        logger.info("Fetched %s unpublished tweets (out of max %s)", len(tweets), max_tweets_to_fetch_from_db, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 3. Determine how many tweets to publish
         max_tweets_to_publish = user.max_tweets_to_publish

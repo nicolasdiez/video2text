@@ -1,5 +1,6 @@
+# IMPORTANT!!!:
 # this is a snippet code, NOT part of the application code base. 
-# meant to be used only once.
+# it is meant to be used only once --> generate key in console and SAVE it in .env
 
 from cryptography.fernet import Fernet
 

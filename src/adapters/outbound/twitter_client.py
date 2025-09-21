@@ -8,24 +8,24 @@ import tweepy
 import inspect
 import logging
 
+import config
+
 from domain.ports.outbound.twitter_port import TwitterPort
 from functools import wraps
 
-DEBUG = os.getenv("APP_DEBUG", "false").lower() == "true"
+DEBUG = config.APP_DEBUG
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 def skip_if_debug(fn):
     @wraps(fn)
     async def wrapper(self, *args, **kwargs):
         if DEBUG:
-            # print(f"[DEBUG] Se omitió TwitterClient publish con args={args}, kwargs={kwargs}")
-            logger.info("[DEBUG] Se omitió TwitterClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module": __name__, "function": inspect.currentframe().f_code.co_name})
+            logger.info("[DEBUG] Se omitió TwitterClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
             return None
         return await fn(self, *args, **kwargs)
     return wrapper
-
-# Specific logger for this module
-logger = logging.getLogger(__name__)
-
 
 class TwitterClient(TwitterPort):
     """
