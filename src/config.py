@@ -23,12 +23,17 @@ TWITTER_API_SECRET          = os.getenv("X_API_SECRET")
 TWITTER_ACCESS_TOKEN        = os.getenv("X_API_ACCESS_TOKEN")
 TWITTER_ACCESS_TOKEN_SECRET = os.getenv("X_API_ACCESS_TOKEN_SECRET")
 TWITTER_BEARER_TOKEN        = os.getenv("X_API_BEARER_TOKEN")
+TWITTER_OAUTH2_CLIENT_ID    = os.getenv("X_OAUTH2_CLIENT_ID")       # identifica tu aplicación frente a Twitter/X
+TWITTER_OAUTH2_CLIENT_SECRET= os.getenv("X_OAUTH2_CLIENT_SECRET")   # identifica tu aplicación frente a Twitter/X --> se usa junto con el CLIENT_ID para intercambiar un authorization code por un access token
 
 # --- MongoDB ---
 MONGO_USER     = os.getenv("MONGO_USER")
 MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
 MONGO_HOST     = os.getenv("MONGO_HOST")
 MONGO_DB       = os.getenv("MONGO_DB")
+
+# --- Encryption ---
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # --- Validations  ---
 required_vars = {
@@ -45,6 +50,8 @@ required_vars = {
     "MONGO_PASSWORD": MONGO_PASSWORD,
     "MONGO_HOST": MONGO_HOST,
     "MONGO_DB": MONGO_DB,
+    # Encryption
+    "SECRET_KEY": SECRET_KEY,
 }
 
 missing = [k for k, v in required_vars.items() if not v]

@@ -14,9 +14,16 @@ class TweetFetchSortOrder(str, Enum):
 
 @dataclass
 class TwitterCredentials:
+    api_key: str
+    api_secret: str
     access_token: str
     access_token_secret: str
-    screen_name: str  # Visible name on Twitter
+    bearer_token: str
+    oauth2_client_id: str
+    oauth2_client_secret: str
+    refresh_token: Optional[str] = None                     # For future OAuth2.0
+    refresh_token_expires_at: Optional[datetime] = None     # For future OAuth2.0
+    screen_name: Optional[str] = None                       # Visible name on Twitter
 
 
 @dataclass(kw_only=True)

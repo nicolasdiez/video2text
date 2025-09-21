@@ -7,6 +7,9 @@ import asyncio
 
 import config
 
+# set twitter credentials for user Nico (TEMPORATY UNTIL API AND FRONTEND READY) 
+from domain.entities.user import TwitterCredentials
+
 # logger
 import logging
 import inspect
@@ -99,11 +102,28 @@ pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_in
 # APScheduler instance
 scheduler = AsyncIOScheduler()
 
-USER_ID = "64e8b0f3a1b2c3d4e5f67891"
+USER_ID = "64e8b0f3a1b2c3d4e5f67891" #Nico
 
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+     # ===== TEMPORARY BLOCK =====
+    # TODO: remove this when frontend/endpoints for user credential management are ready
+    bootstrap_user_id = USER_ID
+    creds = TwitterCredentials(
+        api_key=config.TWITTER_API_KEY,
+        api_secret=config.TWITTER_API_SECRET,
+        access_token=config.TWITTER_ACCESS_TOKEN,
+        access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
+        bearer_token=config.TWITTER_BEARER_TOKEN,
+        oauth2_client_id=config.TWITTER_OAUTH2_CLIENT_ID,
+        oauth2_client_secret=config.TWITTER_OAUTH2_CLIENT_SECRET,
+        screen_name="nico"  # placeholder until real screen_name is fetched
+    )
+    await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
+    logger.info("Temporary: Twitter credentials updated for bootstrap user")
+    # ===== END TEMPORARY BLOCK =====
 
     # Inline async function for Ingestion
     async def ingestion_job():

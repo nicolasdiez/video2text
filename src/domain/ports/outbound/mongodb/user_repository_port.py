@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Dict, Any
 
-from domain.entities.user import User
+from domain.entities.user import User, TwitterCredentials
 
 class UserRepositoryPort(ABC):
     """
@@ -48,5 +48,12 @@ class UserRepositoryPort(ABC):
     async def delete(self, user_id: str) -> None:
         """
         Elimina un User por su _id.
+        """
+        ...
+
+    @abstractmethod
+    async def update_twitter_credentials(self, user_id: str, creds: TwitterCredentials) -> None:
+        """
+        Actualiza las credenciales de Twitter de un usuario.
         """
         ...
