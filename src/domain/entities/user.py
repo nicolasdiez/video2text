@@ -13,18 +13,15 @@ class TweetFetchSortOrder(str, Enum):
 
 
 @dataclass
-class TwitterCredentials:
-    # credentials related to THE APPLICATION ITSELF:
-    api_key: str
-    api_secret: str
-    access_token: str
-    access_token_secret: str
-    bearer_token: str
-    oauth2_client_id: str
-    oauth2_client_secret: str
-    refresh_token: Optional[str] = None                     # For future OAuth2.0
-    refresh_token_expires_at: Optional[datetime] = None     # For future OAuth2.0
-    screen_name: Optional[str] = None                       # Visible name on Twitter
+class UserTwitterCredentials:
+    # only credentials related to THE USER:
+    oauth1_access_token: str
+    oauth1_access_token_secret: str
+    oauth2_access_token: str                                    # For future OAuth2.0
+    oauth2_access_token_expires_at: Optional[datetime] = None   # For future OAuth2.0
+    oauth2_refresh_token: Optional[str] = None                  # For future OAuth2.0
+    oauth2_refresh_token_expires_at: Optional[datetime] = None  # For future OAuth2.0
+    screen_name: Optional[str] = None                           # Visible name on Twitter
 
 
 @dataclass(kw_only=True)
@@ -32,8 +29,8 @@ class User:
     id: Optional[str] = None
     username: str                                               # Email or username
     openai_api_key: Optional[str] = None
-    twitter_credentials: Optional[TwitterCredentials] = None
 
+    twitter_credentials: Optional[UserTwitterCredentials] = None
     ingestion_polling_interval: Optional[int] = None            # in minutes
     publishing_polling_interval: Optional[int] = None           # in minutes
     max_tweets_to_fetch_from_db: int = 10

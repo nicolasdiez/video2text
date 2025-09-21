@@ -61,7 +61,7 @@ class MongoTweetRepository(TweetRepositoryPort):
             query = {"userId": ObjectId(user_id), "published": False}
 
             if order == TweetFetchSortOrder.random:
-                # Use aggregation pipeline with 2 steps --> query with $match and random selection with $sample
+                # Use aggregation pipeline with 2 steps --> the query with $match + pick random selection with $sample
                 pipeline = [
                     {"$match": query},
                     {"$sample": {"size": limit}}

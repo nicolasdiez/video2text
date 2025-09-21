@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.user import User, TwitterCredentials, TweetFetchSortOrder
+from domain.entities.user import User, UserTwitterCredentials, TweetFetchSortOrder
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from infrastructure.mongodb import db
 
@@ -26,9 +26,10 @@ class MongoUserRepository(UserRepositoryPort):
         doc = await self._coll.find_one({"_id": ObjectId(user_id)})
         return self._doc_to_entity(doc) if doc else None
     
-    async def find_all(self) -> List[Dict[str, Any]]:
+    async def find_all(self) -> List[User]:
         cursor = self._coll.find({})
-        return await cursor.to_list(length=None)
+        docs = await cursor.to_list(length=None)
+        return [self._doc_to_entity(doc) for doc in docs]
 
     async def find_by_username(self, username: str) -> Optional[User]:
         doc = await self._coll.find_one({"username": username})
@@ -44,20 +45,17 @@ class MongoUserRepository(UserRepositoryPort):
     async def delete(self, user_id: str) -> None:
         await self._coll.delete_one({"_id": ObjectId(user_id)})
 
-    async def update_twitter_credentials(self, user_id: str, creds: TwitterCredentials) -> None:
+    async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
         await self._coll.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {
-                "twitterCredentials": {
-                    "apiKey": encrypt_value(creds.api_key),
-                    "apiSecret": encrypt_value(creds.api_secret),
-                    "accessToken": encrypt_value(creds.access_token),
-                    "accessTokenSecret": encrypt_value(creds.access_token_secret),
-                    "bearerToken": encrypt_value(creds.bearer_token),
-                    "oauth2ClientId": encrypt_value(creds.oauth2_client_id),
-                    "oauth2ClientSecret": encrypt_value(creds.oauth2_client_secret),
-                    "refreshToken": encrypt_value(creds.refresh_token),
-                    "refreshTokenExpiresAt": encrypt_value(creds.refresh_token_expires_at),
+                "UserTwitterCredentials": {
+                    "oauth1AccessToken": encrypt_value(creds.oauth1_access_token),
+                    "oauth1AccessTokenSecret": encrypt_value(creds.oauth1_access_token_secret),
+                    "oauth2AccessToken": encrypt_value(creds.oauth2_access_token),
+                    "oauth2AccessTokenExpiresAt": encrypt_value(creds.oauth2_access_token_expires_at),
+                    "oauth2RefreshToken": encrypt_value(creds.oauth2_refresh_token),
+                    "oauth2RefreshTokenExpiresAt": encrypt_value(creds.oauth2_refresh_token_expires_at),
                     "screenName": creds.screen_name,
                 },
                 "updatedAt": datetime.utcnow()
@@ -65,20 +63,17 @@ class MongoUserRepository(UserRepositoryPort):
         )
 
     def _doc_to_entity(self, doc: dict) -> User:
-        creds = doc.get("twitterCredentials")
+        creds = doc.get("UserTwitterCredentials")
         twitter = None
         if creds:
-            twitter_creds = TwitterCredentials(
-                api_key=decrypt_value(creds.get("apiKey")) if creds.get("apiKey") else "",
-                api_secret=decrypt_value(creds.get("apiSecret")) if creds.get("apiSecret") else "",
-                access_token=decrypt_value(creds.get("accessToken")) if creds.get("accessToken") else "",
-                access_token_secret=decrypt_value(creds.get("accessTokenSecret")) if creds.get("accessTokenSecret") else "",
-                bearer_token=decrypt_value(creds.get("bearerToken")) if creds.get("bearerToken") else "",
-                oauth2_client_id=decrypt_value(creds.get("oauth2ClientId")) if creds.get("oauth2ClientId") else "",
-                oauth2_client_secret=decrypt_value(creds.get("oauth2ClientSecret")) if creds.get("oauth2ClientSecret") else "",
-                refresh_token=decrypt_value(creds.get("refreshToken")) if creds.get("refreshToken") else None,      # For future OAuth2.0
-                refresh_token_expires_at=creds.get("refreshTokenExpiresAt"),                                        # For future OAuth2.0
-                screen_name=creds.get("screenName")
+            twitter_creds = UserTwitterCredentials(
+                oauth1_access_token=decrypt_value(creds.get("oauth1AccessToken")) if creds.get("oauth1AccessToken") else None,
+                oauth1_access_token_secret=decrypt_value(creds.get("oauth1AccessTokenSecret")) if creds.get("oauth1AccessTokenSecret") else None,
+                oauth2_access_token=decrypt_value(creds.get("oauth2AccessToken")) if creds.get("oauth2AccessToken") else None,
+                oauth2_access_token_expires_at=decrypt_value(creds.get("oauth2AccessTokenExpiresAt")) if creds.get("oauth2AccessTokenExpiresAt") else None,
+                oauth2_refresh_token=decrypt_value(creds.get("oauth2RefreshToken")) if creds.get("oauth2RefreshToken") else None,
+                oauth2_refresh_token_expires_at=decrypt_value(creds.get("oauth2RefreshTokenExpiresAt")) if creds.get("oauth2RefreshTokenExpiresAt") else None,
+                screen_name=creds.get("screenName"),
             )
 
         return User(
@@ -99,16 +94,13 @@ class MongoUserRepository(UserRepositoryPort):
         doc = {
             "username": user.username,
             "openaiApiKey": user.openai_api_key,
-            "twitterCredentials": {
-                "apiKey": encrypt_value(user.twitter_credentials.api_key),
-                "apiSecret": encrypt_value(user.twitter_credentials.api_secret),
-                "accessToken": encrypt_value(user.twitter_credentials.access_token),
-                "accessTokenSecret": encrypt_value(user.twitter_credentials.access_token_secret),
-                "bearerToken": encrypt_value(user.twitter_credentials.bearer_token),
-                "oauth2ClientId": encrypt_value(user.twitter_credentials.oauth2_client_id),
-                "oauth2ClientSecret": encrypt_value(user.twitter_credentials.oauth2_client_secret),
-                "refreshToken": encrypt_value(user.twitter_credentials.refresh_token) if user.twitter_credentials.refresh_token else None,  # For future OAuth2.0
-                "refreshTokenExpiresAt": user.twitter_credentials.refresh_token_expires_at,                                                 # For future OAuth2.0
+                "UserTwitterCredentials": {
+                "oauth1AccessToken": encrypt_value(user.twitter_credentials.oauth1_access_token) if user.twitter_credentials.oauth1_access_token else None,
+                "oauth1AccessTokenSecret": encrypt_value(user.twitter_credentials.oauth1_access_token_secret) if user.twitter_credentials.oauth1_access_token_secret else None,
+                "oauth2AccessToken": encrypt_value(user.twitter_credentials.oauth2_access_token) if user.twitter_credentials.oauth2_access_token else None,
+                "oauth2AccessTokenExpiresAt": encrypt_value(user.twitter_credentials.oauth2_access_token_expires_at) if user.twitter_credentials.oauth2_access_token_expires_at else None,
+                "oauth2RefreshToken": encrypt_value(user.twitter_credentials.oauth2_refresh_token) if user.twitter_credentials.oauth2_refresh_token else None,
+                "oauth2RefreshTokenExpiresAt": encrypt_value(user.twitter_credentials.oauth2_refresh_token_expires_at) if user.twitter_credentials.oauth2_refresh_token_expires_at else None,
                 "screenName": user.twitter_credentials.screen_name,
             } if user.twitter_credentials else None,
             "ingestionPollingInterval": user.ingestion_polling_interval,

@@ -108,7 +108,4 @@ class OpenAIClient(OpenAIPort):
         lines = [line.strip() for line in raw_output.splitlines() if line.strip()]
         clean = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
-        # Logging
-        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-
         return clean

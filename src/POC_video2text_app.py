@@ -60,19 +60,19 @@ def load_twitter_api_credentials():
     load_dotenv()
 
     # Recupera cada una de las 5 credenciales necesarias
-    consumer_key    = os.getenv('X_API_KEY')
-    consumer_secret = os.getenv('X_API_SECRET')
-    access_token    = os.getenv('X_API_ACCESS_TOKEN')
-    access_secret   = os.getenv('X_API_ACCESS_TOKEN_SECRET')
-    bearer_token    = os.getenv('X_API_BEARER_TOKEN')
+    consumer_key    = os.getenv('X_OAUTH1_API_KEY')
+    consumer_secret = os.getenv('X_OAUTH1_API_SECRET')
+    access_token    = os.getenv('X_OAUTH1_ACCESS_TOKEN')
+    access_secret   = os.getenv('X_OAUTH1_ACCESS_TOKEN_SECRET')
+    bearer_token    = os.getenv('X_OAUTH2_API_BEARER_TOKEN')
 
     # Comprueba si falta alguna
     missing = []
-    if not consumer_key:    missing.append('X_API_KEY')
-    if not consumer_secret: missing.append('X_API_SECRET')
-    if not access_token:    missing.append('X_API_ACCESS_TOKEN')
-    if not access_secret:   missing.append('X_API_ACCESS_TOKEN_SECRET')
-    if not bearer_token:    missing.append('X_API_BEARER_TOKEN')
+    if not consumer_key:    missing.append('X_OAUTH1_API_KEY')
+    if not consumer_secret: missing.append('X_OAUTH1_API_SECRET')
+    if not access_token:    missing.append('X_OAUTH1_ACCESS_TOKEN')
+    if not access_secret:   missing.append('X_OAUTH1_ACCESS_TOKEN_SECRET')
+    if not bearer_token:    missing.append('X_OAUTH2_API_BEARER_TOKEN')
 
     if missing:
         raise RuntimeError(
@@ -184,16 +184,16 @@ def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-t
 
 def post_tweet_v2(text: str) -> str:
 
-    X_API_KEY, X_API_SECRET, X_API_ACCESS_TOKEN, X_API_ACCESS_TOKEN_SECRET, X_API_BEARER_TOKEN = load_twitter_api_credentials()
+    X_OAUTH1_API_KEY, X_OAUTH1_API_SECRET, X_OAUTH1_ACCESS_TOKEN, X_OAUTH1_ACCESS_TOKEN_SECRET, X_OAUTH2_API_BEARER_TOKEN = load_twitter_api_credentials()
 
-    print(X_API_KEY, X_API_SECRET, X_API_ACCESS_TOKEN, X_API_ACCESS_TOKEN_SECRET, X_API_BEARER_TOKEN)
+    print(X_OAUTH1_API_KEY, X_OAUTH1_API_SECRET, X_OAUTH1_ACCESS_TOKEN, X_OAUTH1_ACCESS_TOKEN_SECRET, X_OAUTH2_API_BEARER_TOKEN)
 
     client = tweepy.Client(
-        consumer_key=X_API_KEY,
-        consumer_secret=X_API_SECRET,
-        access_token=X_API_ACCESS_TOKEN,
-        access_token_secret=X_API_ACCESS_TOKEN_SECRET,
-        bearer_token=X_API_BEARER_TOKEN
+        consumer_key=X_OAUTH1_API_KEY,
+        consumer_secret=X_OAUTH1_API_SECRET,
+        access_token=X_OAUTH1_ACCESS_TOKEN,
+        access_token_secret=X_OAUTH1_ACCESS_TOKEN_SECRET,
+        bearer_token=X_OAUTH2_API_BEARER_TOKEN
     )
 
     resp = client.create_tweet(text=text)

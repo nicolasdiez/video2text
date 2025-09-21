@@ -2,7 +2,7 @@
 
 # TODO: 
 # - endpoints CRUD entities desde front
-# - almacenar credenciales (app --> YOUTUBE, OPENAI, MONGO | user --> X)
+# - almacenar credenciales donde corresponda (app en .env --> YOUTUBE, OPENAI, MONGO | user en {user} --> X)
 # - meter los minutes del APScheduler desde en config file para cambiar dinamicamente o desde un entity
 # - definir un Dockerfile (construir imagen + subir a Azure Container Registry (ACR))
 
@@ -12,7 +12,7 @@ import asyncio
 import config
 
 # set twitter credentials for user Nico (TEMPORATY UNTIL API AND FRONTEND READY) 
-from domain.entities.user import TwitterCredentials
+from domain.entities.user import UserTwitterCredentials
 
 # logger
 import logging
@@ -86,11 +86,11 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 # --- Publishing adapters & service instantiation ---
 twitter_client = TwitterClient(
-    api_key            = config.X_API_KEY,
-    api_secret         = config.X_API_SECRET,
-    access_token       = config.X_API_ACCESS_TOKEN,
-    access_token_secret= config.X_API_ACCESS_TOKEN_SECRET,
-    bearer_token       = config.X_API_BEARER_TOKEN
+    oauth1_api_key      = config.X_OAUTH1_API_KEY,
+    oauth1_api_secret   = config.X_OAUTH1_API_SECRET,
+    # access_token       = config.X_OAUTH1_ACCESS_TOKEN,
+    # access_token_secret= config.X_OAUTH1_ACCESS_TOKEN_SECRET,
+    # bearer_token       = config.X_OAUTH2_API_BEARER_TOKEN
 )
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
@@ -111,25 +111,25 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-     # ===== TEMPORARY BLOCK =====
+    # ===== TEMPORARY BLOCK =====
+    # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this when frontend/endpoints for user credential management are ready
     USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
     bootstrap_user_id = USER_ID
-    creds = TwitterCredentials(
-        api_key=config.X_API_KEY,
-        api_secret=config.X_API_SECRET,
-        access_token=config.X_API_ACCESS_TOKEN,
-        access_token_secret=config.X_API_ACCESS_TOKEN_SECRET,
-        bearer_token=config.X_API_BEARER_TOKEN,
-        oauth2_client_id=config.X_OAUTH2_CLIENT_ID,
-        oauth2_client_secret=config.X_OAUTH2_CLIENT_SECRET,
-        refresh_token=config.X_REFRESH_TOKEN,
-        refresh_token_expires_at=config.X_REFRESH_TOKEN_EXPIRES_AT,
+    creds = UserTwitterCredentials(
+        # credentials related to THE USER of the application:
+        oauth1_access_token=config.X_OAUTH1_ACCESS_TOKEN,
+        oauth1_access_token_secret=config.X_OAUTH1_ACCESS_TOKEN_SECRET,
+        oauth2_access_token=config.X_OAUTH2_ACCESS_TOKEN,
+        oauth2_access_token_expires_at=config.X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT,
+        oauth2_refresh_token=config.X_OAUTH2_REFRESH_TOKEN,
+        oauth2_refresh_token_expires_at=config.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT,
         screen_name=config.X_SCREEN_NAME
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
-    logger.info("Temporary: Twitter credentials updated for bootstrap user")
+    logger.info("Temporary - Twitter credentials updated in MongoDB for bootstrap user: %s", bootstrap_user_id)
     # ===== END TEMPORARY BLOCK =====
+
 
     # Inline async function for Ingestion
     async def ingestion_job():
@@ -155,17 +155,20 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error("Publishing pipeline failed: %s", str(e), extra={"user_id": user_id, "error": str(e)})
 
-
-    scheduler.add_job(ingestion_job, "interval", minutes=0)
-    scheduler.add_job(publishing_job, "interval", minutes=1)
+    # setup job execution frequency
+    scheduler.add_job(ingestion_job, "interval", minutes=1)
+    scheduler.add_job(publishing_job, "interval", minutes=0)
+    
+    # start scheduler
     scheduler.start()
     logger.info("APScheduler started")
 
     yield  # Application runs here
 
-    # --- Shutdown ---
+    # shutdown scheduler
     scheduler.shutdown()
     logger.info("APScheduler stopped")
+
 
 # Start FastAPI application
 app = FastAPI(

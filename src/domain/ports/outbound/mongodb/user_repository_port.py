@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Dict, Any
 
-from domain.entities.user import User, TwitterCredentials
+from domain.entities.user import User, UserTwitterCredentials
 
 class UserRepositoryPort(ABC):
     """
@@ -26,7 +26,7 @@ class UserRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def find_all(self) -> List[Dict[str, Any]]:
+    async def find_all(self) -> List[User]:
         """Devuelve todos los usuarios"""
         ...
 
@@ -52,7 +52,7 @@ class UserRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def update_twitter_credentials(self, user_id: str, creds: TwitterCredentials) -> None:
+    async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
         """
         Actualiza las credenciales de Twitter de un usuario.
         """
