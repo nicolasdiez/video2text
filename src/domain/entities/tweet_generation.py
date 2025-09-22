@@ -1,4 +1,4 @@
-# domain/entities/tweet_generation.py
+# src/domain/entities/tweet_generation.py
 
 from dataclasses import dataclass, field
 from datetime import datetime

@@ -1,4 +1,4 @@
-# domain/entities/user.py
+# src/domain/entities/user.py
 
 from dataclasses import dataclass, field
 from datetime import datetime

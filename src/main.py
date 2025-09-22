@@ -11,7 +11,7 @@ import asyncio
 
 import config
 
-# set twitter credentials for user Nico (TEMPORATY UNTIL API AND FRONTEND READY) 
+# set twitter credentials for user Nico (TEMPORATY: UNTIL API AND FRONTEND READY) 
 from domain.entities.user import UserTwitterCredentials
 
 # logger
@@ -31,6 +31,7 @@ from infrastructure.mongodb import db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
+# Controllers
 # import pipeline_controller to later inject the IngestionPipelineService/PublishingPipelineService instances with all the created adapters into pipeline_controller.ingestion_pipeline_service/publishing_pipeline_service
 import adapters.inbound.http.pipeline_controller as pipeline_controller 
 
@@ -47,12 +48,15 @@ from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 
-# Specific logger for this module
-logger = logging.getLogger(__name__)
-
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
 from adapters.outbound.twitter_client import TwitterClient
+
+# appConfig adapter
+from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
+
+# Specific logger for this module
+logger = logging.getLogger(__name__)
 
 # --- Ingestion adapters & service instantiation ---
 user_repo               = MongoUserRepository(database=db)
@@ -87,10 +91,7 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 # --- Publishing adapters & service instantiation ---
 twitter_client = TwitterClient(
     oauth1_api_key      = config.X_OAUTH1_API_KEY,
-    oauth1_api_secret   = config.X_OAUTH1_API_SECRET,
-    # access_token       = config.X_OAUTH1_ACCESS_TOKEN,
-    # access_token_secret= config.X_OAUTH1_ACCESS_TOKEN_SECRET,
-    # bearer_token       = config.X_OAUTH2_API_BEARER_TOKEN
+    oauth1_api_secret   = config.X_OAUTH1_API_SECRET
 )
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
@@ -103,6 +104,9 @@ publishing_pipeline_service_instance = PublishingPipelineService(
 # Inject the instance of PublishingPipelineService (with all the Adapters) into the pipeline controller 
 pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_instance
 
+# --- AppConfig adapter ---
+app_config_repo = MongoAppConfigRepository(database=db)
+
 # APScheduler instance
 scheduler = AsyncIOScheduler()
 
@@ -113,7 +117,7 @@ async def lifespan(app: FastAPI):
 
     # ===== TEMPORARY BLOCK =====
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
-    # TODO: remove this when frontend/endpoints for user credential management are ready
+    # TODO: remove this block when frontend/endpoints for user credential management is ready
     USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
     bootstrap_user_id = USER_ID
     creds = UserTwitterCredentials(
@@ -127,7 +131,7 @@ async def lifespan(app: FastAPI):
         screen_name=config.X_SCREEN_NAME
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
-    logger.info("Temporary - Twitter credentials updated in MongoDB for bootstrap user: %s", bootstrap_user_id)
+    logger.info("Temporary - Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
     # ===== END TEMPORARY BLOCK =====
 
 
@@ -135,29 +139,33 @@ async def lifespan(app: FastAPI):
     async def ingestion_job():
         users = await user_repo.find_all()
         for user in users:
-            user_id = str(user["_id"])
             try:
-                logger.info("Ingestion pipeline starting", extra={"user_id": user_id, "job": "ingestion"})
-                await ingestion_pipeline_service_instance.run_for_user(user_id=user_id)
-                logger.info("Ingestion pipeline finished", extra={"user_id": user_id, "job": "ingestion"})
+                logger.info("Ingestion pipeline starting", extra={"user_id": user.id, "job": "ingestion"})
+                await ingestion_pipeline_service_instance.run_for_user(user_id=user.id)
+                logger.info("Ingestion pipeline finished", extra={"user_id": user.id, "job": "ingestion"})
             except Exception as e:
-                logger.error("Ingestion pipeline failed: %s", str(e), extra={"user_id": user_id, "error": str(e)})
+                logger.error("Ingestion pipeline failed: %s", str(e), extra={"user_id": user.id, "error": str(e)})
 
     # Inline async function for Publishing
     async def publishing_job():
         users = await user_repo.find_all()
         for user in users:
-            user_id = str(user["_id"])
-        try:
-            logger.info("Publishing pipeline starting", extra={"user_id": user_id, "job": "publishing"})
-            await publishing_pipeline_service_instance.run_for_user(user_id=user_id)
-            logger.info("Publishing pipeline finished", extra={"user_id": user_id, "job": "publishing"})
-        except Exception as e:
-            logger.error("Publishing pipeline failed: %s", str(e), extra={"user_id": user_id, "error": str(e)})
+            try:
+                logger.info("Publishing pipeline starting", extra={"user_id": user.id, "job": "publishing"})
+                await publishing_pipeline_service_instance.run_for_user(user_id=user.id)
+                logger.info("Publishing pipeline finished", extra={"user_id": user.id, "job": "publishing"})
+            except Exception as e:
+                logger.error("Publishing pipeline failed: %s", str(e), extra={"user_id": user.id, "error": str(e)})
 
-    # setup job execution frequency
-    scheduler.add_job(ingestion_job, "interval", minutes=1)
-    scheduler.add_job(publishing_job, "interval", minutes=0)
+    # load appConfig from DB
+    app_config = await app_config_repo.get_config()
+    ingestion_minutes = app_config.scheduler.ingestion_minutes
+    publishing_minutes = app_config.scheduler.publishing_minutes
+    logger.info("Loaded appConfig from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_minutes, publishing_minutes)
+    
+    # setup job execution frequency dynamically
+    scheduler.add_job(ingestion_job, "interval", minutes=ingestion_minutes)
+    scheduler.add_job(publishing_job, "interval", minutes=publishing_minutes)
     
     # start scheduler
     scheduler.start()

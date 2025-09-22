@@ -1,4 +1,4 @@
-# domain/entities/prompt.py
+# src/domain/entities/prompt.py
 
 from dataclasses import dataclass, field
 from datetime import datetime

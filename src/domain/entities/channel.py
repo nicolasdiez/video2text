@@ -1,4 +1,4 @@
-# domain/entities/channel.py
+# src/domain/entities/channel.py
 
 from dataclasses import dataclass, field
 from datetime import datetime

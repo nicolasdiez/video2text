@@ -12,7 +12,7 @@ class SchedulerConfig:
     publishing_minutes: int
 
     def __post_init__(self):
-        if self.ingestion_minutes <= 0:
-            raise ValueError("ingestion_minutes debe ser mayor que 0")
-        if self.publishing_minutes <= 0:
-            raise ValueError("publishing_minutes debe ser mayor que 0")
+        if self.ingestion_minutes < 0:
+            raise ValueError("ingestion_minutes no puede ser menor que 0")
+        if self.publishing_minutes < 0:
+            raise ValueError("publishing_minutes no puede ser menor que 0")

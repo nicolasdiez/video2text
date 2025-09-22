@@ -1,6 +1,5 @@
-# adapters/outbound/mongodb/app_config_repository.py
-
 # src/adapters/outbound/mongodb/app_config_repository.py
+
 from domain.entities.app_config import AppConfig
 from domain.value_objects.scheduler_config import SchedulerConfig
 from domain.ports.outbound.mongodb.app_config_repository_port import AppConfigRepositoryPort

@@ -1,4 +1,4 @@
-# domain/ports/outbound/mongodb/app_config_repository_port.py
+# src/domain/ports/outbound/mongodb/app_config_repository_port.py
 
 from abc import ABC, abstractmethod
 from domain.entities.app_config import AppConfig
