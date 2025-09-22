@@ -25,8 +25,8 @@ X_OAUTH2_API_BEARER_TOKEN   = os.getenv("X_OAUTH2_API_BEARER_TOKEN")    # OAuth 
 X_OAUTH2_CLIENT_ID          = os.getenv("X_OAUTH2_CLIENT_ID")           # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X
 X_OAUTH2_CLIENT_SECRET      = os.getenv("X_OAUTH2_CLIENT_SECRET")       # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X --> se usa junto con el CLIENT_ID para intercambiar un authorization code por un access token
 # credentials related to THE USER of the application:
-X_OAUTH1_ACCESS_TOKEN               = os.getenv("X_OAUTH1_ACCESS_TOKEN")                # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X --> cambiar a X_OAUTH1_ACCESS_TOKEN
-X_OAUTH1_ACCESS_TOKEN_SECRET        = os.getenv("X_OAUTH1_ACCESS_TOKEN_SECRET")         # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X --> cambiar a X_OAUTH1__API_ACCESS_TOKEN_SECRET
+X_OAUTH1_ACCESS_TOKEN               = os.getenv("X_OAUTH1_ACCESS_TOKEN")                # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X
+X_OAUTH1_ACCESS_TOKEN_SECRET        = os.getenv("X_OAUTH1_ACCESS_TOKEN_SECRET")         # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_OAUTH2_ACCESS_TOKEN               = os.getenv("X_OAUTH2_ACCESS_TOKEN")                # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT    = os.getenv("X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT")     # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_OAUTH2_REFRESH_TOKEN              = os.getenv("X_OAUTH2_REFRESH_TOKEN")               # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X

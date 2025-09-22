@@ -6,3 +6,6 @@ sample_text.txt
 prompts/
 cred.txt
 graphics/
+
+# Kubernetes real secrets
+k8s/secret.yaml
