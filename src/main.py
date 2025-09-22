@@ -1,7 +1,7 @@
 # src/main.py
 
 # TODO: 
-# - endpoints CRUD entities desde front
+# - endpoints de consumo desde front para CRUD entities: users, channels, prompts
 # - almacenar credenciales donde corresponda (app en .env --> YOUTUBE, OPENAI, MONGO | user en {user} --> X)
 # - meter los minutes del APScheduler desde en config file para cambiar dinamicamente o desde un entity
 # - definir un Dockerfile (construir imagen + subir a Azure Container Registry (ACR))
