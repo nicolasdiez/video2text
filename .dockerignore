@@ -1,0 +1,41 @@
+# Archivos y carpetas innecesarias
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Configuración local
+.env
+.vscode/
+.idea/
+*.log
+video2text-venv/
+
+# Archivos de git
+.git
+.gitignore
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de ayuda / notas personales
+*.txt
+*.jpg
+*.png
+*.drawio
+*.bkp
+*.dtmp
+*.stackdump
+useful_commands.txt
+sw_architecture.drawio
+sample_text.txt
+packetization.txt
+mongo_document_samples.txt
+important_before_deploying_in_cloud.txt
+cred.txt
+channel_ids.txt
+prompts/
+graphics/
