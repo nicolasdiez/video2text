@@ -1,0 +1,15 @@
+# Service: conecta el Deployment con el Ingress. Expone la app dentro del cluster.
+# En AKS lo normal es usar ClusterIP + Ingress.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+spec:
+  selector:
+    app: fastapi-app   # debe coincidir con labels del Deployment
+  ports:
+    - protocol: TCP
+      port: 80         # puerto expuesto dentro del cluster
+      targetPort: 8000 # puerto del contenedor (Uvicorn)
+  type: ClusterIP

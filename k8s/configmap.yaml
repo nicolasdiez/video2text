@@ -9,10 +9,6 @@ data:
   APP_DEBUG: "False"
   LOG_LEVEL: "INFO"
   ENVIRONMENT: "local"  
-
-  # scheduler frequency
-  INGESTION_JOB_MINUTES: "5"
-  PUBLISHING_JOB_MINUTES: "2"
   
   # mongoDB
   MONGO_HOST: "cluster0.0q3dvqk.mongodb.net"
