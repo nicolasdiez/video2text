@@ -40,7 +40,7 @@ MONGO_HOST     = os.getenv("MONGO_HOST")
 MONGO_DB       = os.getenv("MONGO_DB")
 
 # --- Encryption (used to encrypt user-level X credentials) ---
-SECRET_KEY = os.getenv("SECRET_KEY")
+DB_ENCRIPTION_SECRET_KEY = os.getenv("DB_ENCRIPTION_SECRET_KEY")
 
 # --- Validations  ---
 required_vars = {
@@ -58,7 +58,7 @@ required_vars = {
     "MONGO_HOST": MONGO_HOST,
     "MONGO_DB": MONGO_DB,
     # Encryption
-    "SECRET_KEY": SECRET_KEY,
+    "DB_ENCRIPTION_SECRET_KEY": DB_ENCRIPTION_SECRET_KEY,   # used to encript user-level X credentials in DB
 }
 
 missing = [k for k, v in required_vars.items() if not v]

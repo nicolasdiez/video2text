@@ -3,16 +3,16 @@
 from cryptography.fernet import Fernet
 import config
 
-# Initialize Fernet with the SECRET_KEY defined in .env (and loaded in config.py).
+# Initialize Fernet with the DB_ENCRIPTION_SECRET_KEY defined in .env (and loaded in config.py).
 # This key must be a valid Fernet key (base64-encoded 32-byte string).
 # To generate one: Fernet.generate_key().decode()
 
-SECRET_KEY = config.SECRET_KEY
+DB_ENCRIPTION_SECRET_KEY = config.DB_ENCRIPTION_SECRET_KEY
 
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY is not set in environment variables")
+if not DB_ENCRIPTION_SECRET_KEY:
+    raise ValueError("DB_ENCRIPTION_SECRET_KEY is not set in environment variables")
 
-fernet = Fernet(SECRET_KEY.encode())
+fernet = Fernet(DB_ENCRIPTION_SECRET_KEY.encode())
 
 def encrypt_value(value: str) -> str:
     """

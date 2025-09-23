@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  # Parámetros de configuración no sensibles (key-value in plain text)
+  
+  # app config params
+  APP_DEBUG: "False"
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "local"  
+
+  # scheduler frequency
+  INGESTION_JOB_MINUTES: "5"
+  PUBLISHING_JOB_MINUTES: "2"
+  
+  # mongoDB
+  MONGO_HOST: "cluster0.0q3dvqk.mongodb.net"
+  MONGO_DB: "video2text"
