@@ -22,7 +22,6 @@ video2text-venv/
 Thumbs.db
 
 # Archivos de ayuda / notas personales
-*.txt
 *.jpg
 *.png
 *.drawio

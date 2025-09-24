@@ -11,6 +11,14 @@ python -m pip freeze > requirements.txt
 source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
+# build docker image (in project root, where Dockerfile is located)
+docker build -t fastapi-app:local .
+
+# execute container
+docker run -p 8000:8000 fastapi-app:local
+
+
+
 # google cloud console
 https://console.cloud.google.com/apis/
 
