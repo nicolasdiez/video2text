@@ -1,0 +1,11 @@
+# inbound
+# domain/ports/inbound  --> definen de las interfaces que el core expone (casos de uso)
+# application/services  --> implementan interfaces inbound, reciben por inyección los outbound-ports y orquestan la lógica de negocio
+# adapters/inbound/http --> controladores (FastAPI, gRPC, CLI…) que inyectan los services y delegan en ellos
+# main (wiring)         --> instanciar adapters/outbound → services → adapters/inbound y registrar rutas/comandos
+
+# outbound
+# domain/ports/outbound --> definen contratos para acceso a infra (DB, APIs, colas…), sin lógica propia.
+# adapters/outbound     --> implementan los contratos domain/ports/outbound traduciendo entre entidades de dominio y formatos externos.
+# application/services  --> usan los outbound-ports inyectados para ejecutar llamadas a infra dentro de la lógica de negocio.
+# main (wiring)         --> crear adapters/outbound, pasarlos a los services y luego a los controllers (adapters) inbound.
