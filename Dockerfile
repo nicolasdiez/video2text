@@ -26,4 +26,7 @@ COPY ./src ./src
 EXPOSE 8000
 
 # Comando de arranque (Uvicorn en modo producción)
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ENV PYTHONPATH=/app/src:$PYTHONPATH
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--app-dir", "/app/src", "--host", "0.0.0.0", "--port", "8000"]
+

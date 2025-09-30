@@ -1,3 +1,4 @@
+# DEV
 # create virtual environment
 python -m venv video2text-venv
 
@@ -11,11 +12,19 @@ python -m pip freeze > requirements.txt
 source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
+# CI/CD
 # build docker image (in project root, where Dockerfile is located)
 docker build -t fastapi-app:local .
 
-# execute container
+# run container with docker desktop
 docker run -p 8000:8000 fastapi-app:local
+
+# pull latest remote image from GitHub Container Registry (GHCR) into local environment
+docker pull ghcr.io/nicolasdiez/video2text:latest
+
+# run remote image with docker desktop (validate by opening http://localhost:8000/docs)
+docker run -p 8000:8000 ghcr.io/nicolasdiez/video2text:latest
+
 
 
 
