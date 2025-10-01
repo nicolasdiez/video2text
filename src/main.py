@@ -9,7 +9,8 @@
 import os
 import asyncio
 
-import config
+# import config
+from src import config
 
 # set twitter credentials for user Nico (TEMPORATY: UNTIL API AND FRONTEND READY) 
 from domain.entities.user import UserTwitterCredentials

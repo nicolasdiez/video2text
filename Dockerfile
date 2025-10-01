@@ -5,7 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Crear directorio de trabajo
+# Crear directorio de trabajo dentro del contenedor
 WORKDIR /app
 
 # Instalar dependencias del sistema (ej. gcc si alguna lib lo requiere)
@@ -19,14 +19,14 @@ COPY requirements.txt .
 # Instalar dependencias Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código
+# Copiar el código fuente
 COPY ./src ./src
 
 # Exponer puerto
 EXPOSE 8000
 
-# Comando de arranque (Uvicorn en modo producción)
-# ENV PYTHONPATH=/app/src:$PYTHONPATH
-# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["uvicorn", "main:app", "--app-dir", "/app/src", "--host", "0.0.0.0", "--port", "8000"]
+# Establecer el directorio de trabajo en src para que los imports funcionen
+WORKDIR /app/src
 
+# Comando de arranque (Uvicorn en modo producción)
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
