@@ -19,11 +19,29 @@ docker build -t fastapi-app:local .
 # run container with docker desktop
 docker run -p 8000:8000 fastapi-app:local
 
-# pull latest remote image from GitHub Container Registry (GHCR) into local environment
+# force pull latest remote image from GitHub Container Registry (GHCR) into local environment (before docker run)
 docker pull ghcr.io/nicolasdiez/video2text:latest
 
 # run remote image with docker desktop (validate by opening http://localhost:8000/docs)
 docker run -p 8000:8000 ghcr.io/nicolasdiez/video2text:latest
+
+# check the docker image I have locally
+docker images ghcr.io/nicolasdiez/video2text
+
+# remove the old local latest image
+docker rmi ghcr.io/nicolasdiez/video2text:latest
+
+# list all local images
+docker images -a
+
+# remove all local images
+docker rmi -f $(docker images -aq)
+
+# clean up all resources
+docker system prune -a --volumes
+
+# see docker resources being used
+docker system df
 
 
 
