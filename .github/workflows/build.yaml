@@ -77,7 +77,7 @@ jobs:
           except Exception as e:
               print("uvicorn import error:", type(e).__name__, e)
           PY
-      - name: Debug: comprobar si los secrets están disponibles
+      - name: Debug comprobar si los secrets están disponibles
         run: |
           if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
             echo "OPENAI_API_KEY: MISSING"
