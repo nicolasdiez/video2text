@@ -26,7 +26,7 @@ COPY ./src ./src
 EXPOSE 8000
 
 # Establecer el directorio de trabajo en src para que los imports funcionen
-WORKDIR /app/src
+# WORKDIR /app/src
 
 # Comando de arranque (Uvicorn en modo producción)
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

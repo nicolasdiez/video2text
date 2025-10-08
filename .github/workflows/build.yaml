@@ -42,10 +42,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  test-image:
+   test-image:
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 15
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -56,16 +60,49 @@ jobs:
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Run container
-        run: |
-          docker run -d --rm -p 8000:8000 --name sut ${{ env.IMAGE_NAME }}:latest
-          sleep 6
+      - name: List images (debug)
+        run: docker images | head -n 20
 
-      - name: Healthcheck
+      - name: Run container (background) with retries
         run: |
-          curl -v -s -S -f http://localhost:8000/docs
+          docker run -d --rm -p 8000:8000 --name sut ${{ env.IMAGE_NAME }}:latest || true
+          for i in $(seq 1 30); do
+            echo "check $i/30: containers:"
+            docker ps -a --filter "name=sut"
+            if docker exec sut true 2>/dev/null; then
+              echo "container is present"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Dump container status and ports
+        run: |
+          docker ps -a --filter "name=sut" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+          ss -ltnp || true
+
+      - name: Dump container logs (first snapshot)
+        run: docker logs sut || true
+
+      - name: Healthcheck (retries, show status and head of body)
+        run: |
+          for i in $(seq 1 20); do
+            echo "healthcheck attempt $i/20"
+            status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
+            echo "HTTP status: $status"
+            if [ "$status" = "200" ]; then
+              echo "OK: show first 400 chars of body:"
+              head -c 400 /tmp/resp || true
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Healthcheck failed, dumping container logs:"
+          docker logs sut || true
+          exit 1
 
       - name: Stop container
         if: always()
         run: |
           docker stop sut || true
+          docker ps -a --filter "name=sut"
