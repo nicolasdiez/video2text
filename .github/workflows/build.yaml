@@ -77,23 +77,37 @@ jobs:
           except Exception as e:
               print("uvicorn import error:", type(e).__name__, e)
           PY
-
+      - name: Debug: comprobar si los secrets están disponibles
+        run: |
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "OPENAI_API_KEY: MISSING"
+            exit 1
+          else
+            echo "OPENAI_API_KEY: PRESENT"
+          fi
+          if [ -z "${{ secrets.MONGO_HOST }}" ]; then
+            echo "MONGO_HOST: MISSING"
+            exit 1
+          else
+            echo "MONGO_HOST: PRESENT"
+          fi
       - name: Create env file from GitHub Secrets
         run: |
           cat > .env.ci <<EOF
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
-          X_OAUTH1_API_KEY=${{ secrets.X_OAUTH1_API_KEY }}
-          X_OAUTH1_API_SECRET=${{ secrets.X_OAUTH1_API_SECRET }}
-          X_OAUTH2_API_BEARER_TOKEN=${{ secrets.X_OAUTH2_API_BEARER_TOKEN }}
-          X_OAUTH2_CLIENT_ID=${{ secrets.X_OAUTH2_CLIENT_ID }}
-          X_OAUTH2_CLIENT_SECRET=${{ secrets.X_OAUTH2_CLIENT_SECRET }}
-          MONGO_USER=${{ secrets.MONGO_USER }}
-          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
-          MONGO_HOST=${{ secrets.MONGO_HOST }}
-          MONGO_DB=${{ secrets.MONGO_DB }}
-          DB_ENCRIPTION_SECRET_KEY=${{ secrets.DB_ENCRIPTION_SECRET_KEY }}
-          EOF
+      OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+      YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
+      X_OAUTH1_API_KEY=${{ secrets.X_OAUTH1_API_KEY }}
+      X_OAUTH1_API_SECRET=${{ secrets.X_OAUTH1_API_SECRET }}
+      X_OAUTH2_API_BEARER_TOKEN=${{ secrets.X_OAUTH2_API_BEARER_TOKEN }}
+      X_OAUTH2_CLIENT_ID=${{ secrets.X_OAUTH2_CLIENT_ID }}
+      X_OAUTH2_CLIENT_SECRET=${{ secrets.X_OAUTH2_CLIENT_SECRET }}
+      MONGO_USER=${{ secrets.MONGO_USER }}
+      MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+      MONGO_HOST=${{ secrets.MONGO_HOST }}
+      MONGO_DB=${{ secrets.MONGO_DB }}
+      DB_ENCRIPTION_SECRET_KEY=${{ secrets.DB_ENCRIPTION_SECRET_KEY }}
+      EOF
+        shell: bash
       - name: Run container foreground with env-file
         run: |
           echo "Running container with .env.ci"
