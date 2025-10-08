@@ -42,67 +42,96 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  test-image:
+    test-image:
     runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
-
-      - name: List images (debug)
-        run: docker images | head -n 20
-
-      - name: Run container (background) with retries
+      - name: Inspect image filesystem (quick)
+        run: |
+          echo "=== root ==="
+          docker run --rm ${{ env.IMAGE_NAME }}:latest ls -la / || true
+          echo "=== /app ==="
+          docker run --rm ${{ env.IMAGE_NAME }}:latest sh -c "ls -la /app || true"
+          echo "=== /app/src ==="
+          docker run --rm ${{ env.IMAGE_NAME }}:latest sh -c "ls -la /app/src || true"
+      - name: Check Python imports inside image
+        run: |
+          docker run --rm ${{ env.IMAGE_NAME }}:latest python - <<'PY'
+          import importlib, sys
+          spec = importlib.util.find_spec("src.main")
+          print("spec src.main:", spec)
+          try:
+              import uvicorn
+              print("uvicorn import: OK")
+          except Exception as e:
+              print("uvicorn import error:", type(e).__name__, e)
+          PY
+      - name: Run container foreground to capture startup logs
+        run: |
+          echo "Running container in foreground for up to 20s to capture startup trace"
+          timeout 20s docker run --rm --name sut-fore -p 8000:8000 ${{ env.IMAGE_NAME }}:latest || true
+          echo "Foreground run finished (exit code above if any)."
+      - name: Show last containers and logs for sut-fore
+        run: |
+          docker ps -a --filter "name=sut-fore" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+          echo "=== logs sut-fore ==="
+          docker logs sut-fore || true
+      - name: Start container in background (if sut-fore exited early)
         run: |
           docker run -d --rm -p 8000:8000 --name sut ${{ env.IMAGE_NAME }}:latest || true
-          for i in $(seq 1 30); do
-            echo "check $i/30: containers:"
-            docker ps -a --filter "name=sut"
-            if docker exec sut true 2>/dev/null; then
-              echo "container is present"
-              break
-            fi
-            sleep 1
-          done
-
-      - name: Dump container status and ports
-        run: |
+          sleep 2
           docker ps -a --filter "name=sut" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
-          ss -ltnp || true
-
-      - name: Dump container logs (first snapshot)
-        run: docker logs sut || true
-
-      - name: Healthcheck (retries, show status and head of body)
+          echo "=== initial logs sut (tail 200) ==="
+          docker logs --tail 200 sut || true
+          echo "=== process list inside container ==="
+          docker exec sut ps aux || true
+          echo "=== listening sockets inside container ==="
+          docker exec sut ss -ltnp || docker exec sut netstat -ltnp || true
+      - name: Healthcheck (retries, show body head)
         run: |
-          for i in $(seq 1 20); do
-            echo "healthcheck attempt $i/20"
-            status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
-            echo "HTTP status: $status"
-            if [ "$status" = "200" ]; then
-              echo "OK: show first 400 chars of body:"
-              head -c 400 /tmp/resp || true
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Healthcheck failed, dumping container logs:"
-          docker logs sut || true
-          exit 1
-
-      - name: Stop container
+          if docker ps --filter "name=sut" --format "{{.Names}}" | grep -q sut; then
+            for i in $(seq 1 20); do
+              echo "healthcheck attempt $i/20"
+              status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
+              echo "HTTP status: $status"
+              if [ "$status" = "200" ]; then
+                echo "OK: show first 400 chars of body:"
+                head -c 400 /tmp/resp || true
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "Healthcheck failed, dumping container logs:"
+            docker logs sut || true
+            exit 1
+          else
+            echo "Container 'sut' is not running; dumping recent containers and exit 1"
+            docker ps -a --filter "name=sut" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+            exit 1
+          fi
+      - name: Final container diagnostics (always)
         if: always()
         run: |
-          docker stop sut || true
-          docker ps -a --filter "name=sut"
+          echo "=== docker ps -a (filtered) ==="
+          docker ps -a --filter "name=sut" --filter "name=sut-fore" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+          echo "=== docker logs sut (tail 500) ==="
+          docker logs --tail 500 sut || true
+          echo "=== docker logs sut-fore (tail 500) ==="
+          docker logs --tail 500 sut-fore || true
+      - name: Stop containers (cleanup)
+        if: always()
+        run: |
+          docker stop sut sut-fore || true
+          docker ps -a --filter "name=sut" --filter "name=sut-fore"
+
