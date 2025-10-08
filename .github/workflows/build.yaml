@@ -77,11 +77,28 @@ jobs:
           except Exception as e:
               print("uvicorn import error:", type(e).__name__, e)
           PY
-      - name: Run container foreground to capture startup logs
+
+      - name: Create env file from GitHub Secrets
         run: |
-          echo "Running container in foreground for up to 20s to capture startup trace"
-          timeout 20s docker run --rm --name sut-fore -p 8000:8000 ${{ env.IMAGE_NAME }}:latest || true
-          echo "Foreground run finished (exit code above if any)."
+          cat > .env.ci <<EOF
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
+          X_OAUTH1_API_KEY=${{ secrets.X_OAUTH1_API_KEY }}
+          X_OAUTH1_API_SECRET=${{ secrets.X_OAUTH1_API_SECRET }}
+          X_OAUTH2_API_BEARER_TOKEN=${{ secrets.X_OAUTH2_API_BEARER_TOKEN }}
+          X_OAUTH2_CLIENT_ID=${{ secrets.X_OAUTH2_CLIENT_ID }}
+          X_OAUTH2_CLIENT_SECRET=${{ secrets.X_OAUTH2_CLIENT_SECRET }}
+          MONGO_USER=${{ secrets.MONGO_USER }}
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          MONGO_HOST=${{ secrets.MONGO_HOST }}
+          MONGO_DB=${{ secrets.MONGO_DB }}
+          DB_ENCRIPTION_SECRET_KEY=${{ secrets.DB_ENCRIPTION_SECRET_KEY }}
+          EOF
+      - name: Run container foreground with env-file
+        run: |
+          echo "Running container with .env.ci"
+          timeout 20s docker run --rm --name sut-fore -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest || true
+          echo "Foreground run finished"
       - name: Show last containers and logs for sut-fore
         run: |
           docker ps -a --filter "name=sut-fore" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
