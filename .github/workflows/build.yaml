@@ -42,7 +42,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-   test-image:
+  test-image:
     runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 15
