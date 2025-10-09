@@ -57,6 +57,8 @@ class YouTubeVideoClient(VideoSourcePort):
         )
         channel_resp = channel_req.execute()
         playlist_id = channel_resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        logger.info("Video playlist retrieved for channel: %s", channel_id , extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
 
         # 2) Listar ítems del playlist
         pl_req = self.youtube.playlistItems().list(
@@ -65,6 +67,8 @@ class YouTubeVideoClient(VideoSourcePort):
             maxResults=max_videos
         )
         pl_resp = pl_req.execute()
+        logger.info("Items from playlist retrieved for channel: %s", channel_id , extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
 
         # 3) Mapear a nuestro DTO / protocolo
         videos: List[VideoMetadata] = []
@@ -75,10 +79,6 @@ class YouTubeVideoClient(VideoSourcePort):
             videos.append(YouTubeVideo(videoId=vid_id, title=title, url=url))
 
         # Logging
-        # print(f"[YouTubeVideoClient] Channel: {channel_id}")
-        # print(f"[YouTubeVideoClient] Videos retrieved: {len(videos)} (out of max: {max_videos})")
-        # print(f"[{self.__class__.__name__}][{inspect.currentframe().f_code.co_name}] Finished OK")
-        # logger.info("Channel retrieved (channel_id: %s)", channel_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         logger.info("Videos retrieved: %s (out of max: %s)", len(videos), max_videos , extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
