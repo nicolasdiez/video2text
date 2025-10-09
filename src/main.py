@@ -44,6 +44,7 @@ from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
 from adapters.outbound.transcription_client import YouTubeTranscriptionClient
+from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficial
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
@@ -65,7 +66,8 @@ prompt_loader           = FilePromptLoader(prompts_dir="prompts")
 channel_repo            = MongoChannelRepository(database=db)
 video_source            = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo              = MongoVideoRepository(database=db)
-transcription_client    = YouTubeTranscriptionClient(default_language="es")
+#transcription_client    = YouTubeTranscriptionClient(default_language="es")
+transcription_client    = YouTubeTranscriptionClientOfficial(api_key=config.YOUTUBE_API_KEY)
 prompt_repo             = MongoPromptRepository(database=db)
 openai_client           = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo   = MongoTweetGenerationRepository(db=db)

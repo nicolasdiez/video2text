@@ -9,5 +9,5 @@ class TranscriptionPort(ABC):
     """
 
     @abstractmethod
-    async def transcribe(self, video_id: str, language: Optional[str] = None) -> str:
+    async def transcribe(self, video_id: str, language: Optional[str] = None) -> Optional[str]:
         pass

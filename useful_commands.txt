@@ -46,7 +46,7 @@ docker system df
 
 
 
-# google cloud console
+# google cloud console (justfol..)
 https://console.cloud.google.com/apis/
 
 # auto-generated swagger by FastAPI (if shown then server is running properly)

@@ -91,7 +91,7 @@ class IngestionPipelineService(IngestionPipelinePort):
             video_ids = [v.videoId for v in videos_meta]
             max_show = 20
             video_ids_to_show = video_ids if len(video_ids) <= max_show else video_ids[:max_show] + ["...(+%d)" % (len(video_ids) - max_show)]
-            logger.info("%s videos retrieved from channel %s (%s) — videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_show, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_show, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 5. Process each video independently
             for video_meta in videos_meta:
