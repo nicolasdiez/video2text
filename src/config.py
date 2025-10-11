@@ -32,6 +32,10 @@ X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT    = os.getenv("X_OAUTH2_ACCESS_TOKEN_EXPIRES_A
 X_OAUTH2_REFRESH_TOKEN              = os.getenv("X_OAUTH2_REFRESH_TOKEN")               # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT   = os.getenv("X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT")    # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_SCREEN_NAME                       = os.getenv("X_SCREEN_NAME")                        # permite actuar en nombre de un usuario frente a Twitter/X
+# credentials of the application used to retrieve youtube video transcripts
+YOUTUBE_OAUTH_CLIENT_ID             = os.getenv("YOUTUBE_OAUTH_CLIENT_ID")
+YOUTUBE_OAUTH_CLIENT_SECRET         = os.getenv("YOUTUBE_OAUTH_CLIENT_SECRET")
+YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN  = os.getenv("YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN")
 
 # --- MongoDB ---
 MONGO_USER     = os.getenv("MONGO_USER")
@@ -52,6 +56,9 @@ required_vars = {
     "X_OAUTH2_API_BEARER_TOKEN": X_OAUTH2_API_BEARER_TOKEN,
     "X_OAUTH2_CLIENT_ID": X_OAUTH2_CLIENT_ID,
     "X_OAUTH2_CLIENT_SECRET": X_OAUTH2_CLIENT_SECRET,
+    "YOUTUBE_OAUTH_CLIENT_ID": YOUTUBE_OAUTH_CLIENT_ID,
+    "YOUTUBE_OAUTH_CLIENT_SECRET": YOUTUBE_OAUTH_CLIENT_SECRET,
+    "YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN": YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN,
     # Mongo
     "MONGO_USER": MONGO_USER,
     "MONGO_PASSWORD": MONGO_PASSWORD,

@@ -30,8 +30,8 @@ class YouTubeVideoClient(VideoSourcePort):
     """
 
     def __init__(self, api_key: str = None):
-
-        # load api key
+        
+        # load api key --> retrieving videos from a youtube channel only requires API KEY, no OAuth user authentication.
         if not api_key:
             raise RuntimeError("YOUTUBE_API_KEY not defined")
         self.api_key = api_key

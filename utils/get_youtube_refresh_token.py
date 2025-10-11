@@ -1,3 +1,7 @@
+# IMPORTANT!!!:
+# this is a snippet code, NOT part of the application code base. 
+# it is meant to be used only once --> generate a OAuth2 refresh token from a clientId and a clientSecret. Get the refresh token and save it to .env
+
 from dotenv import load_dotenv
 import os
 from google_auth_oauthlib.flow import InstalledAppFlow

@@ -10,7 +10,7 @@ import threading
 import logging 
 import inspect  
 
-from infrastructure.mongodb import ping_mongo, db, _sync_client, _motor_client
+from src.infrastructure.mongodb import ping_mongo, db, _sync_client, _motor_client
 
 # Specific logger for this module
 logger = logging.getLogger(__name__)

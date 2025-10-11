@@ -1,6 +1,6 @@
 # IMPORTANT!!!:
 # this is a snippet code, NOT part of the application code base. 
-# it is meant to be used only once --> generate key in console and SAVE it in .env
+# it is meant to be used only once --> generate encryption key in console and SAVE it to .env. Encryption key is used to encrypt user credentials before saving to mongoDB.
 
 from cryptography.fernet import Fernet
 

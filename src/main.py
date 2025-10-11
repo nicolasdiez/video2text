@@ -57,8 +57,14 @@ from adapters.outbound.twitter_client import TwitterClient
 # appConfig adapter
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
 
+# factory to get a youtube_client resource for consuming Youtube Data API to retrieve video transcriptions 
+from infrastructure.auth.youtube_credentials import get_youtube_client
+
 # Specific logger for this module
 logger = logging.getLogger(__name__)
+
+# create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficial
+youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
 
 # --- Ingestion adapters & service instantiation ---
 user_repo               = MongoUserRepository(database=db)
@@ -67,7 +73,7 @@ channel_repo            = MongoChannelRepository(database=db)
 video_source            = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo              = MongoVideoRepository(database=db)
 #transcription_client    = YouTubeTranscriptionClient(default_language="es")
-transcription_client    = YouTubeTranscriptionClientOfficial(api_key=config.YOUTUBE_API_KEY)
+transcription_client    = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client)
 prompt_repo             = MongoPromptRepository(database=db)
 openai_client           = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
