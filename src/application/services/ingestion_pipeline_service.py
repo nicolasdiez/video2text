@@ -116,16 +116,40 @@ class IngestionPipelineService(IngestionPipelinePort):
                     logger.info("Video %s saved in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 7. If video has no transcription yet, fetch it and update the record
+                #if not video.transcript_fetched_at:
+                #    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
+                #    logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                #    video.transcript = transcript
+                #    video.transcript_fetched_at = datetime.utcnow()
+                #    video.updated_at = datetime.utcnow()
+
                 if not video.transcript_fetched_at:
-                    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
-                    logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                    video.transcript = transcript
-                    video.transcript_fetched_at = datetime.utcnow()
-                    video.updated_at = datetime.utcnow()
+                    transcript = None
+                    # Try primary transcription client (official API)
+                    try:
+                        transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
+                    except Exception as e:
+                        logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+
+                    # If primary didn't return a usable transcript, try fallback ASR client
+                    if not transcript:
+                        logger.info("Primary transcription unavailable, attempting ASR fallback for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                        try:
+                            transcript = await self.transcription_client_fallback.transcribe(video.youtube_video_id, language=['en','es'])
+                        except Exception as e:
+                            logger.warning("Fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+
+                    if not transcript:
+                        logger.info("No transcription obtained for video %s after both primary and fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                    else:
+                        logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                        video.transcript = transcript
+                        video.transcript_fetched_at = datetime.utcnow()
+                        video.updated_at = datetime.utcnow()
                     
-                    # persist the updated video entity
-                    await self.video_repo.update(video)
-                    logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        # persist the updated video entity
+                        await self.video_repo.update(video)
+                        logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
                 if not video.tweets_generated:
