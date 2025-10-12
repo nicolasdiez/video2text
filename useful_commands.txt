@@ -43,6 +43,8 @@ docker system prune -a --volumes
 # see docker resources being used
 docker system df
 
+# confirm version of ffmpeg installed
+ffmpeg -version
 
 
 

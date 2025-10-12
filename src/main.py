@@ -2,9 +2,6 @@
 
 # TODO: 
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts
-# - almacenar credenciales donde corresponda (app en .env --> YOUTUBE, OPENAI, MONGO | user en {user} --> X)
-# - meter los minutes del APScheduler desde en config file para cambiar dinamicamente o desde un entity
-# - definir un Dockerfile (construir imagen + subir a Azure Container Registry (ACR))
 
 import os
 import asyncio
@@ -45,6 +42,7 @@ from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
 from adapters.outbound.transcription_client import YouTubeTranscriptionClient
 from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficial
+from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientASR
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
@@ -67,30 +65,32 @@ logger = logging.getLogger(__name__)
 youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
 
 # --- Ingestion adapters & service instantiation ---
-user_repo               = MongoUserRepository(database=db)
-prompt_loader           = FilePromptLoader(prompts_dir="prompts")
-channel_repo            = MongoChannelRepository(database=db)
-video_source            = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
-video_repo              = MongoVideoRepository(database=db)
-#transcription_client    = YouTubeTranscriptionClient(default_language="es")
-transcription_client    = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client)
-prompt_repo             = MongoPromptRepository(database=db)
-openai_client           = OpenAIClient(api_key=config.OPENAI_API_KEY)
-tweet_generation_repo   = MongoTweetGenerationRepository(db=db)
-tweet_repo              = MongoTweetRepository(database=db)
+user_repo                       = MongoUserRepository(database=db)
+prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
+channel_repo                    = MongoChannelRepository(database=db)
+video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
+video_repo                      = MongoVideoRepository(database=db)
+#transcription_client           = YouTubeTranscriptionClient(default_language="es")
+transcription_client            = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client)
+transcription_client_fallback   = YouTubeTranscriptionClientASR(model_name="small", device="cpu")
+prompt_repo                     = MongoPromptRepository(database=db)
+openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
+tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
+tweet_repo                      = MongoTweetRepository(database=db)
 
 # Create an instance of PipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
-    user_repo               = user_repo,
-    prompt_loader           = prompt_loader,
-    channel_repo            = channel_repo,
-    video_source            = video_source,
-    video_repo              = video_repo,
-    transcription_client    = transcription_client,
-    prompt_repo             = prompt_repo,
-    openai_client           = openai_client,
-    tweet_generation_repo   = tweet_generation_repo,
-    tweet_repo              = tweet_repo,
+    user_repo                       = user_repo,
+    prompt_loader                   = prompt_loader,
+    channel_repo                    = channel_repo,
+    video_source                    = video_source,
+    video_repo                      = video_repo,
+    transcription_client            = transcription_client,
+    transcription_client_fallback   = transcription_client_fallback,
+    prompt_repo                     = prompt_repo,
+    openai_client                   = openai_client,
+    tweet_generation_repo           = tweet_generation_repo,
+    tweet_repo                      = tweet_repo,
 )
 
 # Inject the instance of IngestionPipelineService (with all the Adapters) into the pipeline controller 
@@ -129,6 +129,7 @@ async def lifespan(app: FastAPI):
     # TODO: remove this block when frontend/endpoints for user credential management is ready
     USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
     bootstrap_user_id = USER_ID
+    # Retrieve USER X credentials from env (either .env file or Github Environment secrets) and save them encrypted to mongoDB user collection
     creds = UserTwitterCredentials(
         # credentials related to THE USER of the application:
         oauth1_access_token=config.X_OAUTH1_ACCESS_TOKEN,

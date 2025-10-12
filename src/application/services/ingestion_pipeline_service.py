@@ -50,6 +50,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
         transcription_client: TranscriptionPort,
+        transcription_client_fallback: TranscriptionPort,
         prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
@@ -61,6 +62,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.video_source = video_source
         self.video_repo = video_repo
         self.transcription_client = transcription_client
+        self.transcription_client_fallback = transcription_client_fallback
         self.prompt_repo = prompt_repo
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
@@ -151,8 +153,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                         await self.video_repo.update(video)
                         logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # 8. If video has not been used for tweet generation yet, then generate tweets and update the record
-                if not video.tweets_generated:
+                # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
+                if (not video.tweets_generated) and video.transcript:
 
                     # 9. Retrieve Prompt entity for this user and channel
                     prompt_entity = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
