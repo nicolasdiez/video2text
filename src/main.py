@@ -2,6 +2,10 @@
 
 # TODO: 
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts
+# - change transcription_client.py to switch from using deprecated get_transcript() to use fetch()
+# - implement 2nd fallback mechanism in ingestion_pipeline_service for the transcription retrieval
+# - tidy up prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
+
 
 import os
 import asyncio
