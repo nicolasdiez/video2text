@@ -62,7 +62,8 @@ from adapters.outbound.mongodb.app_config_repository import MongoAppConfigReposi
 # factory to get a youtube_client resource for consuming Youtube Data API to retrieve video transcriptions 
 from infrastructure.auth.youtube_credentials import get_youtube_client
 
-# Specific logger for this module
+
+# specific logger for this module
 logger = logging.getLogger(__name__)
 
 # create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficial
@@ -154,22 +155,22 @@ async def lifespan(app: FastAPI):
         users = await user_repo.find_all()
         for user in users:
             try:
-                logger.info("Ingestion pipeline starting", extra={"user_id": user.id, "job": "ingestion"})
+                logger.info("Ingestion pipeline starting (user: %s)", user.id, extra={"user_id": user.id, "job": "ingestion"})
                 await ingestion_pipeline_service_instance.run_for_user(user_id=user.id)
-                logger.info("Ingestion pipeline finished", extra={"user_id": user.id, "job": "ingestion"})
+                logger.info("Ingestion pipeline finished (user: %s)", user.id, extra={"user_id": user.id, "job": "ingestion"})
             except Exception as e:
-                logger.error("Ingestion pipeline failed: %s", str(e), extra={"user_id": user.id, "error": str(e)})
+                logger.error("Ingestion pipeline failed (user: %s): %s", user.id, str(e), extra={"user_id": user.id, "error": str(e)})
 
     # Inline async function for Publishing
     async def publishing_job():
         users = await user_repo.find_all()
         for user in users:
             try:
-                logger.info("Publishing pipeline starting", extra={"user_id": user.id, "job": "publishing"})
+                logger.info("Publishing pipeline starting (user: %s)", user.id, extra={"user_id": user.id, "job": "publishing"})
                 await publishing_pipeline_service_instance.run_for_user(user_id=user.id)
-                logger.info("Publishing pipeline finished", extra={"user_id": user.id, "job": "publishing"})
+                logger.info("Publishing pipeline finished (user: %s)", user.id, extra={"user_id": user.id, "job": "publishing"})
             except Exception as e:
-                logger.error("Publishing pipeline failed: %s", str(e), extra={"user_id": user.id, "error": str(e)})
+                logger.error("Publishing pipeline failed (user: %s): %s", user.id, extra={"user_id": user.id, "error": str(e)})
 
     # load appConfig from DB
     app_config = await app_config_repo.get_config()
