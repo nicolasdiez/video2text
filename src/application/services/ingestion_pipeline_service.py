@@ -118,13 +118,6 @@ class IngestionPipelineService(IngestionPipelinePort):
                     logger.info("Video %s saved in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 7. If video has no transcription yet, fetch it and update the record
-                #if not video.transcript_fetched_at:
-                #    transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
-                #    logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                #    video.transcript = transcript
-                #    video.transcript_fetched_at = datetime.utcnow()
-                #    video.updated_at = datetime.utcnow()
-
                 if not video.transcript_fetched_at:
                     transcript = None
                     # Try primary transcription client (official API)

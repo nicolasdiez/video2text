@@ -72,7 +72,7 @@ video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_
 video_repo                      = MongoVideoRepository(database=db)
 #transcription_client           = YouTubeTranscriptionClient(default_language="es")
 transcription_client            = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client)
-transcription_client_fallback   = YouTubeTranscriptionClientASR(model_name="small", device="cpu")
+transcription_client_fallback   = YouTubeTranscriptionClientASR(model_name="tiny", device="cpu")
 prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
@@ -171,7 +171,7 @@ async def lifespan(app: FastAPI):
     app_config = await app_config_repo.get_config()
     ingestion_minutes = app_config.scheduler.ingestion_minutes
     publishing_minutes = app_config.scheduler.publishing_minutes
-    logger.info("Loaded appConfig from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_minutes, publishing_minutes)
+    logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_minutes, publishing_minutes)
     
     # setup job execution frequency dynamically
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_minutes)

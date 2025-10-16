@@ -84,7 +84,8 @@ class YouTubeTranscriptionClientASR(TranscriptionPort):
             logger.info("Running Whisper transcription (video_id=%s, sample_rate=%s)", video_id, sr, extra={"class": self.__class__.__name__, "method": method_name})
 
             try:
-                result = self._model.transcribe(audio_np, language=language)  # returns dict with 'text'
+                lang_param = language[0] if isinstance(language, (list, tuple)) and language else language
+                result = self._model.transcribe(audio_np, language=lang_param)  # returns dict with 'text'
             except TypeError:
                 # fallback: whisper may accept a filename only; avoid writing to disk in this simple implementation
                 logger.exception("Model transcribe call failed due to incompatible interface", extra={"class": self.__class__.__name__, "method": method_name})

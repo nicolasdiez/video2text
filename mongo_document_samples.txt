@@ -71,7 +71,7 @@
   "updatedAt": { "$date": "2025-09-10T21:30:00Z" }
 }
 
-{appConfig}
+{application_configurations}
 {
 	"_id": "global",
 	"scheduler": {

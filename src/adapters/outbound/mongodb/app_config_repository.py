@@ -6,7 +6,7 @@ from domain.ports.outbound.mongodb.app_config_repository_port import AppConfigRe
 
 class MongoAppConfigRepository(AppConfigRepositoryPort):
     def __init__(self, database):
-        self._coll = database.get_collection("appConfig")
+        self._coll = database.get_collection("application_config")
 
     async def get_config(self) -> AppConfig:
         doc = await self._coll.find_one({"_id": "global"}) or {}
