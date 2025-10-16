@@ -1,6 +1,6 @@
 # IMPORTANT!!!:
-# this is a snippet code, NOT part of the application code base. 
-# it is meant to be used only once --> to validate that mongoDB works properly
+# this is a snippet code, NOT part of the application code base.
+# What´s this script used for? --> to validate that mongoDB works properly
 
 import sys
 import asyncio

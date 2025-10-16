@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 class PublishingPipelineService(PublishingPipelinePort):
     """
     Orchestrates the publishing pipeline:
-      1. Validate user exists
-      2. Fetch unpublished tweets (up to max_tweets_to_fetch_from_db)
-      3. Publish unpublished tweets (up to max_tweets_to_publish)
-      4. Update metadata only for those actually published
+      - Validate user exists
+      - Fetch unpublished tweets (up to max_tweets_to_fetch_from_db)
+      - Publish unpublished tweets (up to max_tweets_to_publish)
+      - Update metadata only for those tweets actually published
     """
 
     def __init__(
@@ -40,6 +40,8 @@ class PublishingPipelineService(PublishingPipelinePort):
 
     async def run_for_user(self, user_id: str) -> None:
         
+        logger.info("Starting...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
         # 1. Validate that user actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
         if user is None:
@@ -80,3 +82,5 @@ class PublishingPipelineService(PublishingPipelinePort):
 
             await self.tweet_repo.update(tweet)
             logger.info("Tweet_id %s updated in collection 'tweets'", tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

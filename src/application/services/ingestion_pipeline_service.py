@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 class IngestionPipelineService(IngestionPipelinePort):
     """
     Orchestrates the ingestion pipeline:
-      1. Retrieve channels for a user
-      2. For each channel:
+      - Retrieve channels for a user
+      - For each channel:
          a) Find new videos
          b) Transcribe missing videos
          c) Generate tweets for each video
@@ -71,6 +71,8 @@ class IngestionPipelineService(IngestionPipelinePort):
 
     async def run_for_user(self, user_id: str) -> None:
         
+        logger.info("Starting...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
         # 1. Validate that user actually exists on the repo
         user = await self.user_repo.find_by_id(user_id)
         if user is None:

@@ -1,6 +1,7 @@
 # adapters/outbound/transcription_client_ASR.py
+
 """
-ASR-based transcription adapter for YouTube videos.
+ASR-based transcription adapter for YouTube videos. (ASR = Automatic Speech Recognition)
 
 Behavior (simple, in-memory):
 - Resolve an audio URL for the given YouTube video with yt-dlp.
@@ -37,7 +38,6 @@ logger = logging.getLogger(__name__)
 class YouTubeTranscriptionClientASR(TranscriptionPort):
     """
     ASR transcription adapter that downloads YouTube audio streams and runs a local Whisper model.
-
     Constructor:
       - model_name: Whisper model id (e.g., "tiny", "base", "small").
       - device: "cpu" or "cuda".

@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 class YouTubeTranscriptionClient(TranscriptionPort):
     """
     Implementación del puerto TranscriptionPort que usa YouTubeTranscriptApi para obtener la transcripción. Maneja un único idioma.
+    Important: this implementation of the TranscriptionPort does NOT use the official Youtube Data API library, so it might be blocked by youtube.
     """
 
     def __init__(self, default_language: str = "es"):
