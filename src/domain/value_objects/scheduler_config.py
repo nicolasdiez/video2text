@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class SchedulerConfig:
     """
     Value Object que representa la configuración del scheduler.
-    Inmutable y validado en su construcción.
+    Inmutable y validado en construcción.
     """
     ingestion_minutes: int
     publishing_minutes: int

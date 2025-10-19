@@ -182,7 +182,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_minutes)
     scheduler.add_job(publishing_job, "interval", minutes=publishing_minutes)
     
-    # start scheduler
+    # start scheduler.
     scheduler.start()
     logger.info("APScheduler started")
 
