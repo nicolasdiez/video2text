@@ -12,7 +12,7 @@ from colorlog import ColoredFormatter
 
 
 # ===== ENVIRONEMENT VARIABLES =====
-# Cargar .env solo en local (en Azure no será necesario porque las variables ya estarán en el entorno)
+# Cargar .env file solo en local (en Azure no será necesario porque las variables ya estarán en el entorno)
 load_dotenv()
 
 # --- API Keys ---
@@ -33,9 +33,9 @@ X_OAUTH2_REFRESH_TOKEN              = os.getenv("X_OAUTH2_REFRESH_TOKEN")       
 X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT   = os.getenv("X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT")    # OAuth 2.0 - Permite actuar en nombre de un usuario frente a Twitter/X
 X_SCREEN_NAME                       = os.getenv("X_SCREEN_NAME")                        # permite actuar en nombre de un usuario frente a Twitter/X
 # credentials of the application used to retrieve youtube video transcripts
-YOUTUBE_OAUTH_CLIENT_ID             = os.getenv("YOUTUBE_OAUTH_CLIENT_ID")
-YOUTUBE_OAUTH_CLIENT_SECRET         = os.getenv("YOUTUBE_OAUTH_CLIENT_SECRET")
-YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN  = os.getenv("YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN")
+YOUTUBE_OAUTH_CLIENT_ID             = os.getenv("YOUTUBE_OAUTH_CLIENT_ID")              # OAuth 2.0 - Identifica mi aplicación frente a Youtube
+YOUTUBE_OAUTH_CLIENT_SECRET         = os.getenv("YOUTUBE_OAUTH_CLIENT_SECRET")          # OAuth 2.0 - Identifica mi aplicación frente a Youtube
+YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN  = os.getenv("YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN")   # OAuth 2.0 - Identifica mi aplicación frente a Youtube    
 
 # --- MongoDB ---
 MONGO_USER     = os.getenv("MONGO_USER")
