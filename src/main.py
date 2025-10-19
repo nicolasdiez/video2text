@@ -1,6 +1,6 @@
-# src/main.py
+# /src/main.py
 
-# TODO: 
+# TODO:
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts
 # - change transcription_client.py to switch from using deprecated get_transcript() to use fetch()
 # - implement 2nd fallback mechanism in ingestion_pipeline_service for the transcription retrieval
@@ -8,11 +8,13 @@
 # - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run pipeline twice or more at the sime time)
 # - extend collection {users} to have variable: lastIngestionPipelineExecutionStartedAt, lastIngestionPipelineExecutionFinisheddAt
 # - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
-# - modify main to loop thru all users, but only if Pipeline is NOT already executing (flag) AND last execution > X mins (variables)
+# - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (flag) AND last execution > X mins (variables)
+# - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId, nor channelId.
 
 
 import os
 import asyncio
+import sys
 
 # import config
 import config
@@ -66,12 +68,17 @@ from adapters.outbound.mongodb.app_config_repository import MongoAppConfigReposi
 # factory to get a youtube_client resource for consuming Youtube Data API to retrieve video transcriptions 
 from infrastructure.auth.youtube_credentials import get_youtube_client
 
-
 # specific logger for this module
 logger = logging.getLogger(__name__)
 
+
 # create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficial
-youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
+try:
+    youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
+except RuntimeError as exc:
+    logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
+    # if instanciation fails, then rely on the transcription fallback service
+    youtube_client = None
 
 # --- Ingestion adapters & service instantiation ---
 user_repo                       = MongoUserRepository(database=db)
@@ -80,12 +87,16 @@ channel_repo                    = MongoChannelRepository(database=db)
 video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo                      = MongoVideoRepository(database=db)
 #transcription_client           = YouTubeTranscriptionClient(default_language="es")
-transcription_client            = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client)
 transcription_client_fallback   = YouTubeTranscriptionClientASR(model_name="tiny", device="cpu")
+transcription_client            = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client) if youtube_client else None
 prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
 tweet_repo                      = MongoTweetRepository(database=db)
+
+# if no official Youtube API transcription client, warn in log
+if transcription_client is None:
+    logger.warning("YouTube official transcription client not configured; using ASR fallback only", extra={"mod": __name__})
 
 # Create an instance of PipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(

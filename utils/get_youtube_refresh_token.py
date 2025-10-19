@@ -1,7 +1,8 @@
+# /utils/get_youtube_refresh_token.py
+
 # IMPORTANT!!!:
-# this is a snippet code, NOT part of the application code base. 
-# it is meant to be used only once 
-# What´s this script used for? --> generate a OAuth2 refresh token from a clientId and a clientSecret. Then manually get the refresh token and save it to .env
+# this is a snippet code, NOT part of the application code base. It is meant to be used only once 
+# What´s this script used for? --> generate a youtube OAuth2 refresh token from a clientId and a clientSecret. Then manually get the refresh token and save it to .env
 
 from dotenv import load_dotenv
 import os

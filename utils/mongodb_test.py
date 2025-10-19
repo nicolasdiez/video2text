@@ -1,3 +1,5 @@
+# /utils/mongodb_test.py
+
 # IMPORTANT!!!:
 # this is a snippet code, NOT part of the application code base.
 # What´s this script used for? --> to validate that mongoDB works properly

@@ -2,7 +2,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 # logging
 import inspect
@@ -49,7 +49,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         channel_repo: ChannelRepositoryPort,
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
-        transcription_client: TranscriptionPort,
+        transcription_client: Optional[TranscriptionPort],
         transcription_client_fallback: TranscriptionPort,
         prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
@@ -61,7 +61,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.channel_repo = channel_repo
         self.video_source = video_source
         self.video_repo = video_repo
-        self.transcription_client = transcription_client
+        self.transcription_client: Optional[TranscriptionPort] = transcription_client
         self.transcription_client_fallback = transcription_client_fallback
         self.prompt_repo = prompt_repo
         self.openai_client = openai_client
@@ -122,13 +122,15 @@ class IngestionPipelineService(IngestionPipelinePort):
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
                     transcript = None
-                    # Try primary transcription client (official API)
-                    try:
-                        transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
-                    except Exception as e:
-                        logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
 
-                    # If primary didn't return a usable transcript, try fallback ASR client
+                    # Try primary transcription client (official API), but only if client exists
+                    if self.transcription_client:
+                        try:
+                            transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
+                        except Exception as e:
+                            logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+
+                    # If primary didn't return a usable transcript (or client didn't even exist), try fallback ASR client
                     if not transcript:
                         logger.info("Primary transcription unavailable, attempting ASR fallback for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                         try:

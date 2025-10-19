@@ -13,6 +13,7 @@ import logging
 from typing import Any
 
 from google.oauth2.credentials import Credentials
+from google.auth.exceptions import RefreshError
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 
@@ -38,16 +39,19 @@ def _build_credentials(refresh_token: str, client_id: str, client_secret: str) -
 def _ensure_valid_credentials(creds: Credentials) -> Credentials:
     """
     Attempt a single refresh to validate the refresh token and populate an access token.
-    Raises RuntimeError on failure. Do not log secrets.
+    Raises RuntimeError on failure with clear message.
     """
     try:
         if not creds.valid and creds.refresh_token:
             request = Request()
             creds.refresh(request)
             logger.info("YouTube OAuth credentials refreshed successfully", extra={"mod": __name__})
-    except Exception:
+    except RefreshError as re:
+        logger.error("YouTube refresh token invalid or revoked: %s", str(re), extra={"mod": __name__})
+        raise RuntimeError("YouTube refresh token invalid or revoked") from re
+    except Exception as exc:
         logger.exception("Failed to refresh YouTube OAuth credentials", extra={"mod": __name__})
-        raise RuntimeError("Failed to refresh YouTube OAuth credentials")
+        raise RuntimeError("Failed to refresh YouTube OAuth credentials") from exc
     return creds
 
 
