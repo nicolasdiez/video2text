@@ -5,6 +5,10 @@
 # - change transcription_client.py to switch from using deprecated get_transcript() to use fetch()
 # - implement 2nd fallback mechanism in ingestion_pipeline_service for the transcription retrieval
 # - tidy up prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
+# - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run pipeline twice or more at the sime time)
+# - extend collection {users} to have variable: lastIngestionPipelineExecutionStartedAt, lastIngestionPipelineExecutionFinisheddAt
+# - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
+# - modify main to loop thru all users, but only if Pipeline is NOT already executing (flag) AND last execution > X mins (variables)
 
 
 import os

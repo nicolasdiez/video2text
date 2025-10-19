@@ -117,6 +117,9 @@ jobs:
           X_OAUTH2_REFRESH_TOKEN=${{ vars.X_OAUTH2_REFRESH_TOKEN }}
           X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT=${{ vars.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT }}
           X_SCREEN_NAME=${{ vars.X_SCREEN_NAME }}
+          YOUTUBE_OAUTH_CLIENT_ID=${{ vars.YOUTUBE_OAUTH_CLIENT_ID }}
+          YOUTUBE_OAUTH_CLIENT_SECRET=${{ vars.YOUTUBE_OAUTH_CLIENT_SECRET }}
+          YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN=${{ vars.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN }}
           EOF
         shell: bash
       - name: Run container foreground with env-file
