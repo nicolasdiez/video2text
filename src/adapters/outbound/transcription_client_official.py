@@ -47,7 +47,7 @@ class YouTubeTranscriptionClientOfficial(TranscriptionPort):
         Public async entry point. Runs the blocking API calls in a thread to avoid blocking the event loop.
         """
         logger.info(
-            "Starting transcription (video_id=%s)",
+            "Starting transcription retrieval (video_id=%s)",
             video_id,
             extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
         )
