@@ -1,11 +1,11 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="2564" dy="2212" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1924" dy="1828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-25" value="Video Transcript" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="660" y="-70" width="630" height="380" as="geometry" />
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-25" value="Video Transcript" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="660" y="-70" width="770" height="380" as="geometry" />
         </mxCell>
         <mxCell id="mtawYaKO-lGH9iTYJ4dF-1" value="ingestion_pipeline_service&lt;div&gt;&lt;div&gt;(user_repo,&lt;/div&gt;&lt;div&gt;prompt_loader,&lt;/div&gt;&lt;div&gt;channel_repo,&lt;/div&gt;&lt;div&gt;video_source,&lt;/div&gt;&lt;div&gt;video_repo,&lt;/div&gt;&lt;div&gt;transcription_client,&lt;/div&gt;&lt;div&gt;openai_client,&lt;/div&gt;&lt;div&gt;tweet_generation_repo,&lt;/div&gt;&lt;div&gt;tweet_repo)&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;publishing_pipeline_service&lt;/div&gt;&lt;div&gt;(&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;user_repo,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;tweet_repo,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;twitter_client)&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;align=right;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-2" target="6GBo-MGXtRTwtD-Rmwj8-3" edge="1">
           <mxGeometry x="0.0145" y="-15" relative="1" as="geometry">
@@ -78,7 +78,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-13" value="compose_full_prompt (prompt,&amp;nbsp;transcript )" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-12">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-13" value="compose_full_prompt (prompt,&amp;nbsp;transcript )" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-12" edge="1">
           <mxGeometry x="0.5471" y="10" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="470" y="265" />
@@ -87,7 +87,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-16" value="get transcript of the video" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-15">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-16" value="get transcript of the video" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-15" edge="1">
           <mxGeometry x="0.2412" y="9" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="554" y="265" />
@@ -130,7 +130,7 @@
           <mxGeometry x="661" y="1053" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;Data API&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="1140" y="54.5" width="94.5" height="71" as="geometry" />
+          <mxGeometry x="1300" y="54.5" width="94.5" height="71" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-28" value="OpenAI API" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1270.25" y="570" width="83" height="60" as="geometry" />
@@ -340,10 +340,10 @@
         <mxCell id="vX8bgqYICqjiNDsotFaB-1" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;mongo collection&amp;nbsp;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;{&lt;/span&gt;&lt;b&gt;&lt;font style=&quot;&quot;&gt;prompts_master&lt;/font&gt;&lt;/b&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;}&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;{&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; _id: ObjectId,&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; text: String,&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; languageOfTheText: String,&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;/span&gt;// language of the text (ISO 639 - Set 2)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; category: String,&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;// Finance, Sports, Food, etc...&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; subcategory: String,&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;// Investing, Futbol, Cooking, etc...&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; createdAt: Date,&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(255, 255, 255), rgb(255, 255, 255));&quot;&gt;&lt;div&gt;&lt;div&gt;&amp;nbsp; updatedAt: Date&lt;/div&gt;&lt;/div&gt;&lt;div&gt;}&lt;/div&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=#e51400;strokeColor=#B20000;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="1750" y="1749.5" width="660" height="215" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="37fVEJxlYI5hCLpPLEm2-4" target="37fVEJxlYI5hCLpPLEm2-6">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="37fVEJxlYI5hCLpPLEm2-4" target="37fVEJxlYI5hCLpPLEm2-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-5" value="get transcript of the video" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-4">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-5" value="get transcript of the video" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-6" target="37fVEJxlYI5hCLpPLEm2-4" edge="1">
           <mxGeometry x="0.5611" y="10" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="480" y="265" />
@@ -354,48 +354,48 @@
             <mxPoint x="624" y="130" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-6" value="YouTube Captions&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;API&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;timedtext&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-6" value="YouTube Captions&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;API&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;timedtext&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1088.5" y="-60" width="130" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-11" value="find_by_user_and_channel (user_id: str, channel_id: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="37fVEJxlYI5hCLpPLEm2-8" target="fER5kQKjIwSkImDIx6LC-4">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-11" value="find_by_user_and_channel (user_id: str, channel_id: str)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="37fVEJxlYI5hCLpPLEm2-8" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.5584" y="10" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-8" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-8" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="682" y="410" width="141" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-12" value="PromptComposerService" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-12" value="PromptComposerService" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="737" y="500" width="146" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="37fVEJxlYI5hCLpPLEm2-15" target="37fVEJxlYI5hCLpPLEm2-21">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="37fVEJxlYI5hCLpPLEm2-15" target="37fVEJxlYI5hCLpPLEm2-21" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-15" value="YouTubeTranscriptionClientASR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
-          <mxGeometry x="720" y="209" width="201" height="40" as="geometry" />
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-15" value="YouTubeTranscriptionClientOfficialPublicPlayerAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
+          <mxGeometry x="705" y="209" width="320" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-20" value="" style="group" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="710" y="70" width="242" height="90" as="geometry" />
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-20" value="" style="group" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="710" y="70" width="380" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClientOfficial" style="rounded=1;whiteSpace=wrap;html=1;" parent="37fVEJxlYI5hCLpPLEm2-20" vertex="1">
-          <mxGeometry width="201" height="40" as="geometry" />
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClientOfficialDataAPI" style="rounded=1;whiteSpace=wrap;html=1;" parent="37fVEJxlYI5hCLpPLEm2-20" vertex="1">
+          <mxGeometry width="380" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-3" value="youtube_client&lt;div&gt;(&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;YOUTUBE_OAUTH_CLIENT_ID,&lt;br&gt;&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;YOUTUBE_OAUTH_CLIENT_SECRET,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="37fVEJxlYI5hCLpPLEm2-20">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-3" value="youtube_client&lt;div&gt;(&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;YOUTUBE_OAUTH_CLIENT_ID,&lt;br&gt;&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;YOUTUBE_OAUTH_CLIENT_SECRET,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="37fVEJxlYI5hCLpPLEm2-20" vertex="1">
           <mxGeometry x="3" y="40" width="239" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-21" value="YouTube Public Player&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;API&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;ytInitialPlayerResponse&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-21" value="YouTube Public Player&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;API&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;ytInitialPlayerResponse&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)&lt;/span&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1079" y="181.5" width="161.5" height="95" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-4" value="YouTubeTranscriptionClient" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="730" y="-40" width="201" height="40" as="geometry" />
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-4" value="YouTubeTranscriptionClientOfficialCaptionsAPI" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="730" y="-40" width="270" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-26" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-26" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="676.5" y="-180" width="130" height="85" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-11" value="YouTubeVideoClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="37fVEJxlYI5hCLpPLEm2-26" vertex="1">
           <mxGeometry width="130" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="37fVEJxlYI5hCLpPLEm2-1" value="YOUTUBE_API_KEY" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="37fVEJxlYI5hCLpPLEm2-26">
+        <mxCell id="37fVEJxlYI5hCLpPLEm2-1" value="YOUTUBE_API_KEY" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="37fVEJxlYI5hCLpPLEm2-26" vertex="1">
           <mxGeometry x="12.5" y="55" width="108" height="30" as="geometry" />
         </mxCell>
       </root>

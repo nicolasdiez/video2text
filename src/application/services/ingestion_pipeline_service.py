@@ -49,8 +49,9 @@ class IngestionPipelineService(IngestionPipelinePort):
         channel_repo: ChannelRepositoryPort,
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
-        transcription_client: Optional[TranscriptionPort],
-        transcription_client_fallback: TranscriptionPort,
+        transcription_client: TranscriptionPort,
+        transcription_client_fallback: Optional[TranscriptionPort],
+        transcription_client_fallback_2: Optional[TranscriptionPort],
         prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
@@ -61,8 +62,9 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.channel_repo = channel_repo
         self.video_source = video_source
         self.video_repo = video_repo
-        self.transcription_client: Optional[TranscriptionPort] = transcription_client
-        self.transcription_client_fallback = transcription_client_fallback
+        self.transcription_client = transcription_client
+        self.transcription_client_fallback: Optional[TranscriptionPort] = transcription_client_fallback
+        self.transcription_client_fallback_2: Optional[TranscriptionPort] = transcription_client_fallback_2
         self.prompt_repo = prompt_repo
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
@@ -123,23 +125,33 @@ class IngestionPipelineService(IngestionPipelinePort):
                 if not video.transcript_fetched_at:
                     transcript = None
 
-                    # Try primary transcription client (official API), but only if client exists
-                    if self.transcription_client:
-                        try:
-                            transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
-                        except Exception as e:
-                            logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                    # Try primary transcription client (YouTube Captions API -timedtext-)
+                    try:
+                        logger.info("Attempting primary transcription (YouTube Official Captions API -timedtext-) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                        transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
+                    except Exception as e:
+                        logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
 
-                    # If primary didn't return a usable transcript (or client didn't even exist), try fallback ASR client
-                    if not transcript:
-                        logger.info("Primary transcription unavailable, attempting ASR fallback for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
-                        try:
-                            transcript = await self.transcription_client_fallback.transcribe(video.youtube_video_id, language=['en','es'])
-                        except Exception as e:
-                            logger.warning("Fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                    # If primary didn't return a usable transcript try first fallback, but only if client exists
+                    if self.transcription_client_fallback:
+                        if not transcript:
+                            logger.info("Primary transcription unavailable, attempting 1st fallback (Youtube Official Data API) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                            try:
+                                transcript = await self.transcription_client_fallback.transcribe(video.youtube_video_id, language=['en','es'])
+                            except Exception as e:
+                                logger.warning("First fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+
+                    # If secondary didn't return a usable transcript (or client didn't even exist), try second fallback, but only if client exists
+                    if self.transcription_client_fallback_2:                    
+                        if not transcript:
+                            logger.info("Seconday transcription unavailable, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse-) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                            try:
+                                transcript = await self.transcription_client_fallback_2.transcribe(video.youtube_video_id, language=['en','es'])
+                            except Exception as e:
+                                logger.warning("Secondary fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
 
                     if not transcript:
-                        logger.info("No transcription obtained for video %s after both primary and fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                        logger.info("No transcription obtained for video %s after primary, seconday and tertiary fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                     else:
                         logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                         video.transcript = transcript

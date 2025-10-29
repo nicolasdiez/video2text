@@ -50,9 +50,9 @@ from adapters.outbound.file_prompt_loader import FilePromptLoader
 from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
-from adapters.outbound.transcription_client import YouTubeTranscriptionClient
-from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficial
-from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientASR
+from adapters.outbound.transcription_client import YouTubeTranscriptionClientOfficialCaptionsAPI
+from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficialDataAPI
+from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
@@ -72,7 +72,7 @@ from infrastructure.auth.youtube_credentials import get_youtube_client
 logger = logging.getLogger(__name__)
 
 
-# create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficial
+# create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficialDataAPI
 try:
     youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
 except RuntimeError as exc:
@@ -86,9 +86,9 @@ prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
 channel_repo                    = MongoChannelRepository(database=db)
 video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo                      = MongoVideoRepository(database=db)
-#transcription_client           = YouTubeTranscriptionClient(default_language="es")
-transcription_client            = YouTubeTranscriptionClientOfficial(youtube_client=youtube_client) if youtube_client else None
-transcription_client_fallback   = YouTubeTranscriptionClientASR(model_name="tiny", device="cpu")
+transcription_client            = YouTubeTranscriptionClientOfficialCaptionsAPI(default_language="es")
+transcription_client_fallback   = YouTubeTranscriptionClientOfficialDataAPI(youtube_client=youtube_client) if youtube_client else None
+transcription_client_fallback_2 = YouTubeTranscriptionClientOfficialPublicPlayerAPI(model_name="tiny", device="cpu")
 prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
@@ -107,6 +107,7 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     video_repo                      = video_repo,
     transcription_client            = transcription_client,
     transcription_client_fallback   = transcription_client_fallback,
+    transcription_client_fallback_2 = transcription_client_fallback,
     prompt_repo                     = prompt_repo,
     openai_client                   = openai_client,
     tweet_generation_repo           = tweet_generation_repo,

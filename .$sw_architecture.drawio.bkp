@@ -71,7 +71,7 @@
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-16" target="6GBo-MGXtRTwtD-Rmwj8-26" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-16" value="YouTubeTranscriptionClientOfficialCaptionsAPI" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="560" y="100" width="160" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-17" value="Google API YouTube" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">

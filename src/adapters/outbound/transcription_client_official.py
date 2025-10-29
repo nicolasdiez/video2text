@@ -17,7 +17,7 @@ from domain.ports.outbound.transcription_port import TranscriptionPort
 logger = logging.getLogger(__name__)
 
 
-class YouTubeTranscriptionClientOfficial(TranscriptionPort):
+class YouTubeTranscriptionClientOfficialDataAPI(TranscriptionPort):
     """
     Uses the official YouTube Data API to list caption tracks and download a caption file.
     Returns the transcription as a string or None when no captions are available or on failure.
@@ -34,7 +34,7 @@ class YouTubeTranscriptionClientOfficial(TranscriptionPort):
         Raise RuntimeError if youtube_client is not provided.
         """
         if youtube_client is None:
-            raise RuntimeError("youtube_client must be provided to YouTubeTranscriptionClientOfficial")
+            raise RuntimeError("youtube_client must be provided to YouTubeTranscriptionClientOfficialDataAPI")
         self.youtube = youtube_client
 
         logger.info(
