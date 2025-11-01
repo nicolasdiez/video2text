@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="SpRGDxsBfz3jqkra-ryO">
-    <mxGraphModel dx="2430" dy="2132" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1819" dy="1765" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -276,11 +276,11 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-16" value="find_by_id (user_id: str)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-14" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-16" value="find_by_id (user_id: str)" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-14" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.5853" y="9" relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1630" y="880" />
-              <mxPoint x="1630" y="40" />
+              <mxPoint x="791" y="880" />
+              <mxPoint x="1600" y="880" />
             </Array>
             <mxPoint x="747" y="610" as="sourcePoint" />
             <mxPoint x="1467" y="190" as="targetPoint" />
@@ -290,11 +290,10 @@
         <mxCell id="mtawYaKO-lGH9iTYJ4dF-17" value="MongoTweetRepository" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="656" y="944" width="140" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)&amp;nbsp;-&amp;gt; List[Tweet]" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
+        <mxCell id="mtawYaKO-lGH9iTYJ4dF-19" value="find_not_published_by_user (user_id: str, limit: int)&amp;nbsp;-&amp;gt; List[Tweet]" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;" parent="1" source="mtawYaKO-lGH9iTYJ4dF-17" target="fER5kQKjIwSkImDIx6LC-4" edge="1">
           <mxGeometry x="-0.6239" y="14" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1570" y="970" />
-              <mxPoint x="1570" y="40" />
             </Array>
             <mxPoint x="769" y="708" as="sourcePoint" />
             <mxPoint x="1197" y="120" as="targetPoint" />

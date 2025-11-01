@@ -9,7 +9,7 @@
 - Note: how it actually works is that the app video2text is asking the user (in this case is a development user: ju.....@....com) to grant access to see, edit, and permanently delete your YouTube videos, ratings, comments and captions. Also by using this user ju..... the app is able to retrieve videos from the channels.
 
 
-# Configure GitHub actions self-hosted runner on Google Cloud Platform VM (Compute Engine)
+# Setup GitHub Actions Self-Hosted Runner on Google Cloud Platform VM (Compute Engine)
 
 1. Connect to the VM
 Use SSH or your cloud provider’s IAP/tunnel.
@@ -32,7 +32,7 @@ sudo systemctl enable --now docker
 bash
 sudo useradd -m -s /bin/bash actions-runner
 sudo passwd -l actions-runner
-# only if runner needs Docker:
+[comment]: # only if runner needs Docker:
 sudo usermod -aG docker actions-runner
 
 5. Firewall (UFW) — don’t lock yourself out
@@ -42,45 +42,45 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw allow out 80/tcp
 sudo ufw allow out 443/tcp
-# if you use direct SSH, allow your IP before enabling:
-# sudo ufw allow from YOUR_IP/CIDR to any port 22 proto tcp
+[comment]: # if you use direct SSH, allow your IP before enabling:
+[comment]: # sudo ufw allow from YOUR_IP/CIDR to any port 22 proto tcp
 sudo ufw enable
 
 6. Download and register GitHub Actions Runner (!!!! ---> BETTER follow GitHub Actions website instructions)
 Generate a registration token on GitHub: Repo/Org → Settings → Actions → Runners → New self-hosted runner.
 As the actions-runner user on the VM, download, extract and configure the runner:
 bash
-# run as actions-runner (or sudo -u actions-runner -i)
-# fetch latest release tag, download tarball, extract (example pattern)
+[comment]: # run as actions-runner (or sudo -u actions-runner -i)
+[comment]: # fetch latest release tag, download tarball, extract (example pattern)
 RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
 ARCH=$(uname -m); [ "$ARCH" = "x86_64" ] && ARCH="x64" || true
 TAR="actions-runner-${RUNNER_VERSION:1}-linux-${ARCH}.tar.gz"
 curl -fsSLo $TAR "https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/${TAR}"
 tar xzf $TAR && rm -f $TAR
-# run the config step (replace URL and TOKEN)
+[comment]: # run the config step (replace URL and TOKEN)
 ./config.sh --url https://github.com/OWNER/REPO --token YOUR_TOKEN --work _work --labels self-hosted,linux,ci-debian-bookworm-01 --unattended
 
 7. Install runner as a service and start
 Use the runner-provided helper or systemd unit:
 bash
-# runner helper (from runner directory)
+[comment]: # runner helper (from runner directory)
 sudo ./svc.sh install
 sudo ./svc.sh start
 
-# or a minimal systemd unit (example)
-# /etc/systemd/system/github-actions-runner.service
-# [Unit]...
-# [Service] ExecStart=/home/actions-runner/actions-runner/run.sh User=actions-runner
-# Then:
+[comment]: # or a minimal systemd unit (example)
+[comment]: # /etc/systemd/system/github-actions-runner.service
+[comment]: # [Unit]...
+[comment]: # [Service] ExecStart=/home/actions-runner/actions-runner/run.sh User=actions-runner
+[comment]: # Then:
 sudo systemctl daemon-reload
 sudo systemctl enable --now github-actions-runner.service
 
 8. Verify and test
 bash
-# check runner service logs
+[comment]: # check runner service logs
 sudo journalctl -u github-actions-runner -f
 
-# quick Docker smoke test
+[comment]: # quick Docker smoke test
 docker run --rm hello-world
 Confirm the runner appears as "online" in GitHub (Repo/Org → Settings → Actions → Runners).
 
