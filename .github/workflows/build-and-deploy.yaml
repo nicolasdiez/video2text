@@ -2,7 +2,7 @@ name: Build and Deploy Image
 
 on:
   push:
-    branches: [ "main" ]                    # workflow is trigger on each push to main branch 
+    branches: [ "main" ]                    # workflow is triggered on each push to main branch 
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]   # all tags have to match with the ones defined in GitHub Actions Self-hosted Runners
+    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]   # all tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners
     steps:
       - name: Checkout                                          # fetch my github repo
         uses: actions/checkout@v4
@@ -30,23 +30,26 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push                 # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
-        uses: docker/build-push-action@v6    # 'build-push-action@v6' is a reusable GitHub Action, which under the hood is running "docker buildx build", which then uses the ./Dockerfile
+        uses: docker/build-push-action@v6    # 'build-push-action@v6' is a reusable GitHub Action, which under the hood runs "docker buildx build", which uses the ./Dockerfile
         with:
           context: .
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
   deploy-and-test:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
-    environment: production                 # exact name of the Environment in Github repo Settings
+    environment: production                 # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
     timeout-minutes: 120
     steps:
-      - name: Create env file from GitHub Secrets (full)    # create .env file with the vars and secrets to further run the containerized application
+      - name: Checkout                                          # needed to generate .env.ci file from vars/secrets locales
+        uses: actions/checkout@v4
+
+      - name: Create env file from GitHub Secrets (full)        # create .env file with the vars and secrets to further run the containerized application
         run: |
           cat > .env.ci <<EOF
           APP_DEBUG=${{ vars.APP_DEBUG }}
@@ -84,13 +87,20 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pre-pull image                                    # reduce time at the critical step by pulling ahead
+        run: |
+          docker pull ${{ env.IMAGE_NAME }}:latest || true
+
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
       - name: Run container (detached)    # run a container named sut (detached = non-blocking action for the runner step)
         run: |
-          docker rm -f sut || true        
-          docker run -d --name sut --restart unless-stopped -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest    
+          # Use a run-unique name and label so we don't collide with production containers
+          NAME="sut-${{ github.run_id }}"
+          docker rm -f "$NAME" || true
+          docker run -d --name "$NAME" --label gh_workflow=video2text --restart unless-stopped -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest
+          echo "CONTAINER_NAME=$NAME" >> $GITHUB_ENV    
 
       - name: Healthcheck                 # because the container was started detached, we should check that the service started properly
         run: |
@@ -103,11 +113,11 @@ jobs:
             sleep 3
           done
           echo "healthcheck failed; dumping last logs"
-          docker logs --tail 200 sut || true
+          docker logs --tail 200 "$CONTAINER_NAME" || true
           exit 1
 
       - name: Cleanup (optional)
         if: always()
         run: |
-          docker stop sut || true
-          docker rm -f sut || true
+          docker stop "$CONTAINER_NAME" || true
+          docker rm -f "$CONTAINER_NAME" || true

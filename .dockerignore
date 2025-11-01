@@ -32,9 +32,13 @@ useful_commands.txt
 sw_architecture.drawio
 sample_text.txt
 packetization.txt
+packetization.md
 mongo_document_samples.txt
 important_before_deploying_in_cloud.txt
 cred.txt
 channel_ids.txt
 prompts/
 graphics/
+dependencies.md
+notes_hex_arch.txt
+readme.md
