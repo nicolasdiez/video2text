@@ -10,6 +10,7 @@
 # - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
 # - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (flag) AND last execution > X mins (variables)
 # - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId, nor channelId.
+# - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription client (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 
 
 import os
