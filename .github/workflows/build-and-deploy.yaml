@@ -1,0 +1,112 @@
+name: Build and Deploy Image
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/nicolasdiez/video2text
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, ci-debian-bookworm-01]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-and-test:
+    runs-on: [self-hosted, linux, ci-debian-bookworm-01]
+    needs: build
+    timeout-minutes: 60
+    steps:
+      - name: Create env file from GitHub Secrets (full)
+        run: |
+          cat > .env.ci <<EOF
+          APP_DEBUG=${{ vars.APP_DEBUG }}
+          LOG_LEVEL=${{ vars.LOG_LEVEL }}
+          ENVIRONMENT=${{ vars.ENVIRONMENT }}
+          YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          MONGO_USER=${{ secrets.MONGO_USER }}
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          MONGO_HOST=${{ secrets.MONGO_HOST }}
+          MONGO_DB=${{ secrets.MONGO_DB }}
+          X_OAUTH1_API_KEY=${{ secrets.X_OAUTH1_API_KEY }}
+          X_OAUTH1_API_SECRET=${{ secrets.X_OAUTH1_API_SECRET }}
+          X_OAUTH2_API_BEARER_TOKEN=${{ secrets.X_OAUTH2_API_BEARER_TOKEN }}
+          X_OAUTH2_CLIENT_ID=${{ secrets.X_OAUTH2_CLIENT_ID }}
+          X_OAUTH2_CLIENT_SECRET=${{ secrets.X_OAUTH2_CLIENT_SECRET }}
+          DB_ENCRIPTION_SECRET_KEY=${{ secrets.DB_ENCRIPTION_SECRET_KEY }}
+          X_OAUTH1_ACCESS_TOKEN=${{ secrets.X_OAUTH1_ACCESS_TOKEN }}
+          X_OAUTH1_ACCESS_TOKEN_SECRET=${{ secrets.X_OAUTH1_ACCESS_TOKEN_SECRET }}
+          X_OAUTH2_ACCESS_TOKEN=${{ secrets.X_OAUTH2_ACCESS_TOKEN }}
+          X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT=${{ secrets.X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT }}
+          X_OAUTH2_REFRESH_TOKEN=${{ secrets.X_OAUTH2_REFRESH_TOKEN }}
+          X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT=${{ secrets.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT }}
+          X_SCREEN_NAME=${{ secrets.X_SCREEN_NAME }}
+          YOUTUBE_OAUTH_CLIENT_ID=${{ secrets.YOUTUBE_OAUTH_CLIENT_ID }}
+          YOUTUBE_OAUTH_CLIENT_SECRET=${{ secrets.YOUTUBE_OAUTH_CLIENT_SECRET }}
+          YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN=${{ secrets.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN }}
+          EOF
+        shell: bash
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image
+        run: docker pull ${{ env.IMAGE_NAME }}:latest
+
+      - name: Run container (detached)
+        run: |
+          docker rm -f sut || true
+          docker run -d --name sut --restart unless-stopped -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest
+
+      - name: Healthcheck
+        run: |
+          for i in $(seq 1 20); do
+            status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
+            if [ "$status" = "200" ]; then
+              echo "health ok"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "healthcheck failed; dumping last logs"
+          docker logs --tail 200 sut || true
+          exit 1
+
+      - name: Cleanup (optional)
+        if: always()
+        run: |
+          docker stop sut || true
+          docker rm -f sut || true
