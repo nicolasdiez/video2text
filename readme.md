@@ -10,6 +10,7 @@
 
 
 # Configure GitHub actions self-hosted runner on Google Cloud Platform VM (Compute Engine)
+
 1. Connect to the VM
 Use SSH or your cloud provider’s IAP/tunnel.
 
@@ -45,7 +46,7 @@ sudo ufw allow out 443/tcp
 # sudo ufw allow from YOUR_IP/CIDR to any port 22 proto tcp
 sudo ufw enable
 
-6. Download and register GitHub Actions Runner (BETTER follow GitHub Actions website instructions)
+6. Download and register GitHub Actions Runner (!!!! ---> BETTER follow GitHub Actions website instructions)
 Generate a registration token on GitHub: Repo/Org → Settings → Actions → Runners → New self-hosted runner.
 As the actions-runner user on the VM, download, extract and configure the runner:
 bash
@@ -61,7 +62,6 @@ tar xzf $TAR && rm -f $TAR
 
 7. Install runner as a service and start
 Use the runner-provided helper or systemd unit:
-
 bash
 # runner helper (from runner directory)
 sudo ./svc.sh install
@@ -97,3 +97,7 @@ Disable automatic workflow runs from forks or require approval in GitHub Actions
 Use /home/actions-runner/_work or a mounted disk for runner workdir.
 
 Snapshot VM before big changes; rotate secrets and prune images periodically (docker system prune -af).
+
+11. Run github actions self-hosted runner job in VM
+bash
+./run.sh

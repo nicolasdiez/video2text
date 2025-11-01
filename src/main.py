@@ -53,7 +53,7 @@ from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
 from adapters.outbound.transcription_client import YouTubeTranscriptionClientOfficialCaptionsAPI
 from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficialDataAPI
-from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI
+from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
@@ -89,7 +89,7 @@ video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_
 video_repo                      = MongoVideoRepository(database=db)
 transcription_client            = YouTubeTranscriptionClientOfficialCaptionsAPI(default_language="es")
 transcription_client_fallback   = YouTubeTranscriptionClientOfficialDataAPI(youtube_client=youtube_client) if youtube_client else None
-transcription_client_fallback_2 = YouTubeTranscriptionClientOfficialPublicPlayerAPI(model_name="tiny", device="cpu")
+transcription_client_fallback_2 = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
 prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)

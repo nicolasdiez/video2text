@@ -35,7 +35,7 @@ from domain.ports.outbound.transcription_port import TranscriptionPort
 logger = logging.getLogger(__name__)
 
 
-class YouTubeTranscriptionClientOfficialPublicPlayerAPI(TranscriptionPort):
+class YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(TranscriptionPort):
     """
     ASR transcription adapter that downloads YouTube audio streams and runs a local Whisper model.
 

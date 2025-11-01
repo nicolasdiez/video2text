@@ -1,4 +1,5 @@
-# DEV
+### DEV ###
+
 # create virtual environment
 python -m venv video2text-venv
 
@@ -12,7 +13,9 @@ python -m pip freeze > requirements.txt
 source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
-# CI/CD
+
+### CI/CD - DOCKER LOCAL ###
+
 # build docker image (in project root, where Dockerfile is located)
 docker build -t fastapi-app:local .
 
@@ -47,7 +50,14 @@ docker system df
 ffmpeg -version
 
 
-# UTILS
+### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
+
+# Run github actions self-hosted runner job in VM
+./run.sh
+
+
+### UTILS ###
+
 # google cloud console (justfol..)
 https://console.cloud.google.com/apis/
 

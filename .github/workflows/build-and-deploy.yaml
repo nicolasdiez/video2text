@@ -14,9 +14,9 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, ci-debian-bookworm-01]
+    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     steps:
-      - name: Checkout
+      - name: Checkout                      # fetch my github repo
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -29,8 +29,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - name: Build and push                 # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
+        uses: docker/build-push-action@v6    # 'build-push-action@v6' is a reusable GitHub Action, which under the hood is running "docker buildx build", which then uses the ./Dockerfile
         with:
           context: .
           push: true
@@ -41,9 +41,9 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy-and-test:
-    runs-on: [self-hosted, linux, ci-debian-bookworm-01]
+    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: Create env file from GitHub Secrets (full)
         run: |
