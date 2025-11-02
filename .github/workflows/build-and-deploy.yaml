@@ -49,7 +49,7 @@ jobs:
       - name: Checkout                                          # needed to generate .env.ci file from vars/secrets locales
         uses: actions/checkout@v4
 
-      - name: Create env file from GitHub Secrets (full)        # create .env file with the vars and secrets to further run the containerized application
+      - name: Create env file from GitHub Secrets (full)        # create .env file with the vars and secrets to further use it as input to run the containerized application
         run: |
           cat > .env.ci <<EOF
           APP_DEBUG=${{ vars.APP_DEBUG }}
