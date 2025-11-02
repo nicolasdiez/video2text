@@ -9,10 +9,10 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev) — usadas solo para construir binarios
-#RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential gcc make libpq-dev \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+#RUN apt-get update \
+#  && apt-get install -y --no-install-recommends build-essential gcc make libpq-dev \
+#  && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primero para aprovechar cache de Docker
 COPY requirements.txt .
