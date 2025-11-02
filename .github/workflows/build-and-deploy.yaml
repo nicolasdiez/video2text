@@ -94,7 +94,7 @@ jobs:
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Run container (detached)    # run a container named sut (detached = non-blocking action for the runner step)
+      - name: Run container (detached)    # run a container named sut-_ID (detached = non-blocking action for the runner step)
         run: |
           # Use a run-unique name and label so we don't collide with production containers
           NAME="sut-${{ github.run_id }}"

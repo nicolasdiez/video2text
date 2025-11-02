@@ -14,6 +14,7 @@ source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
 
+
 ### CI/CD - DOCKER LOCAL ###
 
 # build docker image (in project root, where Dockerfile is located)
@@ -50,11 +51,41 @@ docker system df
 ffmpeg -version
 
 
+
 ### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
 
 # Run github actions self-hosted runner job in VM
 cd actions-runner/
 ./run.sh
+
+# Ver uso CPU / memoria / procesos pesados 
+sudo apt install -y procps && top -b -n1 | head -n 20 
+ps aux --sort=-%cpu | head -n 20 
+ps aux --sort=-%mem | head -n 20
+
+# Liberar caches de página (sync + drop caches) 
+sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
+
+# Vaciar swap (forzar mover a RAM y limpiar swap) 
+sudo swapoff -a && sudo swapon -a
+
+# Matar procesos con CPU alta (ejemplo: matar procesos >40% CPU) 
+ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | awk '$4>40 {print $1}' | xargs -r sudo kill -9
+
+# Liberar caches de apt/paquetes (si hay mucho espacio usado) 
+sudo apt-get clean && sudo rm -rf /var/cache/apt/archives/*
+
+# Ver estado de memoria, swap y carga 
+free -h; vmstat 1 5; uptime
+
+# Revisar I/O y procesos bloqueantes (instalar: sudo apt install -y iotop) 
+sudo iotop -b -n 5 
+
+# Reiniciar servicios problemáticos sin reboot (ejemplo systemd) 
+sudo systemctl restart <servicio>
+
+# Reboot si todo lo demás falla (limpieza completa, último recurso) 
+sudo reboot
 
 
 ### UTILS ###
