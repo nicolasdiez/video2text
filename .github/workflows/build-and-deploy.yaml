@@ -37,8 +37,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
-          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
+          # cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
+          # cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
   deploy-and-test:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]

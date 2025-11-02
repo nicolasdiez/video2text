@@ -53,6 +53,7 @@ ffmpeg -version
 ### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
 
 # Run github actions self-hosted runner job in VM
+cd actions-runner/
 ./run.sh
 
 
