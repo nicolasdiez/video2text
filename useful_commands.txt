@@ -87,6 +87,19 @@ sudo systemctl restart <servicio>
 # Reboot si todo lo demás falla (limpieza completa, último recurso) 
 sudo reboot
 
+# Limpieza periódica (para no acumular capas)
+docker system prune -af
+docker builder prune --all --filter until=24h
+
+# Inspect VM specs
+CPU summary: 				lscpu
+Number of vCPUs (simple): 	nproc
+Memory: 					free -h
+Detailed memory info:		cat /proc/meminfo | head -n 5
+Disk devices and sizes:		lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
+Filesystem usage:			df -h
+Kernel/architecture:		 uname -a
+
 
 ### UTILS ###
 

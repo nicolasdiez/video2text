@@ -2,7 +2,7 @@ name: Build and Deploy Image
 
 on:
   push:
-    branches: [ "main" ]                    # workflow is triggered on each push to main branch 
+    branches: [ "main" ]                                        # workflow is triggered on each push to main branch 
   workflow_dispatch:
 
 permissions:
@@ -29,8 +29,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push                 # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
-        uses: docker/build-push-action@v6    # 'build-push-action@v6' is a reusable GitHub Action, which under the hood runs "docker buildx build", which uses the ./Dockerfile
+      - name: Build and push                                    # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
+        uses: docker/build-push-action@v6                       # 'build-push-action@v6' is a reusable GitHub Action, which under the hood runs "docker buildx build", which uses the ./Dockerfile
         with:
           context: .
           push: true
@@ -43,7 +43,7 @@ jobs:
   deploy-and-test:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
-    environment: production                 # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
+    environment: production                                      # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
     timeout-minutes: 120
     steps:
       - name: Checkout                                          # needed to generate .env.ci file from vars/secrets locales
@@ -94,7 +94,7 @@ jobs:
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Run container (detached)    # run a container named sut-_ID (detached = non-blocking action for the runner step)
+      - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step)
         run: |
           # Use a run-unique name and label so we don't collide with production containers
           NAME="sut-${{ github.run_id }}"
@@ -102,7 +102,7 @@ jobs:
           docker run -d --name "$NAME" --label gh_workflow=video2text --restart unless-stopped -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest
           echo "CONTAINER_NAME=$NAME" >> $GITHUB_ENV    
 
-      - name: Healthcheck                 # because the container was started detached, we should check that the service started properly
+      - name: Healthcheck                                       # because the container was started detached, we should check that the service started properly
         run: |
           for i in $(seq 1 20); do
             status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
