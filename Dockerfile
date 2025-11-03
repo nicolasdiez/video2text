@@ -8,18 +8,17 @@ ENV PYTHONUNBUFFERED=1
 # Crear directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev) — usadas solo para construir binarios
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-#RUN apt-get update \
-#  && apt-get install -y --no-install-recommends build-essential gcc make libpq-dev \
-#  && rm -rf /var/lib/apt/lists/*
+# Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev) — usadas solo para construir binarios en las wheels
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primero para aprovechar cache de Docker
 COPY requirements.txt .
 
 # Crear ruedas (whls) para todas las dependencias
-RUN python -m pip install --upgrade pip setuptools wheel \
-  && python -m pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    python -m pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 
 # ********** Stage final: imagen de runtime ligera **********
