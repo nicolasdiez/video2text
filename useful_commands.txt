@@ -100,6 +100,38 @@ Disk devices and sizes:		lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
 Filesystem usage:			df -h
 Kernel/architecture:		 uname -a
 
+# Verificar uso de disco y localizar dónde falta espacio
+df -h
+du -hsx /* 2>/dev/null | sort -rh | head -n 20
+du -sh /home/* 2>/dev/null
+
+# Limpiar caché de apt
+sudo apt-get clean
+sudo rm -rf /var/cache/apt/archives/*
+
+# Limpiar contenedores, imágenes y builders Docker no usados
+sudo docker system prune -af 
+sudo docker builder prune --all --force 
+sudo docker image prune -af
+
+# Borrar images/containers huérfanos y volúmenes grandes
+sudo docker volume ls -q | xargs -r sudo docker volume rm
+
+# Liberación específica para actions-runner si tiene sesiones antiguas o carpetas grandes
+# Dentro del directorio del runner
+du -sh ~/actions-runner/*
+# borrar backups o logs viejos
+sudo rm -rf ~/actions-runner/_work/*
+
+# Limpiar logs y archivos temporales
+# Truncar journal (si ocupa mucho)
+sudo journalctl --vacuum-size=100M
+# Limpiar /tmp
+sudo rm -rf /tmp/*
+
+# Buscar grandes ficheros residuales
+find / -xdev -type f -size +100M -exec ls -lh {} \; 2>/dev/null | sort -k5 -h
+
 
 ### UTILS ###
 
