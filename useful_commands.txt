@@ -13,6 +13,8 @@ python -m pip freeze > requirements.txt
 source video2text-venv/Scripts/activate
 pip install -r requirements.txt
 
+# generate a requirements based on imports
+pipreqs --force --ignore tests --savepath requirements_from_src.txt ./src
 
 
 ### CI/CD - DOCKER LOCAL ###
