@@ -16,8 +16,16 @@ pip install -r requirements.txt
 # generate a requirements based on imports
 pipreqs --force --ignore tests --savepath requirements_from_src.txt ./src
 
+# confirm version of ffmpeg installed
+ffmpeg -version
 
-### CI/CD - DOCKER LOCAL ###
+
+### CI/CD - DOCKER ###
+
+# buil, run
+
+# go to runner directoy
+cd ~/actions-runner
 
 # build docker image (in project root, where Dockerfile is located)
 docker build -t fastapi-app:local .
@@ -43,14 +51,41 @@ docker images -a
 # remove all local images
 docker rmi -f $(docker images -aq)
 
+# lista contenedores con nombre, estado y puertos
+sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# logs
+
+# see application logs realtime (parar con Ctrl+C)
+sudo docker logs -f CONTAINER_NAME
+
+# see last 200 log lines
+sudo docker logs --tail 200 CONTAINER_NAME
+
+# inspect container
+sudo docker inspect CONTAINER_NAME --format '{{.Name}} {{.State.Status}} {{.NetworkSettings.Ports}}'
+
+# stop container from running
+sudo docker stop CONTAINER_NAME
+
+# pause container from running (freeze process, no stopping no restarting)
+sudo docker pause CONTAINER_NAME
+
+# restart paused container
+sudo docker unpause CONTAINER_NAME
+
+# edit logger config file (Google Cloud Ops Agent) (Save&Exit: Ctrl+O, Enter, Ctrl+X)
+sudo nano /etc/google-cloud-ops-agent/config.yaml
+
+
+
+# clean
+
 # clean up all resources
 docker system prune -a --volumes
 
 # see docker resources being used
 docker system df
-
-# confirm version of ffmpeg installed
-ffmpeg -version
 
 # see which directory is docker using
 sudo docker info | grep "Docker Root Dir"
@@ -66,11 +101,15 @@ sudo docker ps -a
 
 
 
+
 ### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
 
 # Run github actions self-hosted runner job in VM
 cd actions-runner/
 ./run.sh
+
+# Ver puertos y conexiones en la VM
+sudo ss -tulpen | grep 8000 || sudo netstat -tulpen | grep 8000
 
 # Ver uso CPU / memoria / procesos pesados 
 sudo apt install -y procps && top -b -n1 | head -n 20 
@@ -145,6 +184,7 @@ sudo rm -rf /tmp/*
 
 # Buscar grandes ficheros residuales
 find / -xdev -type f -size +100M -exec ls -lh {} \; 2>/dev/null | sort -k5 -h
+
 
 
 ### UTILS ###
