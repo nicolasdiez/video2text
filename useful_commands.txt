@@ -52,6 +52,18 @@ docker system df
 # confirm version of ffmpeg installed
 ffmpeg -version
 
+# see which directory is docker using
+sudo docker info | grep "Docker Root Dir"
+
+# remove all running containers
+sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
+
+# remove all running and stopped containers
+sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null || true
+
+# verify that no containers are running
+sudo docker ps -a
+
 
 
 ### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
