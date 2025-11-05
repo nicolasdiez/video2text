@@ -97,7 +97,7 @@ jobs:
       - name: Pull image
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step)
+      - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step). Before run ensure no leftover container exists.
         run: |
           # Use a run-unique name and label so we don't collide with production containers
           NAME="sut-${{ github.run_id }}"
@@ -119,8 +119,8 @@ jobs:
           docker logs --tail 200 "$CONTAINER_NAME" || true
           exit 1
 
-      - name: Cleanup (optional)
-        if: always()
-        run: |
-          docker stop "$CONTAINER_NAME" || true
-          docker rm -f "$CONTAINER_NAME" || true
+#      - name: Cleanup (optional)
+#        if: always()
+#        run: |
+#          docker stop "$CONTAINER_NAME" || true
+#          docker rm -f "$CONTAINER_NAME" || true
