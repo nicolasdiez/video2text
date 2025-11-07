@@ -107,7 +107,7 @@ jobs:
           docker run -d --name "$NAME" --label gh_workflow=video2text --restart unless-stopped -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest
           echo "CONTAINER_NAME=$NAME" >> $GITHUB_ENV    
 
-      - name: Healthcheck                                       # because the container was started detached, we should check that the service started properly
+      - name: Healthcheck                                        # because the container was started detached, we should check that the service started properly
         run: |
           for i in $(seq 1 20); do
             status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
