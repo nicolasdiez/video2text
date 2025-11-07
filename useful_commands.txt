@@ -24,14 +24,14 @@ ffmpeg -version
 
 # buil, run
 
+# list containers con nombre, estado y puertos
+sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # go to runner directoy
 cd ~/actions-runner
 
 # build docker image (in project root, where Dockerfile is located)
 docker build -t fastapi-app:local .
-
-# run container with docker desktop
-docker run -p 8000:8000 fastapi-app:local
 
 # force pull latest remote image from GitHub Container Registry (GHCR) into local environment (before docker run)
 docker pull ghcr.io/nicolasdiez/video2text:latest
@@ -50,9 +50,6 @@ docker images -a
 
 # remove all local images
 docker rmi -f $(docker images -aq)
-
-# lista contenedores con nombre, estado y puertos
-sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 # inspect container
 sudo docker inspect CONTAINER_NAME --format '{{.Name}} {{.State.Status}} {{.NetworkSettings.Ports}}'
@@ -116,6 +113,9 @@ sudo apt install -y procps && top -b -n1 | head -n 20
 ps aux --sort=-%cpu | head -n 20 
 ps aux --sort=-%mem | head -n 20
 
+
+# clean
+
 # Liberar caches de página (sync + drop caches) 
 sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
@@ -151,7 +151,7 @@ Memory: 					free -h
 Detailed memory info:		cat /proc/meminfo | head -n 5
 Disk devices and sizes:		lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
 Filesystem usage:			df -h
-Kernel/architecture:		 uname -a
+Kernel/architecture:		uname -a
 
 # Verificar uso de disco y localizar dónde falta espacio
 df -h
