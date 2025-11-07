@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]   # all tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners
     steps:
-      - name: Checkout                                          # fetch my github repo
+      - name: Checkout                                          # fetch the project github repo
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -83,18 +83,14 @@ jobs:
           EOF
         shell: bash
 
-      - name: Log in to GHCR
+      - name: Log in to GHCR                                    # authenticates the runner to ghcr.io so the pulls ahead succeed
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pre-pull image                                    # reduce time at the critical step by pulling ahead
-        run: |
-          docker pull ${{ env.IMAGE_NAME }}:latest || true
-
-      - name: Pull image
+      - name: Pre-Pull image from GHCR                          # reduce time at the critical step by pulling ahead image from GHCR
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
       - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step). Before run ensure no leftover container exists.

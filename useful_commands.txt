@@ -108,6 +108,9 @@ cd actions-runner/
 # Ver puertos y conexiones en la VM
 sudo ss -tulpen | grep 8000 || sudo netstat -tulpen | grep 8000
 
+# See what process/container is using port 8000
+sudo ss -ltnp 'sport = :8000'
+
 # Ver uso CPU / memoria / procesos pesados 
 sudo apt install -y procps && top -b -n1 | head -n 20 
 ps aux --sort=-%cpu | head -n 20 
