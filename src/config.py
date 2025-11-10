@@ -9,6 +9,8 @@ import logging
 import sys
 from pythonjsonlogger import jsonlogger
 from colorlog import ColoredFormatter
+import json
+import time
 
 
 # ===== ENVIRONEMENT VARIABLES =====
@@ -74,6 +76,47 @@ if missing:
 
 
 # ===== LOGGING =====
+
+class EmitJsonHandler(logging.StreamHandler):
+    """
+    StreamHandler que emite una sola línea JSON con los campos del record
+    como un objeto. Minimiza cambios en llamadas logger.* existentes.
+    """
+    def emit(self, record):
+        try:
+            # Base dict con campos estándar
+            payload = {
+                "asctime": self.formatTime(record),
+                "levelname": record.levelname,
+                "name": record.name,
+                # message final con %s formateado
+                "message": record.getMessage()
+            }
+
+            # Añade todos los campos que vengan en record.__dict__ (ej: extra={...})
+            # excepto los campos internos del logging que ya hemos añadido
+            skip = {"name", "msg", "args", "levelname", "levelno", "pathname",
+                    "filename", "module", "exc_info", "exc_text", "stack_info",
+                    "lineno", "funcName", "created", "msecs", "relativeCreated",
+                    "thread", "threadName", "processName", "process"}
+            for k, v in record.__dict__.items():
+                if k in skip:
+                    continue
+                # evita sobrescribir campos estándar ya añadidos
+                if k not in payload:
+                    try:
+                        json.dumps(v)  # asegurar serializable; si no, fallback a str()
+                        payload[k] = v
+                    except Exception:
+                        payload[k] = str(v)
+
+            # Escribe la línea JSON (docker añadirá su envoltorio con "log", "stream", "time")
+            self.stream.write(json.dumps(payload, ensure_ascii=False) + "\n")
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 
@@ -106,11 +149,14 @@ if ENVIRONMENT == "local":
     logger.addHandler(console_handler)
 else:
     # JSON format for cloud deployment
-    json_handler = logging.StreamHandler(sys.stdout)
-    formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s"
-    )
-    json_handler.setFormatter(formatter)
+
+    #json_handler = logging.StreamHandler(sys.stdout)
+    #formatter = jsonlogger.JsonFormatter(
+    #    "%(asctime)s %(levelname)s %(name)s %(message)s"
+    #)
+    #json_handler.setFormatter(formatter)
+    
+    json_handler = EmitJsonHandler(sys.stdout)
     logger.addHandler(json_handler)
 
 # ===== DEBUG =====

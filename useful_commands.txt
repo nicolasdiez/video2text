@@ -22,7 +22,7 @@ ffmpeg -version
 
 ### CI/CD - DOCKER ###
 
-# buil, run
+# buil, run, pause, resume
 
 # list containers con nombre, estado y puertos
 sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
@@ -108,7 +108,7 @@ cd actions-runner/
 # Ver puertos y conexiones en la VM
 sudo ss -tulpen | grep 8000 || sudo netstat -tulpen | grep 8000
 
-# See what process/container is using port 8000
+# See which process/container is using port 8000
 sudo ss -ltnp 'sport = :8000'
 
 # Ver uso CPU / memoria / procesos pesados 
