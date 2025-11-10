@@ -190,6 +190,15 @@ find / -xdev -type f -size +100M -exec ls -lh {} \; 2>/dev/null | sort -k5 -h
 
 
 
+### GCP###
+
+# log explorer
+
+# query to view logs
+resource.type="gce_instance"
+resource.labels.instance_id="7247675534609476891"
+
+
 ### UTILS ###
 
 # google cloud console (justfol..)

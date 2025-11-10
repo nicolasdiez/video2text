@@ -84,17 +84,16 @@ class EmitJsonHandler(logging.StreamHandler):
     """
     def emit(self, record):
         try:
-            # Base dict con campos estándar
+            # usar Formatter para formatear el timestamp
+            time_str = logging.Formatter().formatTime(record)
+
             payload = {
-                "asctime": self.formatTime(record),
+                "asctime": time_str,
                 "levelname": record.levelname,
                 "name": record.name,
-                # message final con %s formateado
                 "message": record.getMessage()
             }
 
-            # Añade todos los campos que vengan en record.__dict__ (ej: extra={...})
-            # excepto los campos internos del logging que ya hemos añadido
             skip = {"name", "msg", "args", "levelname", "levelno", "pathname",
                     "filename", "module", "exc_info", "exc_text", "stack_info",
                     "lineno", "funcName", "created", "msecs", "relativeCreated",
@@ -102,15 +101,13 @@ class EmitJsonHandler(logging.StreamHandler):
             for k, v in record.__dict__.items():
                 if k in skip:
                     continue
-                # evita sobrescribir campos estándar ya añadidos
                 if k not in payload:
                     try:
-                        json.dumps(v)  # asegurar serializable; si no, fallback a str()
+                        json.dumps(v)
                         payload[k] = v
                     except Exception:
                         payload[k] = str(v)
 
-            # Escribe la línea JSON (docker añadirá su envoltorio con "log", "stream", "time")
             self.stream.write(json.dumps(payload, ensure_ascii=False) + "\n")
             self.flush()
         except Exception:
@@ -155,7 +152,7 @@ else:
     #    "%(asctime)s %(levelname)s %(name)s %(message)s"
     #)
     #json_handler.setFormatter(formatter)
-    
+
     json_handler = EmitJsonHandler(sys.stdout)
     logger.addHandler(json_handler)
 
