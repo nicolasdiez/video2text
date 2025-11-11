@@ -57,20 +57,35 @@ sudo docker inspect CONTAINER_NAME --format '{{.Name}} {{.State.Status}} {{.Netw
 # stop container from running
 sudo docker stop CONTAINER_NAME
 
+# stop all running containers
+docker stop $(docker ps -q)
+
 # pause container from running (freeze process, without stopping or re-starting)
 sudo docker pause CONTAINER_NAME
+
+# pause all running containers
+docker pause $(docker ps -q)
 
 # resume paused container
 sudo docker unpause CONTAINER_NAME
 
+# resume all paused containers
+sudo docker unpause $(docker ps -q)
+
 
 # logs
 
-# see application logs realtime (parar con Ctrl+C)
+# see logs realtime (parar con Ctrl+C)
 sudo docker logs -f CONTAINER_NAME
+
+# see logs realtime for the only running container
+[ "$(docker ps -q | wc -l)" -eq 1 ] && sudo docker logs -f $(docker ps -q) || echo "Error: More than one container is running."
 
 # see last 200 log lines
 sudo docker logs --tail 200 CONTAINER_NAME
+
+# see last 200 log lines of the only running container
+[ "$(docker ps -q | wc -l)" -eq 1 ] && sudo docker logs --tail 200 $(docker ps -q) || echo "Error: More than one container is running."
 
 # edit logger config file (Google Cloud Ops Agent) (Save&Exit: Ctrl+O, Enter, Ctrl+X)
 sudo nano /etc/google-cloud-ops-agent/config.yaml
@@ -115,6 +130,15 @@ sudo ss -ltnp 'sport = :8000'
 sudo apt install -y procps && top -b -n1 | head -n 20 
 ps aux --sort=-%cpu | head -n 20 
 ps aux --sort=-%mem | head -n 20
+
+
+# ops agent
+
+# restart ops agent
+sudo systemctl restart google-cloud-ops-agent
+
+# see ops agent status
+sudo systemctl status google-cloud-ops-agent --no-pager
 
 
 # clean
@@ -197,6 +221,7 @@ find / -xdev -type f -size +100M -exec ls -lh {} \; 2>/dev/null | sort -k5 -h
 # query to view logs
 resource.type="gce_instance"
 resource.labels.instance_id="7247675534609476891"
+logName="projects/youtube-api-project-456921/logs/docker_containers"
 
 
 ### UTILS ###

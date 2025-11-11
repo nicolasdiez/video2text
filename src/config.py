@@ -97,7 +97,7 @@ class EmitJsonHandler(logging.StreamHandler):
             skip = {"name", "msg", "args", "levelname", "levelno", "pathname",
                     "filename", "module", "exc_info", "exc_text", "stack_info",
                     "lineno", "funcName", "created", "msecs", "relativeCreated",
-                    "thread", "threadName", "processName", "process"}
+                    "thread", "threadName", "processName", "process"}   
             for k, v in record.__dict__.items():
                 if k in skip:
                     continue
