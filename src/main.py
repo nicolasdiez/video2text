@@ -12,6 +12,7 @@
 # - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription clients/adapters (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 # - in GCP VM, convert./run.sh into a persistent service, so it runs in background all time, not foreground execution needed anymore
 # - change name ingestionMinutes/publishingMinutes (ingestion_minutes/publishing_minutes) to ingestionPipelineFrequencyMinutes/publishingPipelineFrequencyMinutes
+# - 
 
 import os
 import asyncio
