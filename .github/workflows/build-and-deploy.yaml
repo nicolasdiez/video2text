@@ -16,9 +16,10 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]   # all tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners
+    runs-on: ubuntu-latest                                        # run on github-hosted runner
+    # runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]   # run on self-hosted runner (all these tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners)
     steps:
-      - name: Checkout                                          # fetch the project github repo
+      - name: Checkout                                            # fetch the project github repo
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
