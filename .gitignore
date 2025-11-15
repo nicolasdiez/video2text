@@ -7,6 +7,8 @@ prompts/
 cred.txt
 graphics/
 doc/Road_To_Pro.xlsx
+doc/sw_architecture.drawio
+
 
 # Kubernetes real secrets
 k8s/secret.yaml
