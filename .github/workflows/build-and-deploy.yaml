@@ -94,6 +94,56 @@ jobs:
       - name: Pre-Pull image from GHCR                          # reduce time at the critical step by pulling ahead image from GHCR
         run: docker pull ${{ env.IMAGE_NAME }}:latest
 
+      - name: Ensure container port is free                     # free port that will be used by the container
+        run: |
+          set -euo pipefail
+
+          # 1) Try to read EXPOSE from Dockerfile
+          PORT=$(grep -i '^EXPOSE' Dockerfile | awk '{print $2; exit}' || true)
+
+          # 2) If no EXPOSE, try to parse --port from CMD line (basic extraction)
+          if [ -z "$PORT" ]; then
+            PORT=$(grep -oE '--port[= ]*[0-9]+' Dockerfile | head -n1 | sed -E 's/[^0-9]*([0-9]+).*/\1/' || true)
+          fi
+
+          # 3) Fallback to default 8000
+          if [ -z "$PORT" ]; then
+            echo "No EXPOSE or --port found in Dockerfile; defaulting to 8000"
+            PORT=8000
+          fi
+
+          echo "Checking port: $PORT"
+
+          # 4) Check if any process is listening on the port
+          if ss -ltn "( sport = :$PORT )" >/dev/null 2>&1; then
+            echo "Port $PORT is in use. Detecting owning docker containers (if any)..."
+
+            # 5) Find docker containers that publish this host port (match common docker ps Ports format)
+            CONTAINERS=$(docker ps --format '{{.ID}} {{.Ports}}' | awk -v p=":$PORT" '$0 ~ p {print $1}' || true)
+
+            if [ -n "$CONTAINERS" ]; then
+              echo "Stopping containers that publish port $PORT: $CONTAINERS"
+              for c in $CONTAINERS; do
+                docker rm -f "$c" || true
+              done
+              echo "Stopped containers: $CONTAINERS"
+            else
+              # 6) If no docker container found, detect non-docker PID using lsof/ss
+              PID=$(ss -ltnp "( sport = :$PORT )" | awk -F 'pid=' '/LISTEN/ {print $2; exit}' | cut -d',' -f1 || true)
+              if [ -n "$PID" ]; then
+                echo "Port $PORT is held by non-container process PID $PID. Cannot auto-stop non-container processes."
+                ss -ltnp "( sport = :$PORT )" || true
+                exit 1
+              else
+                echo "Port $PORT appears in use but no owning PID found; aborting."
+                ss -ltnp "( sport = :$PORT )" || true
+                exit 1
+              fi
+            fi
+          else
+            echo "Port $PORT is free."
+          fi
+
       - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step). Before run ensure no leftover container exists.
         run: |
           # Use a run-unique name and label so we don't collide with production containers
