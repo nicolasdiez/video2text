@@ -10,11 +10,6 @@ doc/Road_To_Pro.xlsx
 $sw_architecture.drawio.bkp
 doc/$sw_architecture.drawio.bkp
 
-<<<<<<< HEAD
-=======
-doc/sw_architecture.drawio
-
->>>>>>> 98938e39c1ee3e33efc8c13c6ee80f0d553e01e4
 
 # Kubernetes real secrets
 k8s/secret.yaml
