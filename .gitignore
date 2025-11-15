@@ -6,6 +6,7 @@ sample_text.txt
 prompts/
 cred.txt
 graphics/
+doc/Road_To_Pro.xlsx
 
 # Kubernetes real secrets
 k8s/secret.yaml
