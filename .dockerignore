@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 *.db
 *.sqlite3
+doc/Road_To_Pro.xlsx
 
 # Configuración local
 .env
