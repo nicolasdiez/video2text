@@ -14,7 +14,7 @@ class TweetFetchSortOrder(str, Enum):
 
 @dataclass
 class UserTwitterCredentials:
-    # only credentials related to THE USER:
+    # these are only credentials related to THE USER:
     oauth1_access_token: str
     oauth1_access_token_secret: str
     oauth2_access_token: str                                    # For future OAuth2.0
