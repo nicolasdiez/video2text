@@ -5,10 +5,14 @@ __pycache__/
 *.pyd
 *.db
 *.sqlite3
+*.stackdump
 doc/Road_To_Pro.xlsx
 
 # Configuración local
-.env
+# Ignore all env files
+.env*
+# But keep example in the build context
+!.env.example
 .vscode/
 .idea/
 *.log

@@ -6,7 +6,7 @@ from typing import List, Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.prompt import Prompt
+from domain.entities.prompt import Prompt, PromptContent
 from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
 from infrastructure.mongodb import db
 
@@ -92,10 +92,13 @@ class MongoPromptRepository(PromptRepositoryPort):
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             channel_id=str(doc["channelId"]),
-            text=doc["text"],
-            language_of_the_text=doc["languageOfTheText"],
-            language_to_generate_tweets=doc["languageToGenerateTweets"],
-            max_tweets_to_generate_per_video=doc["maxTweetsToGeneratePerVideo"],
+            prompt_content=PromptContent(
+                system_message=doc.get("promptContent", {}).get("systemMessage", ""),
+                user_message=doc.get("promptContent", {}).get("userMessage", "")
+            ),
+            language_of_the_prompt=doc.get("languageOfThePrompt", ""),
+            language_to_generate_tweets=doc.get("languageToGenerateTweets", ""),
+            max_tweets_to_generate_per_video=doc.get("maxTweetsToGeneratePerVideo", 0),
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
@@ -108,12 +111,14 @@ class MongoPromptRepository(PromptRepositoryPort):
         doc = {
             "userId": ObjectId(prompt.user_id),
             "channelId": ObjectId(prompt.channel_id),
-            "text": prompt.text,
-            "languageOfTheText": prompt.language_of_the_text,
+            "promptContent": {
+                "systemMessage": prompt.prompt_content.system_message,
+                "userMessage": prompt.prompt_content.user_message,
+            },
+            "languageOfThePrompt": prompt.language_of_the_prompt,
             "languageToGenerateTweets": prompt.language_to_generate_tweets,
             "maxTweetsToGeneratePerVideo": prompt.max_tweets_to_generate_per_video,
             "createdAt": prompt.created_at,
             "updatedAt": prompt.updated_at,
         }
         return {key: value for key, value in doc.items() if value is not None}
-

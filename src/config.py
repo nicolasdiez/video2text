@@ -15,7 +15,8 @@ import time
 
 # ===== ENVIRONEMENT VARIABLES =====
 # Cargar .env file solo en local (en Azure no será necesario porque las variables ya estarán en el entorno)
-load_dotenv()
+env = os.getenv("APP_ENV", "dev")           # default development. Antes de arracanr App inyectar en terminal bash: export APP_ENV=dev
+load_dotenv(f".env.{env}", override=True)
 
 # --- API Keys ---
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
@@ -130,7 +131,7 @@ logging.getLogger("apscheduler").setLevel(logging.CRITICAL + 1)
 # silence WARNING logging from APScheduler (only show ERROR and CRITICAL)
 # logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
-if ENVIRONMENT == "local":
+if ENVIRONMENT == "dev":
     # Easy format to read in console
     console_handler = logging.StreamHandler(sys.stdout)
     formatter = ColoredFormatter(

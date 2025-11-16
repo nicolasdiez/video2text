@@ -17,6 +17,7 @@ from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetada
 from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
 from domain.ports.outbound.openai_port import OpenAIPort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
+from domain.entities.prompt import PromptContent
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
 
@@ -171,15 +172,19 @@ class IngestionPipelineService(IngestionPipelinePort):
                         logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         continue
 
-                    # 10. Compose full prompt (text + language + max tweets + transcript)
-                    full_prompt = self.prompt_composer.compose_full_prompt(prompt=prompt_entity, transcript=video.transcript)
-                    logger.info("Full prompt composed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    # 10. Load and prepare user/system messages for the prompt
+                    # Compose only the user message combined with transcript; system message is retrieved separately from the entity
+                    user_message_with_transcript = self.prompt_composer.compose_user_message_with_transcript(prompt=prompt_entity, transcript=video.transcript)
+                    logger.info("Prompt user message loaded, and composed with transcript, for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    system_message = prompt_entity.prompt_content.system_message
+                    logger.info("Prompt system message loaded for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                    # 11. Generate raw texts for the video
+                   # 11. Generate raw texts for the video
                     model="gpt-3.5-turbo"
                     # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                     raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
-                        prompt=full_prompt,
+                        prompt_user_message=user_message_with_transcript,
+                        prompt_system_message=system_message,
                         max_sentences=prompt_entity.max_tweets_to_generate_per_video,
                         output_language=prompt_entity.language_to_generate_tweets,
                         model=model)
@@ -188,7 +193,10 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                     # 12. Persist tweet generation metadata
                     openai_req = OpenAIRequest(
-                        prompt=full_prompt,
+                        prompt_content=PromptContent(
+                            system_message=system_message,
+                            user_message=user_message_with_transcript
+                        ),
                         model=model,
                         # temperature=self.openai_service.default_temperature,  # TODO
                         # max_tokens=self.openai_service.default_max_tokens     # TODO

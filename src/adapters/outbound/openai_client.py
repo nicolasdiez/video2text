@@ -31,81 +31,60 @@ class OpenAIClient(OpenAIPort):
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 
-    async def generate_tweets(self, prompt: str, max_sentences: int = 3, output_language: str = "Spanish (ESPAÑOL)", model: str = "gpt-3.5-turbo") -> list[str]:
+    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, max_sentences: int = 3, output_language: str = "Spanish (ESPAÑOL)", model: str = "gpt-3.5-turbo") -> list[str]:
         
+        # validate API KEY
         if not self.api_key:
+            logger.error("Missing OPENAI_API_KEY", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
 
-        clean = await asyncio.to_thread(self._call_and_process, prompt, max_sentences, output_language, model)
+        # validate inputs early and log context
+        if not prompt_system_message or not str(prompt_system_message).strip():
+            logger.error("Empty prompt_system_message provided; aborting OpenAI call", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            raise ValueError("prompt_system_message must not be empty")
+
+        if not prompt_user_message or not str(prompt_user_message).strip():
+            logger.error("Empty prompt_user_message provided; aborting OpenAI call", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            raise ValueError("prompt_user_message must not be empty")
+
+        tweets = await asyncio.to_thread(self._call_and_process, prompt_user_message, prompt_system_message, max_sentences, output_language, model)
 
         # Logging
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-        return clean
+        return tweets
 
 
-    def _call_and_process(self, prompt: str, max_sentences: int, output_language: str, model: str) -> list[str]:
+    def _call_and_process(self, prompt_user_message: str, prompt_system_message: str, max_sentences: int, output_language: str, model: str) -> list[str]:
         
         client = OpenAI(api_key=self.api_key)
 
-        system_message = {
-            "role": "system",
-            "content": (
-                f"You are a witty, insightful financial educator who writes engaging, human-sounding tweets "
-                f"that spark curiosity and conversation.\n\n"
-
-                f"=== OBJECTIVE ===\n"
-                f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets "
-                f"in {output_language} that feel personal, relatable, and directly connected to the video's story.\n\n"
-
-                f"=== MANDATORY CONTENT RULES ===\n"
-                f"1. Each tweet must reference at least one specific detail from the transcript "
-                f"(e.g., names, events, strategies, dates, figures, or quotes).\n"
-                f"2. Avoid generic advice — every tweet must clearly tie back to the video's narrative.\n"
-                f"3. Each tweet must deliver the maximum possible value to the reader — no empty promotion, channel mentions, or filler.\n"                f"4. That value can be in the form of a learning, a practical tip, an educational takeaway, "
-                f"or a thought-provoking reflection that leaves the reader thinking about the topic.\n\n"
-                f"4. Model your tweets closely on the style, tone, and structure of the examples provided below.\n\n"
-                f"5. Each tweet must stand alone and provide immediate value to the reader.\n"
-                f"6. Do not invite the reader to watch the video or to 'learn more later'.\n"
-                f"7. Avoid vague calls like 'profundicemos juntos' or 'descubre más'.\n"
-                f"8. Instead, include a concrete insight, fact, or reflection directly in the tweet.\n\n"
-
-                f"=== STYLE & TONE ===\n"
-                f"- Conversational and engaging.\n"
-                f"- Intelligent sense of humor where appropriate.\n"
-                f"- Occasional emojis and relevant hashtags.\n"
-                # f"- Mix intrigue and insight, as if live-tweeting key moments.\n"
-                f"- Vary the structure: some tweets as questions, others as impactful statements, others as quotes.\n\n"
-
-                f"=== OUTPUT FORMAT ===\n"
-                f"- Do NOT number the tweets.\n"
-                f"- Each tweet on its own line.\n"
-                f"- No introductions or explanations — only the tweets.\n\n"
-
-                f"=== STYLE EXAMPLES (in spanish language) ===\n"
-                f"- \"Warren Buffett acumula efectivo, no para adivinar el mercado, sino para aprovechar oportunidades únicas cuando los precios caen. La paciencia tiene recompensa. 💰📉 #SabiduríaInversora #InversiónEnValor\"\n"
-                f"- \"Las correcciones de mercado suelen venir provocadas por factores externos, no solo por sobrevaloración. Estar preparado supera al 'market timing'. 🧠📊 #MercadoDeValores #InversiónALargoPlazo\"\n"
-                f"- \"Diversificar y pensar a largo plazo es clave para surfear la volatilidad. Cabalga las olas, no persigas la marea. 🌊📈 #LibertadFinanciera #InvierteInteligente\"\n"
-                f"- \"En las caídas del mercado, el efectivo es el rey 👑. Las inversiones de Buffett en 2008 en Goldman Sachs y GE demostraron que la oportunidad llega a los que están preparados. 🔑💼 #EfectivoEnMano #SabiduríaBuffett\"\n"
-                f"- \"Las correcciones bursátiles pueden ser oportunidades de oro. Como dice Buffett: cuando llueve oro, mejor coge una bañera, no una cucharita. 🌧️💵 #CorrecciónDeMercado\"\n"
-                f"- \"¿Y si la próxima gran oportunidad llega en plena crisis? Los inversores pacientes ya saben la respuesta. ⏳📉 #InversiónInteligente\"\n"
-                f"- \"\\\"El riesgo viene de no saber lo que estás haciendo\\\" — Buffett. Aprende antes de apostar. 📚💡 #EducaciónFinanciera\"\n"
-                f"- \"Los CDOs (Collateralized Debt Obligation) empaquetaban hipotecas basura como si fueran oro. En 2008 aprendimos que el envoltorio no cambia la realidad. 🎭💣 #CrisisFinanciera #RiesgoEstructural\"\n"
-                f"- \"Si una inversión es tan compleja que nadie puede explicártela en 2 frases, cuidado: puede esconder un riesgo enorme. Ahí están los CDOs en la crisis 2008. ⚠️📉 #InversiónInteligente #Lección2008\"\n"
-            )
-        }
-        user_message = {"role": "user", "content": prompt}
-
-        response = client.chat.completions.create(
-            model=model,
-            messages=[system_message, user_message],
-            temperature=0.8,            #  0.0 to 2.0 --> Nivel de creatividad/aleatoriedad. Valores bajos → respuestas más deterministas y “seguras”. Valores altos → más creatividad y variación, pero también más riesgo de desviarse del tema.
-            presence_penalty=0.3,       # -2.0 to 2.0 --> Penaliza o incentiva introducir nuevos temas no mencionados antes. Valores positivos → fomenta variedad temática. Valores negativos → favorece quedarse en los mismos temas.
-            frequency_penalty=0.2       # -2.0 to 2.0 --> Penaliza o incentiva repetir las mismas palabras o frases. Valores positivos → reduce repeticiones. Valores negativos → permite o fomenta repeticiones.
+        # the only block of the prompt that is hard-coded
+        objective_block = (
+            f"=== OBJECTIVE ===\n"
+            f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets in {output_language} language.\n\n"
         )
+
+        # Build system_content respecting the input prompt_system_message
+        system_content = prompt_system_message.rstrip() + "\n\n" + objective_block
+
+        system_message = {"role": "system", "content": system_content}
+        user_message = {"role": "user", "content": prompt_user_message}
+
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[system_message, user_message],
+                temperature=0.8,            #  0.0 to 2.0 --> Nivel de creatividad/aleatoriedad. Valores bajos → respuestas más deterministas y “seguras”. Valores altos → más creatividad y variación, pero también más riesgo de desviarse del tema.
+                presence_penalty=0.3,       # -2.0 to 2.0 --> Penaliza o incentiva introducir nuevos temas no mencionados antes. Valores positivos → fomenta variedad temática. Valores negativos → favorece quedarse en los mismos temas.
+                frequency_penalty=0.2       # -2.0 to 2.0 --> Penaliza o incentiva repetir las mismas palabras o frases. Valores positivos → reduce repeticiones. Valores negativos → permite o fomenta repeticiones.
+            )
+        except Exception as e:
+            logger.exception("OpenAI API call failed", extra={"method": inspect.currentframe().f_code.co_name, "error": str(e)})
+            raise RuntimeError(f"OpenAI API call failed: {e}") from e
 
         raw_output = response.choices[0].message.content
         lines = [line.strip() for line in raw_output.splitlines() if line.strip()]
-        clean = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
+        tweets = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
-        return clean
+        return tweets

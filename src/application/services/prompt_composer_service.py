@@ -25,16 +25,17 @@ class PromptComposerService:
         """
         return f"{base_prompt}\n\nHere is the transcript (use only this content as your source):\n{transcript}"
     
-    def compose_full_prompt(self, prompt: Prompt, transcript: str) -> str:
+    def compose_user_message_with_transcript(self, prompt: Prompt, transcript: str) -> str:
         """
-        Compose full prompt: text + language + max tweets + transcript at the end.
-        The order of language and max tweets is not relevant, but transcript must be last.
+        Compose full user message: stored userMessage in DB + Video Transcript obtained
+        Transcript must be last.
         """
+        # Build user message by taking stored user_message and appending the transcript.
+        
         parts = [
-            prompt.text,
-            #f" ONE VERY IMPORTANT THING TO TAKE INTO ACCOUNT: All sentences (tweets) must be written entirely in the following language: {prompt.language_to_generate_tweets}.",
-            #f" Generate exactly {prompt.max_tweets_to_generate_per_video} sentences (tweets) based solely on the transcript provided below.",
+            prompt.prompt_content.user_message,
             f" Here is the transcript:",
             transcript
         ]
+
         return "\n".join(str(p) for p in parts if p)
