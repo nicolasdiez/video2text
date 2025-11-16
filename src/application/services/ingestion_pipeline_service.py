@@ -167,16 +167,17 @@ class IngestionPipelineService(IngestionPipelinePort):
                 if (not video.tweets_generated) and video.transcript:
 
                     # 9. Retrieve Prompt entity for this user and channel
-                    prompt_entity = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
-                    if not prompt_entity:
+                    prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
+                    if not prompt:
                         logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         continue
 
                     # 10. Load and prepare user/system messages for the prompt
-                    # Compose only the user message combined with transcript; system message is retrieved separately from the entity
-                    user_message_with_transcript = self.prompt_composer.compose_user_message_with_transcript(prompt=prompt_entity, transcript=video.transcript)
+                    # compose the user message combined with transcript
+                    user_message_with_transcript = self.prompt_composer.compose_user_message_with_transcript(prompt=prompt, transcript=video.transcript)
                     logger.info("Prompt user message loaded, and composed with transcript, for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                    system_message = prompt_entity.prompt_content.system_message
+                    # retrieve system message
+                    system_message = prompt.prompt_content.system_message
                     logger.info("Prompt system message loaded for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                    # 11. Generate raw texts for the video
@@ -185,8 +186,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                     raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                         prompt_user_message=user_message_with_transcript,
                         prompt_system_message=system_message,
-                        max_sentences=prompt_entity.max_tweets_to_generate_per_video,
-                        output_language=prompt_entity.language_to_generate_tweets,
+                        max_sentences=prompt.max_tweets_to_generate_per_video,
+                        output_language=prompt.language_to_generate_tweets,
                         model=model)
                     tweet_generation_ts = datetime.utcnow()
                     logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

@@ -12,6 +12,17 @@ graphics/
 doc/Road_To_Pro.xlsx
 $sw_architecture.drawio.bkp
 doc/$sw_architecture.drawio.bkp
+doc/.$sw_architecture.drawio.dtmp
+
+# ignore any drawio backup files anywhere
+*.drawio.bkp
+*$*.drawio.bkp
+.*.drawio.bkp
+
+# ignore any drawio dtmp/temp files anywhere
+*.drawio.dtmp
+*$*.drawio.dtmp
+.*.drawio.dtmp
 
 # Ignore Office temp files
 ~$*
