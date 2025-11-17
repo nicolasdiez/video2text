@@ -8,4 +8,4 @@ class AppConfig:
     """
     Entidad raíz que representa la configuración global de la aplicación.
     """
-    scheduler: SchedulerConfig
+    scheduler_config: SchedulerConfig

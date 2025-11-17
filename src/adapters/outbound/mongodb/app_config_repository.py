@@ -10,11 +10,11 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
 
     async def get_config(self) -> AppConfig:
         doc = await self._coll.find_one({"_id": "global"}) or {}
-        scheduler_doc = doc.get("scheduler", {})
+        scheduler_config = doc.get("schedulerConfig", {})
         return AppConfig(
-            scheduler=SchedulerConfig(
-                ingestion_minutes=int(scheduler_doc.get("ingestionMinutes", 5)),
-                publishing_minutes=int(scheduler_doc.get("publishingMinutes", 2)),
+            scheduler_config=SchedulerConfig(
+                ingestion_minutes=int(scheduler_config.get("ingestionPipelineFrequencyMinutes", 5)),
+                publishing_minutes=int(scheduler_config.get("publishingPipelineFrequencyMinutes", 2)),
             )
         )
 
@@ -22,9 +22,9 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
         await self._coll.update_one(
             {"_id": "global"},
             {"$set": {
-                "scheduler": {
-                    "ingestionMinutes": config.scheduler.ingestion_minutes,
-                    "publishingMinutes": config.scheduler.publishing_minutes,
+                "schedulerConfig": {
+                    "ingestionPipelineFrequencyMinutes": config.scheduler_config.ingestion_minutes,
+                    "publishingPipelineFrequencyMinutes": config.scheduler_config.publishing_minutes,
                 }
             }},
             upsert=True

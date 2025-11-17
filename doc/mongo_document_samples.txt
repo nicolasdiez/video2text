@@ -74,9 +74,9 @@
 {application_configurations}
 {
 	"_id": "global",
-	"scheduler": {
-		"ingestionMinutes": 1,
-		"publishingMinutes": 2
+	"schedulerConfig": {
+		"ingestionPipelineFrequencyMinutes": 1,
+		"publishingPipelineFrequencyMinutes": 2
 	}
 }
 
