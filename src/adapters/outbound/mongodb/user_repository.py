@@ -45,6 +45,10 @@ class MongoUserRepository(UserRepositoryPort):
     async def delete(self, user_id: str) -> None:
         await self._coll.delete_one({"_id": ObjectId(user_id)})
 
+    async def delete_all(self) -> int:
+        res = await self._coll.delete_many({})
+        return res.deleted_count
+
     async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
         await self._coll.update_one(
             {"_id": ObjectId(user_id)},

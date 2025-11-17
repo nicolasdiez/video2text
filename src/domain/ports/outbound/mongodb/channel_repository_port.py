@@ -53,3 +53,10 @@ class ChannelRepositoryPort(ABC):
         """
         ...
 
+    @abstractmethod
+    async def delete_all(self) -> int:
+        """
+        Delete all documents in channels collection. Returns number deleted.
+        """
+        ...
+

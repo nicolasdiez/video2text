@@ -87,6 +87,10 @@ class MongoPromptRepository(PromptRepositoryPort):
     async def delete(self, prompt_id: str) -> None:
         await self._collection.delete_one({"_id": ObjectId(prompt_id)})
 
+    async def delete_all(self) -> int:
+        res = await self._coll.delete_many({})
+        return res.deleted_count
+
     def _to_entity(self, doc: dict) -> Prompt:
         return Prompt(
             id=str(doc["_id"]),
