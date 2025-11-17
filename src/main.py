@@ -1,13 +1,13 @@
 # /src/main.py
 
 # TODO:
-# - endpoints de consumo desde front para CRUD entities: users, channels, prompts
-# - change transcription_client.py to switch from using deprecated get_transcript() to use fetch()
-# - tidy up prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
-# - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run pipeline twice or more at the sime time)
+# - endpoints de consumo desde front para CRUD entities: users, channels, prompts, application_config, prompts_master.
+# - modify transcription_client.py from using deprecated get_transcript() to use fetch()
+# - refactor prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
+# - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run same pipeline twice or more at a time)
 # - extend collection {users} to have variable: lastIngestionPipelineExecutionStartedAt, lastIngestionPipelineExecutionFinisheddAt
 # - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
-# - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (check flag) OR lastIngestionPipelineExecutionStartedAt > ingestion_minutes/publishing_minutes mins (variables)
+# - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (check flag) OR lastIngestionPipelineExecutionStartedAt > ingestionPipelineFrequencyMinutes/publishingPipelineFrequencyMinutes mins (variables)
 # - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId or channelId.
 # - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription clients/adapters (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 # - in GCP VM, convert./run.sh into a persistent service, so it runs in background all time, not foreground execution needed anymore

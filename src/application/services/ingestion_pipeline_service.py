@@ -172,7 +172,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         continue
 
-                    # 10. Load and prepare user/system messages for the prompt
+                    # 10. Load and prepare user and system messages for the prompt
                     # compose the user message combined with transcript
                     user_message_with_transcript = self.prompt_composer.compose_user_message_with_transcript(prompt=prompt, transcript=video.transcript)
                     logger.info("Prompt user message loaded, and composed with transcript, for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
