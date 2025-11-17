@@ -17,6 +17,8 @@ doc/Road_To_Pro.xlsx
 .idea/
 *.log
 video2text-venv/
+# Ignore seed testing data
+utils/seed_master_data_mongodb.py
 
 # Archivos de git
 .git
