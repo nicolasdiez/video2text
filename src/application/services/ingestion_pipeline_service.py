@@ -120,7 +120,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     )
                     saved_id = await self.video_repo.save(video)
                     video.id = saved_id
-                    logger.info("Video %s saved in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.info("Video %s saved in 'videos' (title: %s)", video.title, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
@@ -194,8 +194,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                     # 12. Persist tweet generation metadata
                     openai_req = OpenAIRequest(
                         prompt_content=PromptContent(
-                            system_message=system_message,
-                            user_message=user_message_with_transcript
+                            system_message=prompt_system_message,
+                            user_message=prompt_user_message
                         ),
                         model=model,
                         # temperature=self.openai_service.default_temperature,  # TODO

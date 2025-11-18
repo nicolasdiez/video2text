@@ -31,5 +31,5 @@ doc/.$sw_architecture.drawio.dtmp
 # Kubernetes real secrets
 k8s/secret.yaml
 
-# Ignore seed testing data
+# Ignore mongoDB seed testing data
 utils/seed_master_data_mongodb.py

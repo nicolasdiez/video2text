@@ -116,7 +116,7 @@ class EmitJsonHandler(logging.StreamHandler):
 
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "DEV")
 
 # Configure logging in JSON format
 logger = logging.getLogger()
@@ -131,7 +131,7 @@ logging.getLogger("apscheduler").setLevel(logging.CRITICAL + 1)
 # silence WARNING logging from APScheduler (only show ERROR and CRITICAL)
 # logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
-if ENVIRONMENT == "dev":
+if ENVIRONMENT == "DEV":
     # Easy format to read in console
     console_handler = logging.StreamHandler(sys.stdout)
     formatter = ColoredFormatter(

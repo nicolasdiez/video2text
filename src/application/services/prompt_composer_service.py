@@ -33,15 +33,17 @@ class PromptComposerService:
 
     def add_objective(self, message: str, max_sentences: int = 3) -> str:
         """
-        Append the objective to an existing message prompt.
-        """   
+        Prepend the objective to an existing message prompt.
+        """
         objective_block = (
-            f"=== OBJECTIVE ===\n"
+            "=== OBJECTIVE ===\n"
             f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets.\n\n"
         )
 
-        message_with_objective = message.rstrip() + "\n\n" + objective_block
-    
+        # Ensure message starts cleanly after the objective
+        message_body = message.lstrip()
+        message_with_objective = objective_block + message_body
+
         return message_with_objective
 
 
@@ -54,7 +56,6 @@ class PromptComposerService:
             f"The short and standalone tweets must be generated in {output_language} language.\n\n"
         )
 
-        # Build system_content respecting the input prompt_system_message
         message_with_output_language = message.rstrip() + "\n\n" + output_language_block
 
         return message_with_output_language

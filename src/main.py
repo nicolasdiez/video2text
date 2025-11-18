@@ -1,7 +1,7 @@
 # /src/main.py
 
 # TODO:
-# - endpoints de consumo desde front para CRUD entities: users, channels, prompts, application_config, prompts_master.
+# - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - refactor prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
 # - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run same pipeline twice or more at a time)
@@ -150,7 +150,7 @@ async def lifespan(app: FastAPI):
     # ===== TEMPORARY BLOCK =====
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this block when frontend/endpoints for user credential management is ready
-    USER_ID = "1" # Nico
+    USER_ID = "000000000000000000000001" # Nico
     bootstrap_user_id = USER_ID
     # Retrieve USER X credentials from env (either .env file or Github Environment secrets) and save them encrypted to mongoDB user collection
     creds = UserTwitterCredentials(
@@ -164,7 +164,7 @@ async def lifespan(app: FastAPI):
         screen_name=config.X_SCREEN_NAME
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
-    logger.info("Temporary - Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
+    logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
     # ===== END TEMPORARY BLOCK =====
 
 
