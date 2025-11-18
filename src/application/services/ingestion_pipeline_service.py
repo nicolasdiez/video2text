@@ -173,21 +173,20 @@ class IngestionPipelineService(IngestionPipelinePort):
                         continue
 
                     # 10. Load and prepare user and system messages for the prompt
-                    # compose the user message combined with transcript
-                    user_message_with_transcript = self.prompt_composer.compose_user_message_with_transcript(prompt=prompt, transcript=video.transcript)
-                    logger.info("Prompt user message loaded, and composed with transcript, for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                    # retrieve system message
-                    system_message = prompt.prompt_content.system_message
-                    logger.info("Prompt system message loaded for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    # user message
+                    prompt_user_message = self.prompt_composer.add_transcript(message=prompt.prompt_content.user_message, transcript=video.transcript)
+                    logger.info("Prompt user message loaded (+ transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    # system message
+                    prompt_system_message_with_objective = self.prompt_composer.add_objective(message=prompt.prompt_content.system_message, max_sentences=prompt.max_tweets_to_generate_per_video)
+                    prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective, output_language=prompt.language_to_generate_tweets)
+                    logger.info("Prompt system message loaded (+ objective + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                    # 11. Generate raw texts for the video
                     model="gpt-3.5-turbo"
                     # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                     raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
-                        prompt_user_message=user_message_with_transcript,
-                        prompt_system_message=system_message,
-                        max_sentences=prompt.max_tweets_to_generate_per_video,
-                        output_language=prompt.language_to_generate_tweets,
+                        prompt_user_message=prompt_user_message,
+                        prompt_system_message=prompt_system_message,
                         model=model)
                     tweet_generation_ts = datetime.utcnow()
                     logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

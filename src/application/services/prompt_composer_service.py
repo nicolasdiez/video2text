@@ -18,24 +18,43 @@ class PromptComposerService:
         Compose partial prompt: text + maxTweetsToGeneratePerVideo.
         """
         return f"{prompt.text}\nGenerate exactly {prompt.max_tweets_to_generate_per_video} tweets based solely on the transcript provided below."
-
-    def add_transcript(self, base_prompt: str, transcript: str) -> str:
-        """
-        Append only the transcript to an existing prompt string.
-        """
-        return f"{base_prompt}\n\nHere is the transcript (use only this content as your source):\n{transcript}"
     
-    def compose_user_message_with_transcript(self, prompt: Prompt, transcript: str) -> str:
+    def add_transcript(self, message: str, transcript: str) -> str:
         """
-        Compose full user message: stored userMessage in DB + Video Transcript obtained
-        Transcript must be last.
-        """
-        # Build user message by taking stored user_message and appending the transcript.
-        
+        Append the transcript to an existing message prompt.
+        """        
         parts = [
-            prompt.prompt_content.user_message,
+            message,
             f" Here is the transcript:",
             transcript
         ]
-
         return "\n".join(str(p) for p in parts if p)
+    
+
+    def add_objective(self, message: str, max_sentences: int = 3) -> str:
+        """
+        Append the objective to an existing message prompt.
+        """   
+        objective_block = (
+            f"=== OBJECTIVE ===\n"
+            f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets.\n\n"
+        )
+
+        message_with_objective = message.rstrip() + "\n\n" + objective_block
+    
+        return message_with_objective
+
+
+    def add_output_language(self, message: str, output_language: str = "Spanish (ESPAÑOL)") -> str:
+        """
+        Append the output language to an existing message prompt.
+        """   
+        output_language_block = (
+            f"=== OUTPUT LANGUAGE ===\n"
+            f"The short and standalone tweets must be generated in {output_language} language.\n\n"
+        )
+
+        # Build system_content respecting the input prompt_system_message
+        message_with_output_language = message.rstrip() + "\n\n" + output_language_block
+
+        return message_with_output_language

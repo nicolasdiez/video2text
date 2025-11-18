@@ -31,11 +31,11 @@ class OpenAIClient(OpenAIPort):
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 
-    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, max_sentences: int = 3, output_language: str = "Spanish (ESPAÑOL)", model: str = "gpt-3.5-turbo") -> list[str]:
+    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, model: str = "gpt-3.5-turbo") -> list[str]:
         
         # validate API KEY
         if not self.api_key:
-            logger.error("Missing OPENAI_API_KEY", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.error("Missing API key", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
 
         # validate inputs early and log context
@@ -47,7 +47,7 @@ class OpenAIClient(OpenAIPort):
             logger.error("Empty prompt_user_message provided; aborting OpenAI call", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise ValueError("prompt_user_message must not be empty")
 
-        tweets = await asyncio.to_thread(self._call_and_process, prompt_user_message, prompt_system_message, max_sentences, output_language, model)
+        tweets = await asyncio.to_thread(self._call_and_process, prompt_user_message, prompt_system_message, model)
 
         # Logging
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -55,20 +55,11 @@ class OpenAIClient(OpenAIPort):
         return tweets
 
 
-    def _call_and_process(self, prompt_user_message: str, prompt_system_message: str, max_sentences: int, output_language: str, model: str) -> list[str]:
+    def _call_and_process(self, prompt_user_message: str, prompt_system_message: str, model: str) -> list[str]:
         
         client = OpenAI(api_key=self.api_key)
 
-        # the only block of the prompt that is hard-coded
-        objective_block = (
-            f"=== OBJECTIVE ===\n"
-            f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets in {output_language} language.\n\n"
-        )
-
-        # Build system_content respecting the input prompt_system_message
-        system_content = prompt_system_message.rstrip() + "\n\n" + objective_block
-
-        system_message = {"role": "system", "content": system_content}
+        system_message = {"role": "system", "content": prompt_system_message}
         user_message = {"role": "user", "content": prompt_user_message}
 
         try:

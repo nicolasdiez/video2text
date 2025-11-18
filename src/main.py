@@ -150,7 +150,7 @@ async def lifespan(app: FastAPI):
     # ===== TEMPORARY BLOCK =====
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this block when frontend/endpoints for user credential management is ready
-    USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
+    USER_ID = "1" # Nico
     bootstrap_user_id = USER_ID
     # Retrieve USER X credentials from env (either .env file or Github Environment secrets) and save them encrypted to mongoDB user collection
     creds = UserTwitterCredentials(
@@ -192,8 +192,8 @@ async def lifespan(app: FastAPI):
 
     # load appConfig from DB
     app_config = await app_config_repo.get_config()
-    ingestion_minutes = app_config.scheduler.ingestion_minutes
-    publishing_minutes = app_config.scheduler.publishing_minutes
+    ingestion_minutes = app_config.scheduler_config.ingestion_minutes
+    publishing_minutes = app_config.scheduler_config.publishing_minutes
     logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_minutes, publishing_minutes)
     
     # setup job execution frequency dynamically
