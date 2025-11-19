@@ -19,16 +19,21 @@ class PromptComposerService:
         """
         return f"{prompt.text}\nGenerate exactly {prompt.max_tweets_to_generate_per_video} tweets based solely on the transcript provided below."
     
+    
     def add_transcript(self, message: str, transcript: str) -> str:
         """
         Append the transcript to an existing message prompt.
-        """        
-        parts = [
-            message,
-            f" Here is the transcript:",
-            transcript
-        ]
-        return "\n".join(str(p) for p in parts if p)
+        """
+        transcript_block = (
+            "=== TRANSCRIPT ===\n"
+            f"{transcript}\n\n"
+        )
+
+        # Ensure message ends cleanly before appending the transcript
+        message_body = message.rstrip()
+        message_with_transcript = message_body + "\n\n" + transcript_block
+
+        return message_with_transcript
     
 
     def add_objective(self, message: str, max_sentences: int = 3) -> str:

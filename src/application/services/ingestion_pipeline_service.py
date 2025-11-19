@@ -120,7 +120,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     )
                     saved_id = await self.video_repo.save(video)
                     video.id = saved_id
-                    logger.info("Video %s saved in 'videos' (title: %s)", video.title, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.info("Video %s saved in 'videos' (title: '%s')", video.id, video.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 7. If video has no transcription yet, fetch it and update the record
                 if not video.transcript_fetched_at:
@@ -182,7 +182,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                     logger.info("Prompt system message loaded (+ objective + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                    # 11. Generate raw texts for the video
-                    model="gpt-3.5-turbo"
+                    model="gpt-4o-mini"
                     # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                     raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                         prompt_user_message=prompt_user_message,

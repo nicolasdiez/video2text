@@ -1,5 +1,20 @@
 # adapters/outbound/openai_client.py
 
+# Models available (code name) | Strength / Best for                 | Cost tier (qualitative) | Notes
+# -----------------------------------------------------------------------------------------------
+# gpt-4o                      | Highest-quality, large-context      | High                    | Use for very nuanced, long-context generations; premium per-token pricing.
+# gpt-4o-mini                 | Strong creative quality, fast       | Moderate                | Best cost/quality trade-off for short creative outputs like tweets.
+# gpt-4o-realtime             | Low-latency interactive generation  | High                    | Use when you need realtime responses (streaming/low latency).
+# gpt-4o-32k                  | Large context window (32k tokens)   | High                    | Use when you must feed long transcripts; expensive but preserves context.
+# gpt-3.5-turbo               | Cost-efficient, reliable            | Low                     | Good for bulk generation and templates; tune prompts for quality.
+# -----------------------------------------------------------------------------------------------
+# Practical guidance:
+# - For tweet generation start with gpt-4o-mini (creative + reasonable cost).
+# - Use gpt-4o or gpt-4o-32k only when transcript length or fidelity requires it.
+# - Use gpt-3.5-turbo for high-volume, low-cost runs or A/B testing.
+# - Costs scale with input + output tokens; output tokens dominate for short outputs.
+# - Tune temperature (0.6-0.9) and penalties for variety; prompt engineering often beats switching to a pricier model.
+
 import os
 import re
 import asyncio
