@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 
+from domain.value_objects.scheduler_config import SchedulerConfig
+
 
 class TweetFetchSortOrder(str, Enum):
     oldest_first = "oldest_first"
@@ -14,7 +16,9 @@ class TweetFetchSortOrder(str, Enum):
 
 @dataclass
 class UserTwitterCredentials:
-    # these are only credentials related to THE USER:
+    """
+    Credentials related to the user's Twitter account.
+    """
     oauth1_access_token: str
     oauth1_access_token_secret: str
     oauth2_access_token: str                                    # For future OAuth2.0
@@ -26,17 +30,20 @@ class UserTwitterCredentials:
 
 @dataclass(kw_only=True)
 class User:
+    """
+    Domain entity representing an application user.
+    scheduler_config is optional; when absent, the application-level config should be used.
+    """
     id: Optional[str] = None
     username: str                                               # Email or username
     openai_api_key: Optional[str] = None
 
     twitter_credentials: Optional[UserTwitterCredentials] = None
-    ingestion_polling_interval: Optional[int] = None            # in minutes
-    publishing_polling_interval: Optional[int] = None           # in minutes
+    scheduler_config: Optional[SchedulerConfig] = None          # Per-user scheduler configuration (overrides app defaults)
+
     max_tweets_to_fetch_from_db: int = 10
     max_tweets_to_publish: int = 5
     tweet_fetch_sort_order: Optional[TweetFetchSortOrder] = None
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
-
