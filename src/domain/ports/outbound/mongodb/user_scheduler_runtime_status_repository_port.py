@@ -120,3 +120,17 @@ class UserSchedulerRuntimeStatusRepositoryPort(ABC):
         Atomically reset consecutiveFailuresIngestionPipeline to 0.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    async def increment_publishing_failures(self, user_id: UserId, by: int = 1) -> None:
+        """
+        Atomically increment the consecutiveFailuresPublishingPipeline counter by `by`.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def reset_publishing_failures(self, user_id: UserId) -> None:
+        """
+        Atomically reset consecutiveFailuresPublishingPipeline to 0.
+        """
+        raise NotImplementedError

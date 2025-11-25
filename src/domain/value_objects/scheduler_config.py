@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-@dataclass(frozen=True)
+@dataclass(frozen=True)     # value object = inmutable = frozen
 class SchedulerConfig:
     """
     Value Object representing scheduler configuration.

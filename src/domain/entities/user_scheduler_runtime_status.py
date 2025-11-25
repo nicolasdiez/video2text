@@ -15,7 +15,7 @@ class UserSchedulerRuntimeStatus:
     Notes:
       - This is an entity (mutable, identifiable) stored in its own collection.
     """
-    
+
     id: Optional[ObjectId] = None                                   # Mongo _id
     user_id: ObjectId = field(default_factory=lambda: ObjectId())   # FK -> users._id
 
@@ -36,6 +36,7 @@ class UserSchedulerRuntimeStatus:
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
+
 
     def __post_init__(self):
         # Basic type and value validation
