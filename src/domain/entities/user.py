@@ -32,7 +32,7 @@ class UserTwitterCredentials:
 class User:
     """
     Domain entity representing an application user.
-    scheduler_config is optional; when absent, the application-level config should be used.
+scheduler_config is optional; when absent, the application-level config should be used.
     """
     id: Optional[str] = None
     username: str                                               # Email or username
