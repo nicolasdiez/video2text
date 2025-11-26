@@ -3,15 +3,9 @@
 # TODO:
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
-# - extend collection {users} to have flags: isIngestionPipelineRunning and isPublishingPipelineRunning (to prevent more than 1 instance to run same pipeline twice or more at a time)
-# - extend collection {users} to have variable: lastIngestionPipelineExecutionStartedAt, lastIngestionPipelineExecutionFinisheddAt
-# - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
-# - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (check flag) OR (systime - lastIngestionPipelineExecutionStartedAt) > ingestionPipelineFrequencyMinutes/publishingPipelineFrequencyMinutes mins (variables)
 # - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId or channelId.
 # - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription clients/adapters (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 # - in GCP VM, convert./run.sh into a persistent service, so it runs in background all time, not foreground execution needed anymore
-# - gitignore .pyc cache files (in folder __pycache__)
-# - dockerignore .pyc cache files (in folder __pycache__)
 
 import os
 import asyncio
