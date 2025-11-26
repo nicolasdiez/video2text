@@ -10,7 +10,7 @@ class Tweet:
     user_id: str
     video_id: str
     generation_id: str                          # FK → tweet_generations._id
-    text: str
+    text: str                                   # The tweet itself
     index_in_generation: Optional[int] = None   # Posición dentro de la generación
     published: bool = False                     # True if already published in X
     published_at: Optional[datetime] = None     # Publication day in X

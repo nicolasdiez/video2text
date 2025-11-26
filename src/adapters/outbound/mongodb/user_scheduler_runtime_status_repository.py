@@ -5,6 +5,7 @@ from typing import Optional, List, Dict, Any, Union
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from datetime import datetime, timezone
 
 from domain.entities.user_scheduler_runtime_status import UserSchedulerRuntimeStatus
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
@@ -83,6 +84,24 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
         oid = _to_object_id(user_id)
         doc = await self._coll.find_one({"userId": oid})
         return self._doc_to_entity(doc) if doc else None
+        
+    async def update_by_user_id(self, user_id: str, update: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Update the runtime document for userId using $set with the provided fields.
+        If 'updatedAt' is not provided in update, add it automatically.
+        Returns the updated document, or None if no document matched.
+        """
+        # copy update to avoid mutating caller's dict
+        update_payload = dict(update)
+        if "updatedAt" not in update_payload:
+            update_payload["updatedAt"] = datetime.now(timezone.utc)
+
+        result = await self._coll.update_one({"userId": user_id}, {"$set": update_payload})
+        if result.matched_count == 0:
+            return None
+
+        updated_doc = await self._coll.find_one({"userId": user_id})
+        return updated_doc
 
     async def create(self, status: UserSchedulerRuntimeStatus) -> ObjectId:
         now = datetime.utcnow()

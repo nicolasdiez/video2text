@@ -31,6 +31,14 @@ class UserSchedulerRuntimeStatusRepositoryPort(ABC):
         Return None if no document exists.
         """
         raise NotImplementedError
+    
+    @abstractmethod
+    async def update_by_user_id(self, user_id: str, update: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Apply a $set update with the provided fields to the runtime document identified by user_id.
+        Returns the updated document, or None if no document matched.
+        """
+        raise
 
     @abstractmethod
     async def create(self, status: UserSchedulerRuntimeStatus) -> ObjectId:
