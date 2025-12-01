@@ -9,7 +9,7 @@ class IngestionPipelinePort(ABC):
     """
 
     @abstractmethod
-    async def run_for_user(self, user_id: str, prompt_file: str, max_tweets_to_generate_per_video: int = 3) -> None:
+    async def run_for_user(self, user_id: str) -> None:
         """
         Execute the ingestion pipeline for the given user_id:
           1) retrieve channels linked to user_id

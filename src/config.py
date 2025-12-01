@@ -157,7 +157,9 @@ else:
     json_handler = EmitJsonHandler(sys.stdout)
     logger.addHandler(json_handler)
 
+
 # ===== DEBUG =====
+
 def str_to_bool(value: str) -> bool:
     return str(value).lower() in ("1", "true", "yes", "y")
 

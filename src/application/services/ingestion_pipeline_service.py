@@ -100,8 +100,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                 # 4. Fetch new videos for this channel
                 logger.info("Channel %s/%s - Fetching max %s videos from channel %s", index, len(channels), channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                max_videos_to_fetch_from_channel = channel.max_videos_to_fetch_from_channel
-                videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, max_videos_to_fetch_from_channel)
+                videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, channel.max_videos_to_fetch_from_channel)
                 
                 # extract video IDs (limit if there are a lot)
                 video_ids = [v.videoId for v in videos_meta]
@@ -244,6 +243,11 @@ class IngestionPipelineService(IngestionPipelinePort):
                         video.tweets_generated = True
                         video.updated_at = datetime.utcnow()
                         await self.video_repo.update(video)
+                    
+                channel.last_polled_at = datetime.utcnow()
+                channel.updated_at = datetime.utcnow()
+                await self.channel_repo.update(channel)
+                logger.info("Channel %s last_polled_at updated to %s", channel.youtube_channel_id, channel.last_polled_at, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 16-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)
