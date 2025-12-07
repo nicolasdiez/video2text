@@ -3,6 +3,7 @@
 # env vars
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 # logging
 import logging
@@ -14,9 +15,15 @@ import time
 
 
 # ===== ENVIRONEMENT VARIABLES =====
-# Cargar .env file solo en local (en Azure no será necesario porque las variables ya estarán en el entorno)
-env = os.getenv("APP_ENV", "dev")           # default development. Antes de arracanr App inyectar en terminal bash: export APP_ENV=dev
-load_dotenv(f".env.{env}", override=True)
+# Cargar .env file (al correr en cloud el .env file se genera como parte del pipeline de deploy y luego se le pasa como argument al docker run)
+# env = os.getenv("APP_ENV", "dev")           # default development. Antes de arracanr App inyectar en terminal bash: export APP_ENV=dev
+# load_dotenv(f".env.{env}", override=True)
+
+# Try local dotenv files in order; do not override already-set environment variables
+for candidate in (Path(".env.dev"), Path(".env")):
+    if candidate.exists():
+        load_dotenv(dotenv_path=str(candidate), override=False)
+        break
 
 # --- API Keys ---
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")

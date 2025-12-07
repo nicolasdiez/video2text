@@ -28,7 +28,7 @@ from domain.entities.prompt import Prompt
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
-from application.services.prompt_composer_service import PromptComposerService
+from application.services.prompt_composer_service import PromptComposerService, InstructionPosition
 
 # Specific logger for this module
 logger = logging.getLogger(__name__)
@@ -182,12 +182,13 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                         # 10. Load and prepare user and system messages for the prompt
                         # user message
-                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt.prompt_content.user_message, transcript=video.transcript)
+                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt.prompt_content.user_message, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user message loaded (+ transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer.add_objective(message=prompt.prompt_content.system_message, max_sentences=prompt.max_tweets_to_generate_per_video)
-                        prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective, output_language=prompt.language_to_generate_tweets)
-                        logger.info("Prompt system message loaded (+ objective + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
+                        prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        logger.info("Prompt system message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 11. Generate raw texts for the video
                         model="gpt-4o-mini"
