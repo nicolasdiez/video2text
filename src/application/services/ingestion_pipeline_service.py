@@ -191,7 +191,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         logger.info("Prompt system message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 11. Generate raw texts for the video
-                        model="gpt-4o-mini"
+                        model="gpt-4"
                         # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                         raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                             prompt_user_message=prompt_user_message,
