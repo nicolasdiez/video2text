@@ -43,7 +43,6 @@ jobs:
           # cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
           # cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
-
   deploy-and-test:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
