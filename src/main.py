@@ -3,7 +3,7 @@
 # TODO:
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
-# - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId or channelId.
+# - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
 # - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription clients/adapters (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 # - in GCP VM, convert./run.sh into a persistent service, so it runs in background all time, not foreground execution needed anymore
 
@@ -77,7 +77,7 @@ except RuntimeError as exc:
     # if instanciation fails, then rely on the transcription fallback service
     youtube_client = None
 
-# --- Ingestion adapters & service instantiation ---
+# --- Ingestion Pipeline adapters & service instantiation ---
 user_repo                       = MongoUserRepository(database=db)
 prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
 channel_repo                    = MongoChannelRepository(database=db)
@@ -96,7 +96,7 @@ user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(data
 if transcription_client is None:
     logger.warning("YouTube official transcription client not configured; using ASR fallback only", extra={"mod": __name__})
 
-# Create an instance of PipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
+# Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
     user_repo                       = user_repo,
     prompt_loader                   = prompt_loader,
