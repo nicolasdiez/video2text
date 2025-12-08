@@ -52,6 +52,13 @@ class UserRepositoryPort(ABC):
         ...
 
     @abstractmethod
+    async def delete_all(self) -> int:
+        """
+        Delete all documents in users collection. Returns number deleted.
+        """
+        ...
+
+    @abstractmethod
     async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
         """
         Actualiza las credenciales de Twitter de un usuario.

@@ -5,14 +5,21 @@ __pycache__/
 *.pyd
 *.db
 *.sqlite3
+*.stackdump
 doc/Road_To_Pro.xlsx
 
 # Configuración local
-.env
+# Ignore all env files
+.env*
+# But keep example in the build context
+!.env.example
 .vscode/
 .idea/
 *.log
 video2text-venv/
+
+# Ignore mongoDB seed testing data
+utils/seed_master_data_mongodb.py
 
 # Archivos de git
 .git
@@ -21,6 +28,16 @@ video2text-venv/
 # Archivos de sistema
 .DS_Store
 Thumbs.db
+
+# ignore any drawio backup files anywhere
+*.drawio.bkp
+*$*.drawio.bkp
+.*.drawio.bkp
+
+# ignore any drawio dtmp/temp files anywhere
+*.drawio.dtmp
+*$*.drawio.dtmp
+.*.drawio.dtmp
 
 # Archivos de ayuda / notas personales
 *.jpg
@@ -44,3 +61,25 @@ dependencies.md
 notes_hex_arch.txt
 readme.md
 *.md
+
+# Ignore any nested __pycache__ directories (all levels)
+**/__pycache__/
+
+# Ignore virtual environment folders commonly used in Python projects
+.venv/
+env/
+ENV/
+
+# Ignore pytest cache directory
+.pytest_cache/
+
+# Ignore mypy cache
+.mypy_cache/
+
+# Ignore tox environments
+.tox/
+
+# Ignore build and distribution artifacts
+build/
+dist/
+*.egg-info

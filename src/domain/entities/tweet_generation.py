@@ -4,9 +4,15 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
+from domain.entities.prompt import PromptContent
+
 @dataclass
 class OpenAIRequest:
-    prompt: str
+    """
+    Represents the payload sent to OpenAI. Uses PromptContent but the field is named
+    prompy_content to match the renamed attribute in the Prompt entity and avoid confusion.
+    """
+    prompt_content: PromptContent
     model: str
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
@@ -14,7 +20,7 @@ class OpenAIRequest:
 @dataclass(kw_only=True)
 class TweetGeneration:
     """
-    Domain entity representing a tweet generation process (i.e. a call to OpenAI API to retrieve generated tweets=sentences)
+    Domain entity representing a tweet generation process (i.e. a call to OpenAI API to retrieve generated tweets/ sentences)
     """
     id: Optional[str] = None
     user_id: str

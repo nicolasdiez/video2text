@@ -3,6 +3,7 @@
 # env vars
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 # logging
 import logging
@@ -14,8 +15,15 @@ import time
 
 
 # ===== ENVIRONEMENT VARIABLES =====
-# Cargar .env file solo en local (en Azure no será necesario porque las variables ya estarán en el entorno)
-load_dotenv()
+# Cargar .env file (al correr en cloud el .env file se genera como parte del pipeline de deploy y luego se le pasa como argument al docker run)
+# env = os.getenv("APP_ENV", "dev")           # default development. Antes de arracanr App inyectar en terminal bash: export APP_ENV=dev
+# load_dotenv(f".env.{env}", override=True)
+
+# Try local dotenv files in order; do not override already-set environment variables
+for candidate in (Path(".env.dev"), Path(".env")):
+    if candidate.exists():
+        load_dotenv(dotenv_path=str(candidate), override=False)
+        break
 
 # --- API Keys ---
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
@@ -115,7 +123,7 @@ class EmitJsonHandler(logging.StreamHandler):
 
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "DEV")
 
 # Configure logging in JSON format
 logger = logging.getLogger()
@@ -130,7 +138,7 @@ logging.getLogger("apscheduler").setLevel(logging.CRITICAL + 1)
 # silence WARNING logging from APScheduler (only show ERROR and CRITICAL)
 # logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
-if ENVIRONMENT == "local":
+if ENVIRONMENT == "DEV":
     # Easy format to read in console
     console_handler = logging.StreamHandler(sys.stdout)
     formatter = ColoredFormatter(
@@ -156,7 +164,9 @@ else:
     json_handler = EmitJsonHandler(sys.stdout)
     logger.addHandler(json_handler)
 
+
 # ===== DEBUG =====
+
 def str_to_bool(value: str) -> bool:
     return str(value).lower() in ("1", "true", "yes", "y")
 

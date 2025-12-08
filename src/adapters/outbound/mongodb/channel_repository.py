@@ -63,6 +63,13 @@ class MongoChannelRepository(ChannelRepositoryPort):
         Remove a channel document by ID.
         """
         await self._collection.delete_one({"_id": ObjectId(channel_id)})
+    
+    async def delete_all(self) -> int:
+        """
+        Delete all documents in channels collection. Returns number deleted.
+        """
+        res = await self._coll.delete_many({})
+        return res.deleted_count
 
     def _to_entity(self, doc: dict) -> Channel:
         """

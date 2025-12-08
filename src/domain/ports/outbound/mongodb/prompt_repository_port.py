@@ -58,3 +58,10 @@ class PromptRepositoryPort(ABC):
         Delete a Prompt by its ID.
         """
         ...
+    
+    @abstractmethod
+    async def delete_all(self) -> int:
+        """
+        Delete all documents in prompts collection. Returns number deleted.
+        """
+        ...

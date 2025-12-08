@@ -41,3 +41,12 @@ def ping_mongo() -> None:
 
 # Uncomment following line to test ping when importing module:
 ping_mongo()
+
+# Log database name and existing collections (synchronous call via pymongo client)
+try:
+    _sync_db = _sync_client[config.MONGO_DB]
+    collections = _sync_db.list_collection_names()
+    logger.info("Database name: %s", config.MONGO_DB, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    logger.info("Collections found: %s", ", ".join(collections) if collections else "(none)", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+except Exception as e:
+    logger.warning("Could not list collections: %s", e, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})

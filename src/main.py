@@ -1,18 +1,11 @@
 # /src/main.py
 
 # TODO:
-# - endpoints de consumo desde front para CRUD entities: users, channels, prompts
-# - change transcription_client.py to switch from using deprecated get_transcript() to use fetch()
-# - tidy up prompt generation with user_message and system_message (prompt_composer_service.py and openai_client.py)
-# - extend collection {users} to have flags: isIngestionPipelineExecuting and isPublishingPipelineExecuting (to prevent more than 1 instance to run pipeline twice or more at the sime time)
-# - extend collection {users} to have variable: lastIngestionPipelineExecutionStartedAt, lastIngestionPipelineExecutionFinisheddAt
-# - extend collection {users} to have variable: lastPublishingPipelineExecutionStartedAt, lastPublishingPipelineExecutionFinisheddAt
-# - modify main to loop thru all {users}, but only if Pipeline is NOT already executing (check flag) OR lastIngestionPipelineExecutionStartedAt > ingestion_minutes/publishing_minutes mins (variables)
-# - create a collection {prompts_master} to hold master prompts of the application, not dependent on userId or channelId.
+# - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
+# - modify transcription_client.py from using deprecated get_transcript() to use fetch()
+# - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
 # - refactor ingestion_pipeline_service constructor to use a Composite pattern for the transcription clients/adapters (crear un CompositeTranscriptionClient que reciba [primary, fallback1, fallback2...] y pruebe cada uno en orden hasta obtener resultado válido. Mantiene Inversion of Control y SRP.)
 # - in GCP VM, convert./run.sh into a persistent service, so it runs in background all time, not foreground execution needed anymore
-# - change name ingestionMinutes/publishingMinutes (ingestion_minutes/publishing_minutes) to ingestionPipelineFrequencyMinutes/publishingPipelineFrequencyMinutes
-# - 
 
 import os
 import asyncio
@@ -40,6 +33,7 @@ from infrastructure.mongodb import db
 # APScheduler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
 
 # Controllers
 # import pipeline_controller to later inject the IngestionPipelineService/PublishingPipelineService instances with all the created adapters into pipeline_controller.ingestion_pipeline_service/publishing_pipeline_service
@@ -59,6 +53,7 @@ from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
+from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import MongoUserSchedulerRuntimeStatusRepository
 
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
@@ -82,7 +77,7 @@ except RuntimeError as exc:
     # if instanciation fails, then rely on the transcription fallback service
     youtube_client = None
 
-# --- Ingestion adapters & service instantiation ---
+# --- Ingestion Pipeline adapters & service instantiation ---
 user_repo                       = MongoUserRepository(database=db)
 prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
 channel_repo                    = MongoChannelRepository(database=db)
@@ -95,12 +90,13 @@ prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
 tweet_repo                      = MongoTweetRepository(database=db)
+user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(database=db)
 
 # if no official Youtube API transcription client, warn in log
 if transcription_client is None:
     logger.warning("YouTube official transcription client not configured; using ASR fallback only", extra={"mod": __name__})
 
-# Create an instance of PipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
+# Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
     user_repo                       = user_repo,
     prompt_loader                   = prompt_loader,
@@ -114,6 +110,7 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     openai_client                   = openai_client,
     tweet_generation_repo           = tweet_generation_repo,
     tweet_repo                      = tweet_repo,
+    user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
 )
 
 # Inject the instance of IngestionPipelineService (with all the Adapters) into the pipeline controller 
@@ -128,9 +125,10 @@ twitter_client = TwitterClient(
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
 publishing_pipeline_service_instance = PublishingPipelineService(
-    user_repo               = user_repo,
-    tweet_repo              = tweet_repo,
-    twitter_client          = twitter_client
+    user_repo                       = user_repo,
+    tweet_repo                      = tweet_repo,
+    twitter_client                  = twitter_client,
+    user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
 )
 
 # Inject the instance of PublishingPipelineService (with all the Adapters) into the pipeline controller 
@@ -147,10 +145,11 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # ===== TEMPORARY BLOCK =====
+    # ===== START TEMPORARY BLOCK =====
+    # =================================================================================
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this block when frontend/endpoints for user credential management is ready
-    USER_ID = "64e8b0f3a1b2c3d4e5f67891" # Nico
+    USER_ID = "000000000000000000000001" # Nico
     bootstrap_user_id = USER_ID
     # Retrieve USER X credentials from env (either .env file or Github Environment secrets) and save them encrypted to mongoDB user collection
     creds = UserTwitterCredentials(
@@ -164,41 +163,96 @@ async def lifespan(app: FastAPI):
         screen_name=config.X_SCREEN_NAME
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
-    logger.info("Temporary - Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
+    logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
+    # =================================================================================
     # ===== END TEMPORARY BLOCK =====
 
 
     # Inline async function for Ingestion
     async def ingestion_job():
+        app_config = await app_config_repo.get_config()
+        ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
         users = await user_repo.find_all()
+        now = datetime.now(timezone.utc)
         for user in users:
             try:
-                logger.info("Ingestion pipeline starting (user: %s)", user.id, extra={"user_id": user.id, "job": "ingestion"})
+                if not getattr(user, "scheduler_config", None) or not user.scheduler_config.is_ingestion_pipeline_enabled:
+                    logger.debug("Skipping ingestion (user: %s disabled by user config)", user.id, extra={"job": "ingestion"})
+                    continue
+                if not app_config.scheduler_config.is_ingestion_pipeline_enabled:
+                    logger.debug("Skipping ingestion (user: %s disabled by app_config)", user.id, extra={"job": "ingestion"})
+                    continue
+
+                user_scheduler_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                last_started = getattr(user_scheduler_runtime_status, "last_ingestion_pipeline_started_at", None) if user_scheduler_runtime_status else None
+                running = getattr(user_scheduler_runtime_status, "is_ingestion_pipeline_running", False) if user_scheduler_runtime_status else False
+
+                should_run = (not running) or (last_started is not None and (now - last_started).total_seconds() / 60.0 > float(ingestion_pipeline_frequency_minutes))
+                if not should_run:
+                    logger.debug("Skipping ingestion (user: %s already running and within frequency)", user.id, extra={"job": "ingestion"})
+                    continue
+
+                # run ingestion pipeline for the user        
+                logger.info("Ingestion pipeline starting (user: %s)", user.id, extra={"job": "ingestion"})
                 await ingestion_pipeline_service_instance.run_for_user(user_id=user.id)
-                logger.info("Ingestion pipeline finished (user: %s)", user.id, extra={"user_id": user.id, "job": "ingestion"})
+                logger.info("Ingestion pipeline finished (user: %s)", user.id, extra={"job": "ingestion"})
+
+                # update nextScheduledIngestionPipelineStartingAt using app_config frequency
+                finish_time = datetime.now(timezone.utc)
+                next_start = finish_time + timedelta(minutes=float(ingestion_pipeline_frequency_minutes))
+                await user_scheduler_runtime_repo.update_by_user_id(user.id, {"nextScheduledIngestionPipelineStartingAt": next_start})
+                logger.debug("Updated nextScheduledIngestionPipelineStartingAt (user: %s) -> %s", user.id, next_start.isoformat(), extra={"job": "ingestion"})
             except Exception as e:
-                logger.error("Ingestion pipeline failed (user: %s): %s", user.id, str(e), extra={"user_id": user.id, "error": str(e)})
+                logger.error("Ingestion pipeline failed (user: %s): %s", user.id, str(e), extra={"error": str(e), "job": "ingestion"})
+
 
     # Inline async function for Publishing
     async def publishing_job():
+        app_config = await app_config_repo.get_config()
+        publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
         users = await user_repo.find_all()
+        now = datetime.now(timezone.utc)
         for user in users:
             try:
-                logger.info("Publishing pipeline starting (user: %s)", user.id, extra={"user_id": user.id, "job": "publishing"})
+                if not getattr(user, "scheduler_config", None) or not user.scheduler_config.is_publishing_pipeline_enabled:
+                    logger.debug("Skipping publishing (user: %s disabled by user config)", user.id, extra={"job": "publishing"})
+                    continue
+                if not app_config.scheduler_config.is_publishing_pipeline_enabled:
+                    logger.debug("Skipping publishing (user: %s disabled by app_config)", user.id, extra={"job": "publishing"})
+                    continue
+
+                user_scheduler_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                last_started = getattr(user_scheduler_runtime_status, "last_publishing_pipeline_started_at", None) if user_scheduler_runtime_status else None
+                running = getattr(user_scheduler_runtime_status, "is_publishing_pipeline_running", False) if user_scheduler_runtime_status else False
+
+                should_run = (not running) or (last_started is not None and (now - last_started).total_seconds() / 60.0 > float(publishing_pipeline_frequency_minutes))
+                if not should_run:
+                    logger.debug("Skipping publishing (user: %s already running and within frequency)", user.id, extra={"job": "publishing"})
+                    continue
+
+                # run publishing pipeline for the user
+                logger.info("Publishing pipeline starting (user: %s)", user.id, extra={"job": "publishing"})
                 await publishing_pipeline_service_instance.run_for_user(user_id=user.id)
-                logger.info("Publishing pipeline finished (user: %s)", user.id, extra={"user_id": user.id, "job": "publishing"})
+                logger.info("Publishing pipeline finished (user: %s)", user.id, extra={"job": "publishing"})
+
+                # update nextScheduledPublishingPipelineStartingAt using app_config frequency
+                finish_time = datetime.now(timezone.utc)
+                next_start = finish_time + timedelta(minutes=float(publishing_pipeline_frequency_minutes))
+                await user_scheduler_runtime_repo.update_by_user_id(user.id, {"nextScheduledPublishingPipelineStartingAt": next_start})
+                logger.debug("Updated nextScheduledPublishingPipelineStartingAt (user: %s) -> %s", user.id, next_start.isoformat(), extra={"job": "ingestion"})
             except Exception as e:
-                logger.error("Publishing pipeline failed (user: %s): %s", user.id, extra={"user_id": user.id, "error": str(e)})
+                logger.error("Publishing pipeline failed (user: %s): %s", user.id, str(e), extra={"error": str(e), "job": "publishing"})
+
 
     # load appConfig from DB
     app_config = await app_config_repo.get_config()
-    ingestion_minutes = app_config.scheduler.ingestion_minutes
-    publishing_minutes = app_config.scheduler.publishing_minutes
-    logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_minutes, publishing_minutes)
+    ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
+    publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
+    logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes)
     
     # setup job execution frequency dynamically
-    scheduler.add_job(ingestion_job, "interval", minutes=ingestion_minutes)
-    scheduler.add_job(publishing_job, "interval", minutes=publishing_minutes)
+    scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes)
+    scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes)
     
     # start scheduler.
     scheduler.start()

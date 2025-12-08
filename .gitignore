@@ -1,5 +1,8 @@
 video2text-venv/
-.env
+# Ignore all env files
+.env*
+# But keep example in the build context
+!.env.example
 channel_ids.txt
 prompt.txt
 sample_text.txt
@@ -9,12 +12,30 @@ graphics/
 doc/Road_To_Pro.xlsx
 $sw_architecture.drawio.bkp
 doc/$sw_architecture.drawio.bkp
+doc/.$sw_architecture.drawio.dtmp
 
-<<<<<<< HEAD
-=======
-doc/sw_architecture.drawio
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
 
->>>>>>> 98938e39c1ee3e33efc8c13c6ee80f0d553e01e4
+# ignore any drawio backup files anywhere
+*.drawio.bkp
+*$*.drawio.bkp
+.*.drawio.bkp
+
+# ignore any drawio dtmp/temp files anywhere
+*.drawio.dtmp
+*$*.drawio.dtmp
+.*.drawio.dtmp
+
+# Ignore Office temp files
+~$*
+*.tmp
 
 # Kubernetes real secrets
 k8s/secret.yaml
+
+# Ignore mongoDB seed testing data
+utils/seed_master_data_mongodb.py

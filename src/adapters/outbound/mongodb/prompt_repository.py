@@ -6,7 +6,13 @@ from typing import List, Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.prompt import Prompt
+from domain.entities.prompt import (
+    Prompt,
+    PromptContent,
+    TweetLengthPolicy,
+    TweetLengthMode,
+    TweetLengthUnit,
+)
 from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
 from infrastructure.mongodb import db
 
@@ -52,7 +58,7 @@ class MongoPromptRepository(PromptRepositoryPort):
             return None
         if len(prompts) > 1:
             raise ValueError(
-                f"Multiple prompts found for user {user_id} and channel {channel_id}.""Expected exactly one."
+                f"Multiple prompts found for user {user_id} and channel {channel_id}. Expected exactly one."
             )
 
         return prompts[0]
@@ -87,15 +93,49 @@ class MongoPromptRepository(PromptRepositoryPort):
     async def delete(self, prompt_id: str) -> None:
         await self._collection.delete_one({"_id": ObjectId(prompt_id)})
 
+    async def delete_all(self) -> int:
+        res = await self._collection.delete_many({})
+        return res.deleted_count
+
     def _to_entity(self, doc: dict) -> Prompt:
+        # Parse tweetLengthPolicy if present
+        tlp_doc = doc.get("tweetLengthPolicy")
+        tweet_length_policy = None
+        if isinstance(tlp_doc, dict):
+            # Safe parsing with defaults
+            mode_val = tlp_doc.get("mode")
+            try:
+                mode = TweetLengthMode(mode_val) if mode_val else TweetLengthMode.FIXED
+            except ValueError:
+                mode = TweetLengthMode.FIXED
+
+            unit_val = tlp_doc.get("unit")
+            try:
+                unit = TweetLengthUnit(unit_val) if unit_val else TweetLengthUnit.CHARS
+            except ValueError:
+                unit = TweetLengthUnit.CHARS
+
+            tweet_length_policy = TweetLengthPolicy(
+                mode=mode,
+                min_length=tlp_doc.get("minLength"),
+                max_length=tlp_doc.get("maxLength"),
+                target_length=tlp_doc.get("targetLength"),
+                tolerance_percent=tlp_doc.get("tolerancePercent", 10),
+                unit=unit,
+            )
+
         return Prompt(
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             channel_id=str(doc["channelId"]),
-            text=doc["text"],
-            language_of_the_text=doc["languageOfTheText"],
-            language_to_generate_tweets=doc["languageToGenerateTweets"],
-            max_tweets_to_generate_per_video=doc["maxTweetsToGeneratePerVideo"],
+            prompt_content=PromptContent(
+                system_message=doc.get("promptContent", {}).get("systemMessage", ""),
+                user_message=doc.get("promptContent", {}).get("userMessage", "")
+            ),
+            language_of_the_prompt=doc.get("languageOfThePrompt", ""),
+            language_to_generate_tweets=doc.get("languageToGenerateTweets", ""),
+            max_tweets_to_generate_per_video=doc.get("maxTweetsToGeneratePerVideo", 0),
+            tweet_length_policy=tweet_length_policy,
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
@@ -108,12 +148,31 @@ class MongoPromptRepository(PromptRepositoryPort):
         doc = {
             "userId": ObjectId(prompt.user_id),
             "channelId": ObjectId(prompt.channel_id),
-            "text": prompt.text,
-            "languageOfTheText": prompt.language_of_the_text,
+            "promptContent": {
+                "systemMessage": prompt.prompt_content.system_message,
+                "userMessage": prompt.prompt_content.user_message,
+            },
+            "languageOfThePrompt": prompt.language_of_the_prompt,
             "languageToGenerateTweets": prompt.language_to_generate_tweets,
             "maxTweetsToGeneratePerVideo": prompt.max_tweets_to_generate_per_video,
             "createdAt": prompt.created_at,
             "updatedAt": prompt.updated_at,
         }
-        return {key: value for key, value in doc.items() if value is not None}
 
+        # Include tweetLengthPolicy if present
+        if getattr(prompt, "tweet_length_policy", None):
+            tlp = prompt.tweet_length_policy
+            tlp_doc = {
+                "mode": tlp.mode.value if hasattr(tlp.mode, "value") else str(tlp.mode),
+                "minLength": tlp.min_length,
+                "maxLength": tlp.max_length,
+                "targetLength": tlp.target_length,
+                "tolerancePercent": tlp.tolerance_percent,
+                "unit": tlp.unit.value if hasattr(tlp.unit, "value") else str(tlp.unit),
+            }
+            # remove None values from tlp_doc
+            tlp_doc = {k: v for k, v in tlp_doc.items() if v is not None}
+            if tlp_doc:
+                doc["tweetLengthPolicy"] = tlp_doc
+
+        return {key: value for key, value in doc.items() if value is not None}
