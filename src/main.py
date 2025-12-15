@@ -174,6 +174,7 @@ async def lifespan(app: FastAPI):
         ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
         users = await user_repo.find_all()
         now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         for user in users:
             try:
                 if not getattr(user, "scheduler_config", None) or not user.scheduler_config.is_ingestion_pipeline_enabled:

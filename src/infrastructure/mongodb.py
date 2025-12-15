@@ -1,7 +1,7 @@
 # src/infrastructure/mongodb.py
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import config
 
 # logging
@@ -25,7 +25,7 @@ _motor_client: AsyncIOMotorClient = AsyncIOMotorClient(URI_ASYNC)
 db: AsyncIOMotorDatabase = _motor_client[config.MONGO_DB]
 
 # Sync client for ping testing (PyMongo)
-_sync_client = MongoClient(URI_SYNC, server_api=ServerApi("1"))
+_sync_client = MongoClient(URI_SYNC, tz_aware=True, tzinfo=timezone.utc, server_api=ServerApi("1"))
 
 def ping_mongo() -> None:
     """
