@@ -1,6 +1,7 @@
 # /src/main.py
 
 # TODO:
+# - crear FK desde entity Channel (channel.selected_prompt_id) a Prompt para indicar el prompt seleccionado en el channel (xq puede haber varios prompts disponibles para un mismo channel, y el channel tiene que seleccionar el q quiere usar)
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
@@ -168,20 +169,20 @@ async def lifespan(app: FastAPI):
     # ===== END TEMPORARY BLOCK =====
 
 
-    # Inline async function for Ingestion
+    # Inline async function for INGESTION
     async def ingestion_job():
         app_config = await app_config_repo.get_config()
         ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
         users = await user_repo.find_all()
-        now = datetime.now(timezone.utc)
+        # now = datetime.now(timezone.utc)
         now = datetime.utcnow()
         for user in users:
             try:
                 if not getattr(user, "scheduler_config", None) or not user.scheduler_config.is_ingestion_pipeline_enabled:
-                    logger.debug("Skipping ingestion (user: %s disabled by user config)", user.id, extra={"job": "ingestion"})
+                    logger.debug("Skipping ingestion pipeline (user: %s disabled by user config)", user.id, extra={"job": "ingestion"})
                     continue
                 if not app_config.scheduler_config.is_ingestion_pipeline_enabled:
-                    logger.debug("Skipping ingestion (user: %s disabled by app_config)", user.id, extra={"job": "ingestion"})
+                    logger.debug("Skipping ingestion pipeline (user: %s disabled by app_config)", user.id, extra={"job": "ingestion"})
                     continue
 
                 user_scheduler_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
@@ -190,7 +191,7 @@ async def lifespan(app: FastAPI):
 
                 should_run = (not running) or (last_started is not None and (now - last_started).total_seconds() / 60.0 > float(ingestion_pipeline_frequency_minutes))
                 if not should_run:
-                    logger.debug("Skipping ingestion (user: %s already running and within frequency)", user.id, extra={"job": "ingestion"})
+                    logger.debug("Skipping ingestion pipeline (user: %s already running or within frequency)", user.id, extra={"job": "ingestion"})
                     continue
 
                 # run ingestion pipeline for the user        
@@ -205,9 +206,21 @@ async def lifespan(app: FastAPI):
                 logger.debug("Updated nextScheduledIngestionPipelineStartingAt (user: %s) -> %s", user.id, next_start.isoformat(), extra={"job": "ingestion"})
             except Exception as e:
                 logger.error("Ingestion pipeline failed (user: %s): %s", user.id, str(e), extra={"error": str(e), "job": "ingestion"})
+        
+        # refresh app config and reschedule job if frequency changed
+        new_app_config = await app_config_repo.get_config()
+        new_ingestion_freq = new_app_config.scheduler_config.ingestion_pipeline_frequency_minutes
+        if float(new_ingestion_freq) != float(ingestion_pipeline_frequency_minutes):
+            try:
+                scheduler.reschedule_job("ingestion_job", trigger="interval", minutes=new_ingestion_freq)
+                ingestion_pipeline_frequency_minutes = new_ingestion_freq  # update local var for this run
+                logger.info("Rescheduled ingestion_job to %s minutes", new_ingestion_freq, extra={"job": "ingestion"})
+            except Exception as ex:
+                logger.warning("Failed to reschedule ingestion_job: %s", str(ex), extra={"job": "ingestion"})
 
 
-    # Inline async function for Publishing
+
+    # Inline async function for PUBLISHING
     async def publishing_job():
         app_config = await app_config_repo.get_config()
         publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
@@ -216,10 +229,10 @@ async def lifespan(app: FastAPI):
         for user in users:
             try:
                 if not getattr(user, "scheduler_config", None) or not user.scheduler_config.is_publishing_pipeline_enabled:
-                    logger.debug("Skipping publishing (user: %s disabled by user config)", user.id, extra={"job": "publishing"})
+                    logger.debug("Skipping publishing pipeline (user: %s disabled by user config)", user.id, extra={"job": "publishing"})
                     continue
                 if not app_config.scheduler_config.is_publishing_pipeline_enabled:
-                    logger.debug("Skipping publishing (user: %s disabled by app_config)", user.id, extra={"job": "publishing"})
+                    logger.debug("Skipping publishing pipeline (user: %s disabled by app_config)", user.id, extra={"job": "publishing"})
                     continue
 
                 user_scheduler_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
@@ -228,7 +241,7 @@ async def lifespan(app: FastAPI):
 
                 should_run = (not running) or (last_started is not None and (now - last_started).total_seconds() / 60.0 > float(publishing_pipeline_frequency_minutes))
                 if not should_run:
-                    logger.debug("Skipping publishing (user: %s already running and within frequency)", user.id, extra={"job": "publishing"})
+                    logger.debug("Skipping publishing pipeline (user: %s already running and within frequency)", user.id, extra={"job": "publishing"})
                     continue
 
                 # run publishing pipeline for the user
@@ -243,7 +256,19 @@ async def lifespan(app: FastAPI):
                 logger.debug("Updated nextScheduledPublishingPipelineStartingAt (user: %s) -> %s", user.id, next_start.isoformat(), extra={"job": "ingestion"})
             except Exception as e:
                 logger.error("Publishing pipeline failed (user: %s): %s", user.id, str(e), extra={"error": str(e), "job": "publishing"})
+        
+        # refresh app config and reschedule job if frequency changed
+        new_app_config = await app_config_repo.get_config()
+        new_publishing_freq = new_app_config.scheduler_config.publishing_pipeline_frequency_minutes
+        if float(new_publishing_freq) != float(publishing_pipeline_frequency_minutes):
+            try:
+                scheduler.reschedule_job("publishing_job", trigger="interval", minutes=new_publishing_freq)
+                publishing_pipeline_frequency_minutes = new_publishing_freq  # update local var for this run
+                logger.info("Rescheduled publishing_job to %s minutes", new_publishing_freq, extra={"job": "publishing"})
+            except Exception as ex:
+                logger.warning("Failed to reschedule publishing_job: %s", str(ex), extra={"job": "publishing"})
 
+        
 
     # load appConfig from DB
     app_config = await app_config_repo.get_config()
@@ -252,8 +277,8 @@ async def lifespan(app: FastAPI):
     logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes)
     
     # setup job execution frequency dynamically
-    scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes)
-    scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes)
+    scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes, id="ingestion_job")
+    scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
     
     # start scheduler.
     scheduler.start()

@@ -93,7 +93,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
             # 2. Fetch all channels the user is subscribed to
             channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
-            logger.info("%s channels retrieved from 'channels'", len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.info("%s channel/s retrieved from 'channels'", len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 3. Process each channel independently
             for index, channel in enumerate(channels, start=1):
@@ -104,9 +104,9 @@ class IngestionPipelineService(IngestionPipelinePort):
                 
                 # extract video IDs (limit if there are a lot)
                 video_ids = [v.videoId for v in videos_meta]
-                max_show = 20
-                video_ids_to_show = video_ids if len(video_ids) <= max_show else video_ids[:max_show] + ["...(+%d)" % (len(video_ids) - max_show)]
-                logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_show, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                max_videos_to_process = 20
+                video_ids_to_process = video_ids if len(video_ids) <= max_videos_to_process else video_ids[:max_videos_to_process] + ["...(+%d)" % (len(video_ids) - max_videos_to_process)]
+                logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_process, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 5. Process each video independently
                 for video_meta in videos_meta:
@@ -174,13 +174,13 @@ class IngestionPipelineService(IngestionPipelinePort):
                     # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
                     if (not video.tweets_generated) and video.transcript:
 
-                        # 9. Retrieve Prompt entity for this user and channel
+                        # 9. Retrieve PROMPT entity for this user and channel
                         prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
                         if not prompt:
                             logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
 
-                        # 10. Load and prepare user and system messages for the prompt
+                        # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message = self.prompt_composer.add_transcript(message=prompt.prompt_content.user_message, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+ transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -191,7 +191,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         logger.info("Prompt system_message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 11. Generate raw texts for the video
-                        model="gpt-4"
+                        model="gpt-4o"
                         # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                         raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                             prompt_user_message=prompt_user_message,

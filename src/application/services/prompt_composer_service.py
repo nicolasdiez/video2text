@@ -47,7 +47,7 @@ class PromptComposerService:
         """
         objective_block = (
             "=== OBJECTIVE ===\n"
-            f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets.\n\n"
+            f"Based on the provided transcript, generate exactly {max_sentences} standalone tweets.\n\n"
         )
 
         pos_val = position.value if hasattr(position, "value") else str(position)
@@ -72,7 +72,7 @@ class PromptComposerService:
         """
         output_language_block = (
             f"=== OUTPUT LANGUAGE ===\n"
-            f"The short and standalone tweets must be generated in {output_language} language.\n\n"
+            f"The tweets must be generated in {output_language} language.\n\n"
         )
 
         pos_val = position.value if hasattr(position, "value") else str(position)
@@ -144,7 +144,7 @@ class PromptComposerService:
             max_val = max_len if max_len is not None else 140
             instruction = (
                 "=== OUTPUT LENGTH ===\n"
-                f"Generate tweets with length between {min_val} and {max_val} {unit_val}.\n\n"
+                f"Each tweet must be between {min_val} and {max_val} {unit_val}.\n\n"
             )
         else:
             # Unknown mode: do not modify message
