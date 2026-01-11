@@ -12,7 +12,7 @@ class Channel:
     id: Optional[str] = None
     user_id: str                                # FK → users._id
     youtube_channel_id: str
-    selected_prompt_id: [str] = None            # FK → prompts._id
+    selected_prompt_id: str = None              # FK → prompts._id
     title: str
     polling_interval: Optional[int] = None                      # in minutes
     max_videos_to_fetch_from_channel: Optional[int] = None      # max number of videos to retrieve from the channel

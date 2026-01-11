@@ -176,29 +176,43 @@ class IngestionPipelineService(IngestionPipelinePort):
                     # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
                     if (not video.tweets_generated) and video.transcript:
 
-                        # 9. Retrieve the SELECTED PROMPT for this user and channel
-                        # If the channel has no selected prompt, skip this video
+                        # 9. Retrieve the SELECTED PROMPT entity for this user and channel                    
+                        # if the channel has no selected prompt, fall back to any available prompt for this user/channel
                         if not channel.selected_prompt_id:
-                            logger.info("Channel %s has no selected_prompt_id, skipping video %s", channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue
-
-                        # Retrieve the selected prompt using the prompt repository
-                        prompt = await self.prompt_repo.find_by_id(channel.selected_prompt_id)
-
-                        # Validate that the prompt exists
-                        if not prompt:
-                            logger.info("Selected prompt %s does not exist, skipping video %s", channel.selected_prompt_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue
-                        # Validate that the prompt belongs to the same user as the channel
-                        if prompt.user_id != channel.user_id:
-                            logger.info("Selected prompt %s does not belong to user %s (channel user_id=%s), skipping video %s", channel.selected_prompt_id, user_id, channel.user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue
+                            prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
+                            # if no prompt exists at all, skip this video
+                            if not prompt:
+                                logger.info("Channel %s has no selected_prompt_id and no prompts exist for user %s, skipping video %s", channel.id, user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue
+                            # validate that the fallback prompt belongs to the same user
+                            if prompt.user_id != channel.user_id:
+                                logger.info("Fallback prompt %s does not belong to user %s (channel user_id=%s), skipping video %s", prompt.id, user_id, channel.user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue
+                            # log that we are using a fallback prompt
+                            logger.info("Channel %s has no selected_prompt_id; using fallback prompt %s for user %s and channel %s", channel.id, prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        else:
+                            # normal path: retrieve the selected prompt
+                            prompt = await self.prompt_repo.find_by_id(channel.selected_prompt_id)
+                            # if the selected prompt does not exist, fall back to any available prompt
+                            if not prompt:
+                                logger.info("Selected prompt %s not found for channel %s; falling back to any available prompt for user %s", channel.selected_prompt_id, channel.id, user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
+                                # if no fallback prompt exists, skip this video
+                                if not prompt:
+                                    logger.info("No fallback prompts exist for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                    continue
+                            # validate that the selected or fallback prompt belongs to the same user
+                            if prompt.user_id != channel.user_id:
+                                logger.info("Selected prompt %s does not belong to user %s (channel user_id=%s), skipping video %s", channel.selected_prompt_id, user_id, channel.user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue
+                            # log that the selected prompt was retrieved successfully
+                            logger.info("Selected prompt %s successfully retrieved for user %s and channel %s", prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message_with_language = self.prompt_composer.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         prompt_user_message = self.prompt_composer.add_transcript(message=prompt_user_message_with_language, transcript=video.transcript, position=InstructionPosition.AFTER)
-                        logger.info("Prompt user_message loaded (+ transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Prompt user_message loaded (+ output language + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
                         prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
