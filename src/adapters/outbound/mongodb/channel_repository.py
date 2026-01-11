@@ -47,6 +47,13 @@ class MongoChannelRepository(ChannelRepositoryPort):
         """
         raw = await self._collection.find_one({"youtubeChannelId": youtube_channel_id})
         return self._to_entity(raw) if raw else None
+    
+    async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
+        """
+        Fetch a single channel by its selected prompt ID.
+        """
+        cursor = self._collection.find({"selectedPromptId": ObjectId(prompt_id)})
+        return [self._to_entity(doc) async for doc in cursor]
 
     async def update(self, channel: Channel) -> None:
         """
@@ -79,6 +86,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             youtube_channel_id=doc["youtubeChannelId"],
+            selected_prompt_id=doc["selectedPromptId"],
             title=doc["title"],
             polling_interval=doc.get("pollingInterval"),
             max_videos_to_fetch_from_channel=doc.get("maxVideosToFetchFromChannel"),
@@ -94,6 +102,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
         doc = {
             "userId": ObjectId(channel.user_id),
             "youtubeChannelId": channel.youtube_channel_id,
+            "selectedPromptId": channel.selected_prompt_id,
             "title": channel.title,
             "pollingInterval": channel.polling_interval,
             "maxVideosToFetchFromChannel": channel.max_videos_to_fetch_from_channel,

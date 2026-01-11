@@ -153,14 +153,14 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # If secondary didn't return a usable transcript (or client didn't even exist), try second fallback, but only if client exists
                         if self.transcription_client_fallback_2:                    
                             if not transcript:
-                                logger.info("Seconday transcription unavailable, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse-) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                logger.info("First fallback transcription client failed, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse- + ASR) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                                 try:
                                     transcript = await self.transcription_client_fallback_2.transcribe(video.youtube_video_id, language=['en','es'])
                                 except Exception as e:
-                                    logger.warning("Secondary fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                    logger.warning("Second fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
 
                         if not transcript:
-                            logger.info("No transcription obtained for video %s after primary, seconday and tertiary fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                            logger.info("No transcription obtained for video %s after primary and 2 fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                         else:
                             logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                             video.transcript = transcript
@@ -170,14 +170,28 @@ class IngestionPipelineService(IngestionPipelinePort):
                             # persist the updated video entity
                             await self.video_repo.update(video)
                             logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    else:
+                        logger.info("Skipping transcript generation - Video %s already has a transcript (%s chars) (video title: %s) ", video.id, len(video.transcript), video.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
                     if (not video.tweets_generated) and video.transcript:
 
-                        # 9. Retrieve PROMPT entity for this user and channel
-                        prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
+                        # 9. Retrieve the SELECTED PROMPT for this user and channel
+                        # If the channel has no selected prompt, skip this video
+                        if not channel.selected_prompt_id:
+                            logger.info("Channel %s has no selected_prompt_id, skipping video %s", channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
+
+                        # Retrieve the selected prompt using the prompt repository
+                        prompt = await self.prompt_repo.find_by_id(channel.selected_prompt_id)
+
+                        # Validate that the prompt exists
                         if not prompt:
-                            logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            logger.info("Selected prompt %s does not exist, skipping video %s", channel.selected_prompt_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
+                        # Validate that the prompt belongs to the same user as the channel
+                        if prompt.user_id != channel.user_id:
+                            logger.info("Selected prompt %s does not belong to user %s (channel user_id=%s), skipping video %s", channel.selected_prompt_id, user_id, channel.user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
 
                         # 10. Load and prepare user and system messages for the PROMPT
@@ -191,7 +205,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                    # 11. Generate raw texts for the video
+                        # 11. Generate raw texts for the video
                         model="gpt-4o"
                         # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                         raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
@@ -245,7 +259,9 @@ class IngestionPipelineService(IngestionPipelinePort):
                         video.tweets_generated = True
                         video.updated_at = datetime.utcnow()
                         await self.video_repo.update(video)
-                    
+                    else:
+                        logger.info("Skipping tweet generation - Video %s already has tweets generated, or video has no transcript available", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
                 channel.last_polled_at = datetime.utcnow()
                 channel.updated_at = datetime.utcnow()
                 await self.channel_repo.update(channel)

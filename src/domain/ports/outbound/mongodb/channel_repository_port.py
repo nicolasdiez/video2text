@@ -40,6 +40,13 @@ class ChannelRepositoryPort(ABC):
         ...
 
     @abstractmethod
+    async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
+        """
+        Retrieve a Channel by its selected prompt ID.
+        """
+        ...
+
+    @abstractmethod
     async def update(self, channel: Channel) -> None:
         """
         Update an existing Channel document.

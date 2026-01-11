@@ -2,6 +2,7 @@
 
 # TODO:
 # - crear FK desde entity Channel (channel.selected_prompt_id) a Prompt para indicar el prompt seleccionado en el channel (xq puede haber varios prompts disponibles para un mismo channel, y el channel tiene que seleccionar el q quiere usar)
+# - modificar las funciones que disparan los pipelines en main (ingestion_job y publishing_job) para tener en cuenta la freq de ejecución de cada user, y solo en caso de no informada usar la de app_config
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
@@ -186,10 +187,10 @@ async def lifespan(app: FastAPI):
                     continue
 
                 user_scheduler_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
-                last_started = getattr(user_scheduler_runtime_status, "last_ingestion_pipeline_started_at", None) if user_scheduler_runtime_status else None
-                running = getattr(user_scheduler_runtime_status, "is_ingestion_pipeline_running", False) if user_scheduler_runtime_status else False
+                last_ingestion_started = getattr(user_scheduler_runtime_status, "last_ingestion_pipeline_started_at", None) if user_scheduler_runtime_status else None
+                is_ingestion_running = getattr(user_scheduler_runtime_status, "is_ingestion_pipeline_running", False) if user_scheduler_runtime_status else False
 
-                should_run = (not running) or (last_started is not None and (now - last_started).total_seconds() / 60.0 > float(ingestion_pipeline_frequency_minutes))
+                should_run = (not is_ingestion_running) or (last_ingestion_started is not None and (now - last_ingestion_started).total_seconds() / 60.0 > float(ingestion_pipeline_frequency_minutes))
                 if not should_run:
                     logger.debug("Skipping ingestion pipeline (user: %s already running or within frequency)", user.id, extra={"job": "ingestion"})
                     continue
