@@ -174,7 +174,8 @@ async def lifespan(app: FastAPI):
     async def ingestion_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
-        app_frequency_minutes = float(app_config.scheduler_config.ingestion_pipeline_frequency_minutes)
+        # app_frequency_minutes = float(app_config.scheduler_config.ingestion_pipeline_frequency_minutes)
+        default_user_frequency_minutes = 1440
 
         users = await user_repo.find_all()
         now = datetime.utcnow()
@@ -194,15 +195,15 @@ async def lifespan(app: FastAPI):
 
                 # 3. Determine effective pipeline frequency (user config takes priority, then app config)
                 user_frequency_minutes = getattr(user.scheduler_config, "ingestion_pipeline_frequency_minutes", None)
-                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else app_frequency_minutes
+                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else default_user_frequency_minutes #app_frequency_minutes
 
                 # 4. Retrieve runtime status for this user
-                runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
-                last_started_at = getattr(runtime_status, "last_ingestion_pipeline_started_at", None) if runtime_status else None
-                is_running = getattr(runtime_status, "is_ingestion_pipeline_running", False) if runtime_status else False
+                user_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                ingestion_last_started_at = getattr(user_runtime_status, "last_ingestion_pipeline_started_at", None) if user_runtime_status else None
+                is_running = getattr(user_runtime_status, "is_ingestion_pipeline_running", False) if user_runtime_status else False
 
                 # 5. Determine if pipeline should run
-                enough_time_passed = last_started_at is not None and (now - last_started_at).total_seconds() / 60.0 > effective_frequency_minutes
+                enough_time_passed = ingestion_last_started_at is not None and (now - ingestion_last_started_at).total_seconds() / 60.0 > effective_frequency_minutes
                 should_run = (not is_running) or enough_time_passed
 
                 if not should_run:
@@ -240,7 +241,8 @@ async def lifespan(app: FastAPI):
     async def publishing_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
-        app_frequency_minutes = float(app_config.scheduler_config.publishing_pipeline_frequency_minutes)
+        # app_frequency_minutes = float(app_config.scheduler_config.publishing_pipeline_frequency_minutes)
+        default_user_frequency_minutes = 1440
 
         users = await user_repo.find_all()
         now = datetime.utcnow()
@@ -260,15 +262,15 @@ async def lifespan(app: FastAPI):
 
                 # 3. Determine effective pipeline frequency (user config takes priority, then app config)
                 user_frequency_minutes = getattr(user.scheduler_config, "publishing_pipeline_frequency_minutes", None)
-                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else app_frequency_minutes
+                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else default_user_frequency_minutes #app_frequency_minutes
 
                 # 4. Retrieve runtime status for this user
-                runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
-                last_started_at = getattr(runtime_status, "last_publishing_pipeline_started_at", None) if runtime_status else None
-                is_running = getattr(runtime_status, "is_publishing_pipeline_running", False) if runtime_status else False
+                user_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                publishing_last_started_at = getattr(user_runtime_status, "last_publishing_pipeline_started_at", None) if user_runtime_status else None
+                is_running = getattr(user_runtime_status, "is_publishing_pipeline_running", False) if user_runtime_status else False
 
                 # 5. Determine if pipeline should run
-                enough_time_passed = last_started_at is not None and (now - last_started_at).total_seconds() / 60.0 > effective_frequency_minutes
+                enough_time_passed = publishing_last_started_at is not None and (now - publishing_last_started_at).total_seconds() / 60.0 > effective_frequency_minutes
                 should_run = (not is_running) or enough_time_passed
 
                 if not should_run:
