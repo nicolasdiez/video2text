@@ -1,8 +1,7 @@
 # /src/main.py
 
 # TODO:
-# - crear FK desde entity Channel (channel.selected_prompt_id) a Prompt para indicar el prompt seleccionado en el channel (xq puede haber varios prompts disponibles para un mismo channel, y el channel tiene que seleccionar el q quiere usar)
-# - modificar las funciones que disparan los pipelines en main (ingestion_job y publishing_job) para tener en cuenta la freq de ejecución de cada user, y solo en caso de no informada usar la de app_config
+# - modificar las jobs que disparan los pipelines en main (ingestion_job y publishing_job) para tener en cuenta la freq de ejecución de cada user. la freq de la app será siempre 1 min para ambos pipelines.
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.

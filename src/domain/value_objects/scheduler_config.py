@@ -14,10 +14,10 @@ class SchedulerConfig:
       - is_ingestion_pipeline_enabled: bool
       - is_publishing_pipeline_enabled: bool
     """
-    ingestion_pipeline_frequency_minutes: int = field(default=1)
-    publishing_pipeline_frequency_minutes: int = field(default=10)
-    is_ingestion_pipeline_enabled: bool = field(default=True)
-    is_publishing_pipeline_enabled: bool = field(default=True)
+    ingestion_pipeline_frequency_minutes: int   = field(default=1)
+    publishing_pipeline_frequency_minutes: int  = field(default=10)
+    is_ingestion_pipeline_enabled: bool         = field(default=True)
+    is_publishing_pipeline_enabled: bool        = field(default=True)
 
     def __post_init__(self):
         if not isinstance(self.ingestion_pipeline_frequency_minutes, int):
