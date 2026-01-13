@@ -99,7 +99,8 @@ class IngestionPipelineService(IngestionPipelinePort):
             for index, channel in enumerate(channels, start=1):
 
                 # 4. Fetch new videos for this channel
-                logger.info("Channel %s/%s - Fetching max %s videos from channel %s", index, len(channels), channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Channel %s/%s - Process starting...", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Fetching max %s videos from channel %s", channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, channel.max_videos_to_fetch_from_channel)
                 
                 # extract video IDs (limit if there are a lot)
@@ -109,7 +110,9 @@ class IngestionPipelineService(IngestionPipelinePort):
                 logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_process, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 5. Process each video independently
-                for video_meta in videos_meta:
+                for index2, video_meta in enumerate(videos_meta, start=1):
+                    
+                    logger.info("Video %s/%s - Process starting...", index2, len(videos_meta), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 6. Map DTO VideoMetadata → to domain entity Video, and persist
                     video = await self.video_repo.find_by_youtube_video_id_and_user_id(video_meta.videoId, user_id=user_id)
@@ -211,7 +214,8 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message_with_language = self.prompt_composer.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt_user_message_with_language, transcript=video.transcript, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+ output language + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
                         prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
@@ -276,10 +280,14 @@ class IngestionPipelineService(IngestionPipelinePort):
                     else:
                         logger.info("Skipping tweet generation - Video %s already has tweets generated, or video has no transcript available", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
+                    logger.info("Video %s/%s - Process finished", index2, len(videos_meta), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
                 channel.last_polled_at = datetime.utcnow()
                 channel.updated_at = datetime.utcnow()
                 await self.channel_repo.update(channel)
                 logger.info("Channel %s last_polled_at updated to %s", channel.youtube_channel_id, channel.last_polled_at, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                logger.info("Channel %s/%s - Process finished", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 16-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)

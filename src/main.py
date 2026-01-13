@@ -1,7 +1,6 @@
 # /src/main.py
 
 # TODO:
-# - modificar las jobs que disparan los pipelines en main (ingestion_job y publishing_job) para tener en cuenta la freq de ejecución de cada user. la freq de la app será siempre 1 min para ambos pipelines.
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
@@ -203,9 +202,14 @@ async def lifespan(app: FastAPI):
 
                 # 5. Determine if pipeline should run
                 elapsed_minutes = (now - ingestion_last_started_at).total_seconds() / 60.0 if ingestion_last_started_at else None
-                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes
-                should_run = (not is_running) and enough_time_passed
-
+                # normal condition: enough time has passed AND pipeline is not running
+                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
+                # protection condition: pipeline stuck (elapsed > 2x frequency)
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 2)
+                # first run condition: no previous execution recorded 
+                first_run = elapsed_minutes is None
+                
+                should_run = first_run or enough_time_passed or stuck_protection
                 logger.info("Ingestion pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, f"{elapsed_minutes:.2f}", extra={"job": "ingestion"})
 
                 if not should_run:
@@ -273,9 +277,14 @@ async def lifespan(app: FastAPI):
 
                 # 5. Determine if pipeline should run
                 elapsed_minutes = (now - publishing_last_started_at).total_seconds() / 60.0 if publishing_last_started_at else None
-                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes
-                should_run = (not is_running) and enough_time_passed
+                # normal condition: enough time has passed AND pipeline is not running
+                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
+                # protection condition: pipeline stuck (elapsed > 2x frequency)
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 2)
+                # first run condition: no previous execution recorded 
+                first_run = elapsed_minutes is None
 
+                should_run = first_run or enough_time_passed or stuck_protection
                 logger.info("Publishing pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, f"{elapsed_minutes:.2f}", extra={"job": "ingestion"})
 
                 if not should_run:
