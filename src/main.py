@@ -1,6 +1,7 @@
 # /src/main.py
 
 # TODO:
+# - usar los metodos del prompt_service.py cuando se asignen prompts a channels, se borren prompts, etc...
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.

@@ -6,7 +6,7 @@ from domain.entities.prompt import Prompt
 from domain.entities.channel import Channel
 
 
-class PromptService:
+class PromptService: #crear PromptServicePort e implementarlo aqui
     """
     Application-level service responsible for orchestrating prompt-related operations.
     - Coordinates prompt and channel repositories.

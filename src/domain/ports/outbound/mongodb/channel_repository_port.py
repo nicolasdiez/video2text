@@ -1,7 +1,8 @@
 # domain/ports/outbound/mongodb/channel_repository_port.py
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+from bson import ObjectId
 from domain.entities.channel import Channel
 
 class ChannelRepositoryPort(ABC):
@@ -50,6 +51,17 @@ class ChannelRepositoryPort(ABC):
     async def update(self, channel: Channel) -> None:
         """
         Update an existing Channel document.
+        """
+        ...
+
+    @abstractmethod
+    async def update_by_id(self, channel_id: ObjectId, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Update a channel document by its ID.
+
+        :param channel_id: ObjectId of the channel to update.
+        :param update_data: Dict with fields to update.
+        :return: The updated channel document or None if not found.
         """
         ...
 

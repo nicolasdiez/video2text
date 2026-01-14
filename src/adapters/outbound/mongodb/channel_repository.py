@@ -1,7 +1,7 @@
 # adapters/outbound/mongodb/channel_repository.py
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -64,6 +64,17 @@ class MongoChannelRepository(ChannelRepositoryPort):
             {"_id": ObjectId(channel.id)},
             {"$set": doc}
         )
+
+    async def update_by_id(self, channel_id: ObjectId, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Update a channel document by its ID and return the updated document.
+        """
+        result = await self._collection.find_one_and_update(
+            {"_id": channel_id},
+            {"$set": update_data},
+            return_document=True  # Return the updated document
+        )
+        return result
 
     async def delete(self, channel_id: str) -> None:
         """
