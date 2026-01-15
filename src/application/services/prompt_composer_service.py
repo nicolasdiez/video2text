@@ -14,7 +14,6 @@ class PromptComposerService:
     Service to compose different variations of a prompt from a Prompt entity and additional runtime data like the transcript.
     """
     
-
     def add_transcript(self, message: str, transcript: str, position: InstructionPosition = InstructionPosition.AFTER) -> str:
         """
         Append or prepend the transcript block to an existing message prompt.
