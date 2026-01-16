@@ -1,18 +1,21 @@
 # /src/main.py
 
 # TODO:
-# - crear PromptServicePort y su implementación adapter PromptService.
+# - crear PromptServicePort y vincularlo a su implementación adapter PromptService.
 # - crear ChannelServicePort y su implementación adapter ChannelService.
+# - crear entidad master_prompts, con su port y su mongo adapter.
+# - crear atributo selectedMasterPromptId en entidad channel (FK a master_prompts)
 # - incorporar en ingestion_pipeline la nueva logica de seleccion de prompt: 
 #   if channel.selectedMasterPromptId:
 #       # usar master prompt
 #   elif channel.selectedPromptId:
-#       # usar prompt normal
+#       # usar prompt de usuario
 #   else:
 #       # error: no prompt seleccionado
 # - modificar PromptComposerService para que implemente un PromptComposerServicePort
 # - usar los metodos del prompt_service.py cuando el usuario asigne prompts a channels, borre prompts, etc...
 # - usar los metodos del channel_service.py cuando el usuario haga cambios en sus channels (ej. update_channel_prompt())
+
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
