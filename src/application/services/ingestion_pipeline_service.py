@@ -17,7 +17,6 @@ from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetada
 from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
 from domain.ports.outbound.openai_port import OpenAIPort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
-from domain.entities.prompt import PromptContent
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
@@ -25,6 +24,7 @@ from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port
 from domain.entities.video import Video
 from domain.entities.channel import Channel
 from domain.entities.prompt import Prompt
+from domain.entities.prompt import PromptContent
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
@@ -72,7 +72,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
-        self.prompt_composer = PromptComposerService()
+        self.prompt_composer = PromptComposerService()  # TODO: no instanciar aqui, sino inyectar desde el composition root (main.py)
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
 
     async def run_for_user(self, user_id: str) -> None:

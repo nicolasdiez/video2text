@@ -1,8 +1,6 @@
 # /src/main.py
 
 # TODO:
-# - crear PromptServicePort y vincularlo a su implementación adapter PromptService.
-# - crear ChannelServicePort y su implementación adapter ChannelService.
 # - crear entidad master_prompts, con su port y su mongo adapter.
 # - crear atributo selectedMasterPromptId en entidad channel (FK a master_prompts)
 # - incorporar en ingestion_pipeline la nueva logica de seleccion de prompt: 
@@ -16,6 +14,8 @@
 # - usar los metodos del prompt_service.py cuando el usuario asigne prompts a channels, borre prompts, etc...
 # - usar los metodos del channel_service.py cuando el usuario haga cambios en sus channels (ej. update_channel_prompt())
 
+# - cuando un service A empiece a usar PromptService, inyectar PromptService en A (builder) desde main.py (composition root)
+# - cuando un service A empiece a usar ChannelServicePort, inyectar ChannelServicePort en A (builder) desde main.py (composition root)
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
@@ -74,14 +74,19 @@ from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import M
 from application.services.publishing_pipeline_service import PublishingPipelineService
 from adapters.outbound.twitter_client import TwitterClient
 
-# appConfig adapter
+# Repository adapters (for wiring with DB instance)
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
+from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository
 
-# factory to get a youtube_client resource for consuming Youtube Data API to retrieve video transcriptions 
+# Application Services ()
+from application.services.master_prompt_service import MasterPromptService
+
+# factory to get a youtube_client resource for consuming Youtube Data API (to retrieve video transcriptions) 
 from infrastructure.auth.youtube_credentials import get_youtube_client
 
 # specific logger for this module
 logger = logging.getLogger(__name__)
+
 
 
 # create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficialDataAPI
@@ -91,6 +96,11 @@ except RuntimeError as exc:
     logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
     # if instanciation fails, then rely on the transcription fallback service
     youtube_client = None
+
+
+# --- Inject concrete Repository Adapters into the Application Services ---
+master_prompt_repo = MongoMasterPromptRepository(db) 
+master_prompt_service = MasterPromptService(master_prompt_repo)
 
 # --- Ingestion Pipeline adapters & service instantiation ---
 user_repo                       = MongoUserRepository(database=db)
@@ -109,7 +119,7 @@ user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(data
 
 # if no official Youtube API transcription client, warn in log
 if transcription_client is None:
-    logger.warning("YouTube official transcription client not configured; using ASR fallback only", extra={"mod": __name__})
+    logger.warning("YouTube official transcription client not configured, using fallback #1: YouTube Data API and fallback #2: YouTube Public Player API (+ASR)", extra={"mod": __name__})
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(

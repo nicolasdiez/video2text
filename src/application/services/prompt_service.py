@@ -1,12 +1,18 @@
 # application/services/prompt_service.py
 # Description: Application-level service that orchestrates prompt lifecycle operations and maintains channel–prompt consistency.
 
+# Important Reminder:
+# - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
+
 from typing import Optional, List
 from domain.entities.prompt import Prompt
 from domain.entities.channel import Channel
+from domain.ports.inbound.prompt_service_port import PromptServicePort
+from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 
 
-class PromptService: #crear PromptServicePort e implementarlo aqui
+class PromptService (PromptServicePort):
     """
     Application-level service responsible for orchestrating prompt-related operations.
     - Coordinates prompt and channel repositories.
@@ -14,7 +20,7 @@ class PromptService: #crear PromptServicePort e implementarlo aqui
     - Does NOT perform prompt composition (handled by PromptComposerService).
     """
 
-    def __init__(self, prompt_repo, channel_repo):
+    def __init__(self, prompt_repo: PromptRepositoryPort, channel_repo: ChannelRepositoryPort):
         self.prompt_repo = prompt_repo
         self.channel_repo = channel_repo
 
