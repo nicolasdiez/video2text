@@ -15,6 +15,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
     """
     MongoDB adapter for ChannelRepositoryPort. Maps between Channel entities and Mongo documents.
     """
+
     def __init__(self, database: AsyncIOMotorDatabase = db):
         # Use the shared `db` instance from infrastructure.mongodb
         self._collection = database.get_collection("channels")
@@ -47,12 +48,26 @@ class MongoChannelRepository(ChannelRepositoryPort):
         """
         raw = await self._collection.find_one({"youtubeChannelId": youtube_channel_id})
         return self._to_entity(raw) if raw else None
-    
+
     async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
         """
-        Fetch a single channel by its selected prompt ID.
+        Retrieve channels that reference the given user prompt ID in selectedPromptId.
         """
         cursor = self._collection.find({"selectedPromptId": ObjectId(prompt_id)})
+        return [self._to_entity(doc) async for doc in cursor]
+
+    async def find_by_selected_master_prompt_id(self, master_prompt_id: str) -> List[Channel]:
+        """
+        Retrieve channels that reference the given master prompt ID in selectedMasterPromptId.
+        """
+        cursor = self._collection.find({"selectedMasterPromptId": ObjectId(master_prompt_id)})
+        return [self._to_entity(doc) async for doc in cursor]
+
+    async def find_all(self) -> List[Channel]:
+        """
+        Retrieve all channels.
+        """
+        cursor = self._collection.find({})
         return [self._to_entity(doc) async for doc in cursor]
 
     async def update(self, channel: Channel) -> None:
@@ -68,11 +83,12 @@ class MongoChannelRepository(ChannelRepositoryPort):
     async def update_by_id(self, channel_id: ObjectId, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Update a channel document by its ID and return the updated document.
+        Note: update_data is expected to be a Mongo-style partial document (fields already mapped to DB keys).
         """
         result = await self._collection.find_one_and_update(
             {"_id": channel_id},
             {"$set": update_data},
-            return_document=True  # Return the updated document
+            return_document=True  # keep existing behavior; motor may accept this as truthy to return updated doc
         )
         return result
 
@@ -81,23 +97,25 @@ class MongoChannelRepository(ChannelRepositoryPort):
         Remove a channel document by ID.
         """
         await self._collection.delete_one({"_id": ObjectId(channel_id)})
-    
+
     async def delete_all(self) -> int:
         """
         Delete all documents in channels collection. Returns number deleted.
         """
-        res = await self._coll.delete_many({})
+        res = await self._collection.delete_many({})
         return res.deleted_count
 
     def _to_entity(self, doc: dict) -> Channel:
         """
         Convert a Mongo document into a Channel entity.
+        Handles optional selected_prompt_id and selected_master_prompt_id.
         """
         return Channel(
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             youtube_channel_id=doc["youtubeChannelId"],
-            selected_prompt_id=doc["selectedPromptId"],
+            selected_prompt_id=str(doc.get("selectedPromptId")) if doc.get("selectedPromptId") is not None else None,
+            selected_master_prompt_id=str(doc.get("selectedMasterPromptId")) if doc.get("selectedMasterPromptId") is not None else None,
             title=doc["title"],
             polling_interval=doc.get("pollingInterval"),
             max_videos_to_fetch_from_channel=doc.get("maxVideosToFetchFromChannel"),
@@ -109,11 +127,13 @@ class MongoChannelRepository(ChannelRepositoryPort):
     def _to_document(self, channel: Channel) -> dict:
         """
         Convert a Channel entity into a Mongo document. Filters out None values.
+        Converts string IDs to ObjectId where appropriate.
         """
-        doc = {
-            "userId": ObjectId(channel.user_id),
+        doc: Dict[str, Any] = {
+            "userId": ObjectId(channel.user_id) if channel.user_id else None,
             "youtubeChannelId": channel.youtube_channel_id,
-            "selectedPromptId": channel.selected_prompt_id,
+            "selectedPromptId": ObjectId(channel.selected_prompt_id) if channel.selected_prompt_id else None,
+            "selectedMasterPromptId": ObjectId(channel.selected_master_prompt_id) if channel.selected_master_prompt_id else None,
             "title": channel.title,
             "pollingInterval": channel.polling_interval,
             "maxVideosToFetchFromChannel": channel.max_videos_to_fetch_from_channel,
@@ -121,4 +141,5 @@ class MongoChannelRepository(ChannelRepositoryPort):
             "createdAt": channel.created_at,
             "updatedAt": channel.updated_at,
         }
+        # Remove keys with None values so we don't overwrite existing fields unintentionally
         return {key: value for key, value in doc.items() if value is not None}
