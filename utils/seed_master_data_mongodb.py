@@ -218,7 +218,7 @@ async def seed():
             "ingestionPipelineFrequencyMinutes": 2,
             "publishingPipelineFrequencyMinutes": 10,
             "isIngestionPipelineEnabled": True,
-            "isPublishingPipelineEnabled": True
+            "isPublishingPipelineEnabled": False
         },
         "maxTweetsToFetchFromDB": 4,
         "maxTweetsToPublish": 1,
@@ -248,8 +248,8 @@ async def seed():
             # build SchedulerConfig from the user_doc (use defaults if keys missing)
             sc_doc = user_doc.get("schedulerConfig", {})
             scheduler_config = SchedulerConfig(
-            #    ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1)),
-            #    publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 2)),
+                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 2)),
+                publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 10)),
                 is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
             )
@@ -425,8 +425,8 @@ async def seed():
     # Build master_prompt document
     master_prompt_doc = {
         "_id": ObjectId(),
-        "category": "seeded",  # adjust category/subcategory as needed
-        "subcategory": "default",
+        "category": "Finance",  # adjust category/subcategory as needed
+        "subcategory": "Investing",
         "promptContent": {
             "systemMessage": SYSTEM_MESSAGE,
             "userMessage": USER_MESSAGE,
@@ -717,8 +717,8 @@ async def seed():
     # 4) APP CONFIG
     # -----------------------
     scheduler_config = SchedulerConfig(
-        ingestion_pipeline_frequency_minutes=1440,
-        publishing_pipeline_frequency_minutes=360,
+        ingestion_pipeline_frequency_minutes=1,
+        publishing_pipeline_frequency_minutes=1,
         is_ingestion_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
     )

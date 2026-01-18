@@ -68,27 +68,27 @@ class ChannelService(ChannelServicePort):
         The method logs informative messages but does not raise for "not found" cases; callers should handle a None return (e.g., skip processing).
         """
         
-        # 1) Master prompt precedence
+        # 1) Master prompt (collection: "master_prompts") takes priority over the user prompt (collection: "prompts")
         if getattr(channel, "selected_master_prompt_id", None):
             
-            master_id = channel.selected_master_prompt_id
+            master_prompt_id = channel.selected_master_prompt_id
             
             try:
-                master_prompt = await self.master_prompt_repo.find_by_id(master_id)
+                master_prompt = await self.master_prompt_repo.find_by_id(master_prompt_id)
             except Exception as exc:
-                logger.exception("Error fetching master prompt %s for channel %s: %s", master_id, channel.id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.exception("Error fetching master prompt %s for channel %s: %s", master_prompt_id, channel.id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 return None
             if not master_prompt:
-                logger.info("Selected master prompt %s not found for channel %s; falling back to user prompts if any", master_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 # fall through to user-prompt resolution
+                logger.info("Selected master prompt %s not found for channel %s; falling back to user prompts (if any)", master_prompt_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             else:
-                logger.info("Using master prompt %s for channel %s (master prompt takes precedence over user prompt).", master_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Using master prompt %s for channel %s (master prompt takes priority over user prompt).", master_prompt_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 return master_prompt
         
-        # 2) User prompt resolution
-        prompt = None
+        # 2) User prompt resolution (fallback if master prompt not available)
+        user_prompt = None
         
-        # If no selected_prompt_id, try to find any prompt for this user+channel
+        # If channel has no selected_prompt_id, try to find any prompt for this user+channel
         if not channel.selected_prompt_id:
             try:
                 prompts = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
@@ -100,25 +100,25 @@ class ChannelService(ChannelServicePort):
                 return None
             
             # Use the first prompt when multiple exist
-            prompt = prompts[0]
+            user_prompt = prompts[0]
            
             # validate that the fallback prompt belongs to the same user
-            if prompt.user_id != channel.user_id:
-                logger.info("Fallback prompt %s does not belong to user %s (channel user_id=%s), skipping", prompt.id, user_id, channel.user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            if user_prompt.user_id != channel.user_id:
+                logger.info("Fallback user prompt %s does not belong to user %s (channel user_id=%s), skipping", user_prompt.id, user_id, channel.user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 return None
             # log that we are using a fallback prompt
-            logger.info("Channel %s has no selected_prompt_id; using fallback prompt %s for user %s and channel %s", channel.id, prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-            return prompt
+            logger.info("Channel %s has no selected_prompt_id; using fallback prompt %s for user %s and channel %s", channel.id, user_prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            return user_prompt
         
         # Normal path: channel.selected_prompt_id exists
         try:
-            prompt = await self.prompt_repo.find_by_id(channel.selected_prompt_id)
+            user_prompt = await self.prompt_repo.find_by_id(channel.selected_prompt_id)
         except Exception as exc:
             logger.exception("Error fetching selected prompt %s for channel %s: %s", channel.selected_prompt_id, channel.id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             return None
         
         # If the selected prompt does not exist, fall back to any available prompt
-        if not prompt:
+        if not user_prompt:
             logger.info("Selected prompt %s not found for channel %s; falling back to any available prompt for user %s", channel.selected_prompt_id, channel.id, user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             try:
                 prompts = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
@@ -129,14 +129,14 @@ class ChannelService(ChannelServicePort):
                 logger.info("No fallback prompts exist for user %s and channel %s, skipping", user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 return None
             # Use the first prompt when multiple exist
-            prompt = prompts[0]
+            user_prompt = prompts[0]
         
         # validate that the selected or fallback prompt belongs to the same user
-        if prompt.user_id != channel.user_id:
-            logger.info("Selected prompt %s does not belong to user %s (channel user_id=%s), skipping", getattr(prompt, "id", None), user_id, channel.user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        if user_prompt.user_id != channel.user_id:
+            logger.info("Selected prompt %s does not belong to user %s (channel user_id=%s), skipping", getattr(user_prompt, "id", None), user_id, channel.user_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             return None
         
         # log that the selected prompt was retrieved successfully
-        logger.info("Selected prompt %s successfully retrieved for user %s and channel %s", prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("Selected prompt %s successfully retrieved for user %s and channel %s", user_prompt.id, user_id, channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
-        return prompt
+        return user_prompt

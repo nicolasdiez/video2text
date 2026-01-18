@@ -11,8 +11,8 @@ from domain.ports.outbound.mongodb.master_prompt_repository_port import MasterPr
 
 class MongoMasterPromptRepository(MasterPromptRepositoryPort):
 
-    def __init__(self, db: AsyncIOMotorDatabase):
-        self.collection = db["master_prompts"]
+    def __init__(self, database: AsyncIOMotorDatabase):
+        self.collection = database["master_prompts"]
 
     # -----------------------------
     # Helpers
@@ -78,7 +78,7 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
     # CRUD methods
     # -----------------------------
     async def find_by_id(self, master_prompt_id: ObjectId) -> Optional[MasterPrompt]:
-        doc = await self.collection.find_one({"_id": master_prompt_id})
+        doc = await self.collection.find_one({"_id": ObjectId(master_prompt_id)})
         return self._document_to_entity(doc) if doc else None
 
     async def find_all(self) -> List[MasterPrompt]:
@@ -99,12 +99,12 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
 
     async def update_by_id(self, master_prompt_id: ObjectId, update_data: Dict[str, Any]) -> Optional[MasterPrompt]:
         doc = await self.collection.find_one_and_update(
-            {"_id": master_prompt_id},
+            {"_id": ObjectId(master_prompt_id)},
             {"$set": update_data},
             return_document=True
         )
         return self._document_to_entity(doc) if doc else None
 
     async def delete_by_id(self, master_prompt_id: ObjectId) -> bool:
-        result = await self.collection.delete_one({"_id": master_prompt_id})
+        result = await self.collection.delete_one({"_id": ObjectId(master_prompt_id)})
         return result.deleted_count == 1

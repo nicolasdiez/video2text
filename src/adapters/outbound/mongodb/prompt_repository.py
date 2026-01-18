@@ -21,7 +21,7 @@ class MongoPromptRepository(PromptRepositoryPort):
     """
     MongoDB adapter for PromptRepositoryPort. Maps between Prompt entities and Mongo documents.
     """
-    def __init__(self, database: AsyncIOMotorDatabase = db):
+    def __init__(self, database: AsyncIOMotorDatabase = db):    # TODO: eliminar el db por defecto y el import, que solo sea por inyección
         self._collection = database.get_collection("prompts")
 
     async def save(self, prompt: Prompt) -> str:

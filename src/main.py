@@ -81,14 +81,13 @@ from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPrompt
 
 # Application Services ()
 from application.services.master_prompt_service import MasterPromptService
+from application.services.channel_service import ChannelService
 
 # factory to get a youtube_client resource for consuming Youtube Data API (to retrieve video transcriptions) 
 from infrastructure.auth.youtube_credentials import get_youtube_client
 
 # specific logger for this module
 logger = logging.getLogger(__name__)
-
-
 
 # create a youtube_client resource to inject as dependency into YouTubeTranscriptionClientOfficialDataAPI
 try:
@@ -98,12 +97,7 @@ except RuntimeError as exc:
     # if instanciation fails, then rely on the transcription fallback service
     youtube_client = None
 
-
-# --- Inject concrete Repository Adapters into the Application Services ---
-master_prompt_repo = MongoMasterPromptRepository(db) 
-master_prompt_service = MasterPromptService(master_prompt_repo)
-
-# --- Ingestion Pipeline adapters & service instantiation ---
+# --- Repo adapters & service instantiation ---
 user_repo                       = MongoUserRepository(database=db)
 prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
 channel_repo                    = MongoChannelRepository(database=db)
@@ -117,6 +111,11 @@ openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
 tweet_repo                      = MongoTweetRepository(database=db)
 user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(database=db)
+
+# inject concrete Repository Adapters into the Application Services ---
+master_prompt_repo = MongoMasterPromptRepository(database=db) 
+master_prompt_service = MasterPromptService(master_prompt_repo)
+channel_service = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
 
 # if no official Youtube API transcription client, warn in log
 if transcription_client is None:
@@ -132,11 +131,12 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     transcription_client            = transcription_client,
     transcription_client_fallback   = transcription_client_fallback,
     transcription_client_fallback_2 = transcription_client_fallback,
-    prompt_repo                     = prompt_repo,
+    prompt_repo                     = prompt_repo,  # Not used anymore, remove!  (now is channel_service which access to the prompts)
     openai_client                   = openai_client,
     tweet_generation_repo           = tweet_generation_repo,
     tweet_repo                      = tweet_repo,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
+    channel_service                 = channel_service
 )
 
 # Inject the instance of IngestionPipelineService (with all the Adapters) into the pipeline controller 
@@ -236,7 +236,10 @@ async def lifespan(app: FastAPI):
                 first_run = elapsed_minutes is None
                 
                 should_run = first_run or enough_time_passed or stuck_protection
-                logger.info("Ingestion pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, f"{elapsed_minutes:.2f}", extra={"job": "ingestion"})
+                
+                # normalizo valor de elapsed_minutes para el caso de que sea None no falle el logger
+                elapsed_minutes = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
+                logger.info("Ingestion pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, elapsed_minutes, extra={"job": "ingestion"})
 
                 if not should_run:
                     logger.info("Skipping ingestion pipeline (user: %s already running or within frequency window)", user.id, extra={"job": "ingestion"})
@@ -311,7 +314,10 @@ async def lifespan(app: FastAPI):
                 first_run = elapsed_minutes is None
 
                 should_run = first_run or enough_time_passed or stuck_protection
-                logger.info("Publishing pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, f"{elapsed_minutes:.2f}", extra={"job": "ingestion"})
+
+                # normalizo valor de elapsed_minutes para el caso de que sea None no falle el logger
+                elapsed_minutes = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
+                logger.info("Publishing pipeline scheduling check (user %s): Configured frequency is %s mins, Last run started %s mins ago.", user.id, effective_frequency_minutes, elapsed_minutes, extra={"job": "ingestion"})
 
                 if not should_run:
                     logger.info("Skipping ingestion pipeline (user: %s already running or within frequency window)", user.id, extra={"job": "ingestion"})
