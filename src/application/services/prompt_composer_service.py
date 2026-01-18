@@ -3,16 +3,18 @@
 # Important Reminder:
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
 
-from domain.entities.prompt import Prompt, TweetLengthPolicy
 from enum import Enum
 from typing import Optional
+
+from domain.entities.prompt import Prompt, TweetLengthPolicy
+from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort
 
 
 class InstructionPosition(str, Enum):
     BEFORE = "before"
     AFTER = "after"
 
-class PromptComposerService:
+class PromptComposerService(PromptComposerServicePort):
     """
     Service to compose different variations of a prompt from a Prompt entity and additional runtime data like the transcript.
     """

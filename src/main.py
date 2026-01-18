@@ -1,22 +1,12 @@
 # /src/main.py
 
 # TODO:
-# - integrar el get_channel_prompt() de channel_service en el ingestion pipeline service
-# - crear entidad master_prompts, con su port y su mongo adapter.
-# - crear atributo selectedMasterPromptId en entidad channel (FK a master_prompts)
-# - incorporar en ingestion_pipeline la nueva logica de seleccion de prompt: 
-#   if channel.selectedMasterPromptId:
-#       # usar master prompt
-#   elif channel.selectedPromptId:
-#       # usar prompt de usuario
-#   else:
-#       # error: no prompt seleccionado
 # - modificar PromptComposerService para que implemente un PromptComposerServicePort
-# - usar los metodos del prompt_service.py cuando el usuario asigne prompts a channels, borre prompts, etc...
-# - usar los metodos del channel_service.py cuando el usuario haga cambios en sus channels (ej. update_channel_prompt())
+# - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
+# - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 
 # - cuando un service A empiece a usar PromptService, inyectar PromptService en A (builder) desde main.py (composition root)
-# - cuando un service A empiece a usar ChannelServicePort, inyectar ChannelServicePort en A (builder) desde main.py (composition root)
+# - cuando un service A empiece a usar ChannelService, inyectar ChannelService en A (builder) desde main.py (composition root)
 # - endpoints de consumo desde front para CRUD entities: users, channels, prompts, app_config, prompts_master.
 # - modify transcription_client.py from using deprecated get_transcript() to use fetch()
 # - create a new collection {prompts_master} to store master prompts of the application, not dependent on userId or channelId.
@@ -82,6 +72,7 @@ from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPrompt
 # Application Services ()
 from application.services.master_prompt_service import MasterPromptService
 from application.services.channel_service import ChannelService
+from application.services.prompt_composer_service import PromptComposerService
 
 # factory to get a youtube_client resource for consuming Youtube Data API (to retrieve video transcriptions) 
 from infrastructure.auth.youtube_credentials import get_youtube_client
@@ -116,6 +107,7 @@ user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(data
 master_prompt_repo = MongoMasterPromptRepository(database=db) 
 master_prompt_service = MasterPromptService(master_prompt_repo)
 channel_service = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
+prompt_composer_service = PromptComposerService()
 
 # if no official Youtube API transcription client, warn in log
 if transcription_client is None:
@@ -136,7 +128,8 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     tweet_generation_repo           = tweet_generation_repo,
     tweet_repo                      = tweet_repo,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
-    channel_service                 = channel_service
+    channel_service                 = channel_service,
+    prompt_composer_service         = prompt_composer_service
 )
 
 # Inject the instance of IngestionPipelineService (with all the Adapters) into the pipeline controller 

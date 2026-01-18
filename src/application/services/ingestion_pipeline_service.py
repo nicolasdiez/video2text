@@ -60,7 +60,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
-        channel_service: ChannelService
+        channel_service: ChannelService,
+        prompt_composer_service: PromptComposerService
     ):
         self.user_repo = user_repo
         self.prompt_loader = prompt_loader
@@ -74,9 +75,9 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
-        self.prompt_composer = PromptComposerService()  # TODO: no instanciar aqui, sino inyectar desde el composition root (main.py)
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
         self.channel_service = channel_service
+        self.prompt_composer_service = prompt_composer_service
 
     async def run_for_user(self, user_id: str) -> None:
         try:
@@ -183,9 +184,6 @@ class IngestionPipelineService(IngestionPipelinePort):
                     if (not video.tweets_generated) and video.transcript:
 
                         # 9. Retrieve the SELECTED PROMPT entity for this user and channel
-                        #   use ChannelService.get_channel_prompt() which encapsulates the business logic:
-                        #       - if channel.selected_master_prompt_id exists, master prompt takes precedence
-                        #       - otherwise, use user prompt (may return the first when multiple exist)
                         try:
                             prompt = await self.channel_service.get_channel_prompt(channel=channel, user_id=user_id)
                         except Exception as exc:
@@ -198,14 +196,14 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
-                        prompt_user_message_with_language = self.prompt_composer.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message_with_objective = self.prompt_composer.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
-                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+ output language + objective + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
-                        prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
-                        prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
+                        prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                         # 11. Generate raw texts for the video
