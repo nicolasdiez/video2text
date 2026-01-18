@@ -36,6 +36,3 @@ __pycache__/
 
 # Kubernetes real secrets
 k8s/secret.yaml
-
-# Ignore mongoDB seed testing data
-utils/seed_master_data_mongodb.py

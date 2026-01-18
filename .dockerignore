@@ -18,8 +18,11 @@ doc/Road_To_Pro.xlsx
 *.log
 video2text-venv/
 
-# Ignore mongoDB seed testing data
+# Ignore mongoDB seed testing data (not needed in PRO server)
 utils/seed_master_data_mongodb.py
+
+# Ignore all the utility scripts and code snippets
+utils/
 
 # Archivos de git
 .git
