@@ -1,6 +1,7 @@
 # /src/main.py
 
 # TODO:
+# - integrar el get_channel_prompt() de channel_service en el ingestion pipeline service
 # - crear entidad master_prompts, con su port y su mongo adapter.
 # - crear atributo selectedMasterPromptId en entidad channel (FK a master_prompts)
 # - incorporar en ingestion_pipeline la nueva logica de seleccion de prompt: 
