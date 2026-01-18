@@ -201,7 +201,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         prompt_user_message_with_language = self.prompt_composer.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         prompt_user_message_with_objective = self.prompt_composer.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
                         prompt_user_message = self.prompt_composer.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
-                        logger.info("Prompt user_message loaded (+ output language + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Prompt user_message loaded (+ output language + objective + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
                         prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
