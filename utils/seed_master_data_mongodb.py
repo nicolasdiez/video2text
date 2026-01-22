@@ -391,6 +391,7 @@ async def seed():
     # ------------------------------
     # saved_channel_ids is expected to be a list of channel IDs (strings) produced by the CHANNEL step
 
+    # Load prompt messages from non-reposited file
     path = Path("prompts/seed_master_data_mongodb_PROMPT.yaml")
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     SYSTEM_MESSAGE = data["system_message"]

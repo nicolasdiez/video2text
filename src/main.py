@@ -1,7 +1,6 @@
 # /src/main.py
 
 # TODO:
-# - modificar PromptComposerService para que implemente un PromptComposerServicePort
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 
@@ -85,7 +84,6 @@ try:
     youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
 except RuntimeError as exc:
     logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
-    # if instanciation fails, then rely on the transcription fallback service
     youtube_client = None
 
 # --- Repo adapters & service instantiation ---
