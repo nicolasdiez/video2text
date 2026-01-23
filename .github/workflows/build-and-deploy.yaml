@@ -1,6 +1,6 @@
 #.github/workflows/build-and-deploy.yaml
 
-name: Build and Deploy Image
+name: Build and Deploy Image to Self-Hosted Runner VM
 
 on:
   push:
