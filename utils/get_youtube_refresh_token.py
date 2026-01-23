@@ -2,7 +2,7 @@
 
 # IMPORTANT!!!:
 # this is a snippet code, NOT part of the application code base. It is meant to be used only once 
-# What´s this script used for? --> generate a youtube OAuth2 refresh token from a clientId and a clientSecret. Then manually get the refresh token and save it to .env
+# What´s this script used for? --> generate a youtube OAuth2 refresh token from a clientId and a clientSecret. Then manually get the refresh token and save it to .env (YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN).
 
 from dotenv import load_dotenv
 import os

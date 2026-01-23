@@ -38,7 +38,7 @@ class PromptRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def find_by_user_and_channel(self, user_id: str, channel_id: str) -> Optional[Prompt]:
+    async def find_by_user_and_channel(self, user_id: str, channel_id: str) -> List[Prompt]:
         """
         Retrieve a single Prompt by both user_id and channel_id.
         Returns None if not found.

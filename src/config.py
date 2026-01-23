@@ -122,7 +122,7 @@ class EmitJsonHandler(logging.StreamHandler):
             self.handleError(record)
 
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()      # order of fatality: FATAL > ERROR > WARNING > INFO > DEBUG > TRACE
 ENVIRONMENT = os.getenv("ENVIRONMENT", "DEV")
 
 # Configure logging in JSON format

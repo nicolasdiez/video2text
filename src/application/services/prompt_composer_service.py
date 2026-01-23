@@ -1,20 +1,24 @@
 # application/services/prompt_composer_service.py
 
-from domain.entities.prompt import Prompt, TweetLengthPolicy
+# Important Reminder:
+# - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
+
 from enum import Enum
 from typing import Optional
+
+from domain.entities.prompt import Prompt, TweetLengthPolicy
+from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort
 
 
 class InstructionPosition(str, Enum):
     BEFORE = "before"
     AFTER = "after"
 
-class PromptComposerService:
+class PromptComposerService(PromptComposerServicePort):
     """
     Service to compose different variations of a prompt from a Prompt entity and additional runtime data like the transcript.
     """
     
-
     def add_transcript(self, message: str, transcript: str, position: InstructionPosition = InstructionPosition.AFTER) -> str:
         """
         Append or prepend the transcript block to an existing message prompt.
@@ -47,7 +51,7 @@ class PromptComposerService:
         """
         objective_block = (
             "=== OBJECTIVE ===\n"
-            f"Based on the provided transcript, create exactly {max_sentences} short, standalone tweets.\n\n"
+            f"Based on the provided transcript, generate exactly {max_sentences} standalone tweets.\n\n"
         )
 
         pos_val = position.value if hasattr(position, "value") else str(position)
@@ -72,7 +76,7 @@ class PromptComposerService:
         """
         output_language_block = (
             f"=== OUTPUT LANGUAGE ===\n"
-            f"The short and standalone tweets must be generated in {output_language} language.\n\n"
+            f"The tweets must be generated in {output_language} language.\n\n"
         )
 
         pos_val = position.value if hasattr(position, "value") else str(position)
@@ -144,7 +148,7 @@ class PromptComposerService:
             max_val = max_len if max_len is not None else 140
             instruction = (
                 "=== OUTPUT LENGTH ===\n"
-                f"Generate tweets with length between {min_val} and {max_val} {unit_val}.\n\n"
+                f"Each tweet must be between {min_val} and {max_val} {unit_val}.\n\n"
             )
         else:
             # Unknown mode: do not modify message

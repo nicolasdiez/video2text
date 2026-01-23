@@ -17,7 +17,6 @@ from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetada
 from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
 from domain.ports.outbound.openai_port import OpenAIPort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
-from domain.entities.prompt import PromptContent
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
@@ -25,10 +24,12 @@ from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port
 from domain.entities.video import Video
 from domain.entities.channel import Channel
 from domain.entities.prompt import Prompt
+from domain.entities.prompt import PromptContent
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
 from application.services.prompt_composer_service import PromptComposerService, InstructionPosition
+from application.services.channel_service import ChannelService
 
 # Specific logger for this module
 logger = logging.getLogger(__name__)
@@ -59,6 +60,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
+        channel_service: ChannelService,
+        prompt_composer_service: PromptComposerService
     ):
         self.user_repo = user_repo
         self.prompt_loader = prompt_loader
@@ -68,12 +71,13 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.transcription_client = transcription_client
         self.transcription_client_fallback: Optional[TranscriptionPort] = transcription_client_fallback
         self.transcription_client_fallback_2: Optional[TranscriptionPort] = transcription_client_fallback_2
-        self.prompt_repo = prompt_repo
+        self.prompt_repo = prompt_repo                  # TODO: Not used anymore, remove!  (now is channel_service which access to the prompts)
         self.openai_client = openai_client
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
-        self.prompt_composer = PromptComposerService()
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
+        self.channel_service = channel_service
+        self.prompt_composer_service = prompt_composer_service
 
     async def run_for_user(self, user_id: str) -> None:
         try:
@@ -93,23 +97,26 @@ class IngestionPipelineService(IngestionPipelinePort):
 
             # 2. Fetch all channels the user is subscribed to
             channels: List[Channel] = await self.channel_repo.find_by_user_id(user_id)
-            logger.info("%s channels retrieved from 'channels'", len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.info("%s channel/s retrieved from 'channels'", len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 3. Process each channel independently
             for index, channel in enumerate(channels, start=1):
 
                 # 4. Fetch new videos for this channel
-                logger.info("Channel %s/%s - Fetching max %s videos from channel %s", index, len(channels), channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Channel %s/%s - Process starting...", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Fetching max %s videos from channel %s", channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, channel.max_videos_to_fetch_from_channel)
                 
                 # extract video IDs (limit if there are a lot)
                 video_ids = [v.videoId for v in videos_meta]
-                max_show = 20
-                video_ids_to_show = video_ids if len(video_ids) <= max_show else video_ids[:max_show] + ["...(+%d)" % (len(video_ids) - max_show)]
-                logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_show, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                max_videos_to_process = 20
+                video_ids_to_process = video_ids if len(video_ids) <= max_videos_to_process else video_ids[:max_videos_to_process] + ["...(+%d)" % (len(video_ids) - max_videos_to_process)]
+                logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_process, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 5. Process each video independently
-                for video_meta in videos_meta:
+                for index2, video_meta in enumerate(videos_meta, start=1):
+                    
+                    logger.info("Video %s/%s - Process starting...", index2, len(videos_meta), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 6. Map DTO VideoMetadata → to domain entity Video, and persist
                     video = await self.video_repo.find_by_youtube_video_id_and_user_id(video_meta.videoId, user_id=user_id)
@@ -153,14 +160,14 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # If secondary didn't return a usable transcript (or client didn't even exist), try second fallback, but only if client exists
                         if self.transcription_client_fallback_2:                    
                             if not transcript:
-                                logger.info("Seconday transcription unavailable, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse-) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                logger.info("First fallback transcription client failed, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse- + ASR) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                                 try:
                                     transcript = await self.transcription_client_fallback_2.transcribe(video.youtube_video_id, language=['en','es'])
                                 except Exception as e:
-                                    logger.warning("Secondary fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                    logger.warning("Second fallback transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
 
                         if not transcript:
-                            logger.info("No transcription obtained for video %s after primary, seconday and tertiary fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                            logger.info("No transcription obtained for video %s after primary and 2 fallback attempts; skipping transcript persistence", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                         else:
                             logger.info("Transcription received (%s chars) (video: %s)", len(transcript), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                             video.transcript = transcript
@@ -170,28 +177,37 @@ class IngestionPipelineService(IngestionPipelinePort):
                             # persist the updated video entity
                             await self.video_repo.update(video)
                             logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    else:
+                        logger.info("Skipping transcript generation - Video %s already has a transcript (%s chars) (video title: %s) ", video.id, len(video.transcript), video.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
                     if (not video.tweets_generated) and video.transcript:
 
-                        # 9. Retrieve Prompt entity for this user and channel
-                        prompt = await self.prompt_repo.find_by_user_and_channel(user_id=user_id, channel_id=channel.id)
-                        if not prompt:
-                            logger.info("No prompt found for user %s and channel %s, skipping video %s", user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        # 9. Retrieve the SELECTED PROMPT entity for this user and channel
+                        try:
+                            prompt = await self.channel_service.get_channel_prompt(channel=channel, user_id=user_id)
+                        except Exception as exc:
+                            logger.exception("Error resolving prompt for channel %s and user %s: %s", channel.id, user_id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
+                        if not prompt:
+                            logger.info("No suitable prompt resolved for channel %s and user %s, skipping video %s", channel.id, user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
+                        logger.info("Prompt %s successfully retrieved for user %s and channel %s (video %s)", getattr(prompt, "id", None), user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 10. Load and prepare user and system messages for the prompt
+                        # 10. Load and prepare user and system messages for the PROMPT
                         # user message
-                        prompt_user_message = self.prompt_composer.add_transcript(message=prompt.prompt_content.user_message, transcript=video.transcript, position=InstructionPosition.AFTER)
-                        logger.info("Prompt user message loaded (+ transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
+                        logger.info("Prompt user_message loaded (+ output language + objective + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
-                        prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
-                        prompt_system_message = self.prompt_composer.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        logger.info("Prompt system message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
+                        prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        logger.info("Prompt system_message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                    # 11. Generate raw texts for the video
-                        model="gpt-4"
+                        # 11. Generate raw texts for the video
+                        model="gpt-4o"
                         # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
                         raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
                             prompt_user_message=prompt_user_message,
@@ -244,11 +260,17 @@ class IngestionPipelineService(IngestionPipelinePort):
                         video.tweets_generated = True
                         video.updated_at = datetime.utcnow()
                         await self.video_repo.update(video)
-                    
+                    else:
+                        logger.info("Skipping tweet generation - Video %s already has tweets generated, or video has no transcript available", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                    logger.info("Video %s/%s - Process finished", index2, len(videos_meta), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
                 channel.last_polled_at = datetime.utcnow()
                 channel.updated_at = datetime.utcnow()
                 await self.channel_repo.update(channel)
                 logger.info("Channel %s last_polled_at updated to %s", channel.youtube_channel_id, channel.last_polled_at, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                logger.info("Channel %s/%s - Process finished", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 16-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)

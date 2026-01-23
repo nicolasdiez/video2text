@@ -1,8 +1,10 @@
-# domain/ports/outbound/mongodb/channel_repository_port.py
+# src/domain/ports/outbound/mongodb/channel_repository_port.py
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+from bson import ObjectId
 from domain.entities.channel import Channel
+
 
 class ChannelRepositoryPort(ABC):
     """
@@ -40,9 +42,41 @@ class ChannelRepositoryPort(ABC):
         ...
 
     @abstractmethod
+    async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
+        """
+        Retrieve channels that reference the given user prompt ID in selected_prompt_id.
+        """
+        ...
+
+    @abstractmethod
+    async def find_by_selected_master_prompt_id(self, master_prompt_id: str) -> List[Channel]:
+        """
+        Retrieve channels that reference the given master prompt ID in selected_master_prompt_id.
+        """
+        ...
+
+    @abstractmethod
+    async def find_all(self) -> List[Channel]:
+        """
+        Retrieve all channels.
+        """
+        ...
+
+    @abstractmethod
     async def update(self, channel: Channel) -> None:
         """
-        Update an existing Channel document.
+        Update an existing Channel document using a full Channel entity.
+        """
+        ...
+
+    @abstractmethod
+    async def update_by_id(self, channel_id: ObjectId, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Update a channel document by its ID.
+
+        :param channel_id: ObjectId of the channel to update.
+        :param update_data: Dict with fields to update (partial updates supported).
+        :return: The updated channel document or None if not found.
         """
         ...
 
@@ -59,4 +93,3 @@ class ChannelRepositoryPort(ABC):
         Delete all documents in channels collection. Returns number deleted.
         """
         ...
-

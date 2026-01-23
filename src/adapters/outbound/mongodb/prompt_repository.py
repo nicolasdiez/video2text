@@ -21,7 +21,7 @@ class MongoPromptRepository(PromptRepositoryPort):
     """
     MongoDB adapter for PromptRepositoryPort. Maps between Prompt entities and Mongo documents.
     """
-    def __init__(self, database: AsyncIOMotorDatabase = db):
+    def __init__(self, database: AsyncIOMotorDatabase = db):    # TODO: eliminar el db por defecto y el import, que solo sea por inyección
         self._collection = database.get_collection("prompts")
 
     async def save(self, prompt: Prompt) -> str:
@@ -41,27 +41,30 @@ class MongoPromptRepository(PromptRepositoryPort):
         cursor = self._collection.find({"channelId": ObjectId(channel_id)})
         return [self._to_entity(doc) async for doc in cursor]
     
-    async def find_by_user_and_channel(self, user_id: str, channel_id: str) -> Optional[Prompt]:
+    async def find_by_user_and_channel(self, user_id: str, channel_id: str) -> List[Prompt]:
         """
-        Retrieve a single Prompt by both user_id and channel_id.
-        Returns None if not found.
-        Raises ValueError if more than one Prompt exists for the same user and channel.
+        Retrieve all Prompts for a given user_id and channel_id.
+        Returns an empty list if none found. Does not raise if multiple prompts exist.
         """
+        # Build query with safe ObjectId conversion when possible
+        try:
+            user_q = ObjectId(user_id)
+        except Exception:
+            user_q = user_id
+
+        try:
+            channel_q = ObjectId(channel_id)
+        except Exception:
+            channel_q = channel_id
+
         cursor = self._collection.find({
-            "userId": ObjectId(user_id),
-            "channelId": ObjectId(channel_id)
+            "userId": user_q,
+            "channelId": channel_q
         })
 
         prompts = [self._to_entity(doc) async for doc in cursor]
+        return prompts
 
-        if not prompts:
-            return None
-        if len(prompts) > 1:
-            raise ValueError(
-                f"Multiple prompts found for user {user_id} and channel {channel_id}. Expected exactly one."
-            )
-
-        return prompts[0]
 
     async def update(self, prompt: Prompt) -> None:
         """

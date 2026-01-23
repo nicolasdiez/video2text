@@ -47,9 +47,9 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
             is_ingestion_pipeline_running=bool(doc.get("isIngestionPipelineRunning", False)),
             is_publishing_pipeline_running=bool(doc.get("isPublishingPipelineRunning", False)),
             last_ingestion_pipeline_started_at=doc.get("lastIngestionPipelineStartedAt"),
-            last_ingestion_pipeline_finished_at=doc.get("lastIngestionPipelineFinisheddAt") or doc.get("lastIngestionPipelineFinishedAt"),
+            last_ingestion_pipeline_finished_at=doc.get("lastIngestionPipelineFinishedAt"),
             last_publishing_pipeline_started_at=doc.get("lastPublishingPipelineStartedAt"),
-            last_publishing_pipeline_finished_at=doc.get("lastPublishingPipelineFinisheddAt") or doc.get("lastPublishingPipelineFinishedAt"),
+            last_publishing_pipeline_finished_at=doc.get("lastPublishingPipelineFinishedAt"),
             next_scheduled_ingestion_pipeline_starting_at=doc.get("nextScheduledIngestionPipelineStartingAt"),
             next_scheduled_publishing_pipeline_starting_at=doc.get("nextScheduledPublishingPipelineStartingAt"),
             consecutive_failures_ingestion_pipeline=int(doc.get("consecutiveFailuresIngestionPipeline", 0)),
@@ -85,10 +85,12 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
         doc = await self._coll.find_one({"userId": oid})
         return self._doc_to_entity(doc) if doc else None
         
+
     async def update_by_user_id(self, user_id: str, update: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Update the runtime document for userId using $set with the provided fields.
         If 'updatedAt' is not provided in update, add it automatically.
+        Tries both string and ObjectId forms for the userId filter.
         Returns the updated document, or None if no document matched.
         """
         # copy update to avoid mutating caller's dict
@@ -96,12 +98,25 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
         if "updatedAt" not in update_payload:
             update_payload["updatedAt"] = datetime.now(timezone.utc)
 
-        result = await self._coll.update_one({"userId": user_id}, {"$set": update_payload})
-        if result.matched_count == 0:
-            return None
+        # Try filter as provided (string)
+        filter_candidates = [{"userId": user_id}]
 
-        updated_doc = await self._coll.find_one({"userId": user_id})
-        return updated_doc
+        # If user_id looks like a 24-hex string, also try ObjectId form
+        try:
+            oid = ObjectId(user_id)
+            filter_candidates.append({"userId": oid})
+        except Exception:
+            oid = None
+
+        for filt in filter_candidates:
+            result = await self._coll.update_one(filt, {"$set": update_payload})
+            if result.matched_count > 0:
+                updated_doc = await self._coll.find_one(filt)
+                return updated_doc
+
+        # nothing matched
+        return None
+
 
     async def create(self, status: UserSchedulerRuntimeStatus) -> ObjectId:
         now = datetime.utcnow()

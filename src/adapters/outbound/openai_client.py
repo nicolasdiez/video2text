@@ -83,9 +83,9 @@ class OpenAIClient(OpenAIPort):
             response = client.chat.completions.create(
                 model=model,
                 messages=[system_message, user_message],
-                temperature=1.0,            #  0.0 to 2.0 --> Nivel de creatividad/aleatoriedad. Valores bajos → respuestas más deterministas y “seguras”. Valores altos → más creatividad y variación, pero también más riesgo de desviarse del tema.
-                presence_penalty=0.3,       # -2.0 to 2.0 --> Penaliza o incentiva introducir nuevos temas no mencionados antes. Valores positivos → fomenta variedad temática. Valores negativos → favorece quedarse en los mismos temas.
-                frequency_penalty=0.2       # -2.0 to 2.0 --> Penaliza o incentiva repetir las mismas palabras o frases. Valores positivos → reduce repeticiones. Valores negativos → permite o fomenta repeticiones.
+                temperature=1.3,            #  0.0 to 2.0 --> Nivel de creatividad/aleatoriedad. Valores bajos → respuestas más deterministas y “seguras”. Valores altos → más creatividad y variación, pero también más riesgo de desviarse del tema.
+                presence_penalty=0.5,       # -2.0 to 2.0 --> Penaliza o incentiva introducir nuevos temas no mencionados antes. Valores positivos → fomenta variedad temática. Valores negativos → favorece quedarse en los mismos temas.
+                frequency_penalty=0.4       # -2.0 to 2.0 --> Penaliza o incentiva repetir las mismas palabras o frases. Valores positivos → reduce repeticiones. Valores negativos → permite o fomenta repeticiones.
             )
         except Exception as e:
             logger.exception("OpenAI API call failed", extra={"method": inspect.currentframe().f_code.co_name, "error": str(e)})

@@ -38,8 +38,8 @@ class User:
     username: str                                               # Email or username
     openai_api_key: Optional[str] = None
 
-    twitter_credentials: Optional[UserTwitterCredentials] = None
-    scheduler_config: Optional[SchedulerConfig] = None          # Per-user scheduler configuration (overrides app defaults)
+    twitter_credentials: Optional[UserTwitterCredentials]   = None
+    scheduler_config: SchedulerConfig                       = None          # Per-user scheduler configuration (overrides app defaults)
 
     max_tweets_to_fetch_from_db: int = 10
     max_tweets_to_publish: int = 5
