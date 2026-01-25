@@ -72,6 +72,9 @@ sudo docker unpause CONTAINER_NAME
 # resume all paused containers
 sudo docker unpause $(docker ps -q)
 
+# resume all paused containers
+sudo docker unpause $(docker ps -q)
+
 
 # logs
 

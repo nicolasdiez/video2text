@@ -4,7 +4,7 @@ name: Build and Deploy to Self-Hosted Runner VM
 
 on:
   push:
-    branches: [ "main" ]                                        # workflow is triggered on each push to main branch 
+    branches: [ "main" ]                                        # workflow is triggered on each push/merge to main branch 
   workflow_dispatch:
 
 permissions:
