@@ -1,7 +1,7 @@
 # /src/main.py
 
 # TODO:
-# - migrate attribute "maxTweetsToGeneratePerVideo" from entity "prompt" to entity "channel"
+# - migrate attribute "maxTweetsToGeneratePerVideo" from entity "prompt"/"master_prompt" to entity "channel"
 # - interate ingestion pipeline with the attribute "maxTweetsToGeneratePerVideo" migrated to entity "channel"
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
@@ -257,7 +257,7 @@ async def lifespan(app: FastAPI):
         # get current app job/pipeline frequency
         job = scheduler.get_job("ingestion_job")
         current_ingestion_frequency_minutes = job.trigger.interval.total_seconds() / 60
-        logger.info("Checking if Ingestion pipeline app config frequency has changed (current freq: %s)", current_ingestion_frequency_minutes, extra={"job": "ingestion"})
+        logger.info("Checking if Ingestion pipeline app config frequency has changed (current freq: %s mins)", current_ingestion_frequency_minutes, extra={"job": "ingestion"})
         # get app configuration frequency from repo
         new_app_config = await app_config_repo.get_config()
         new_ingestion_frequency_minutes = new_app_config.scheduler_config.ingestion_pipeline_frequency_minutes
@@ -269,7 +269,7 @@ async def lifespan(app: FastAPI):
             except Exception as ex:
                 logger.warning("Failed to reschedule Ingestion pipeline app config frequency: %s", str(ex), extra={"job": "ingestion"})
         else:
-            logger.info("Ingestion pipeline app config frequency has not changed (current freq: %s)", current_ingestion_frequency_minutes, extra={"job": "ingestion"})
+            logger.info("Ingestion pipeline app config frequency has not changed (current freq: %s mins)", current_ingestion_frequency_minutes, extra={"job": "ingestion"})
 
 
 
@@ -343,7 +343,7 @@ async def lifespan(app: FastAPI):
         # get current app job/pipeline frequency
         job = scheduler.get_job("publishing_job")
         current_publishing_frequency_minutes = job.trigger.interval.total_seconds() / 60
-        logger.info("Checking if Publishing pipeline app config frequency has changed (current freq: %s)", current_publishing_frequency_minutes, extra={"job": "publishing"})
+        logger.info("Checking if Publishing pipeline app config frequency has changed (current freq: %s mins)", current_publishing_frequency_minutes, extra={"job": "publishing"})
         # get app configuration frequency from repo
         new_app_config = await app_config_repo.get_config()
         new_publishing_frequency_minutes = new_app_config.scheduler_config.publishing_pipeline_frequency_minutes
@@ -355,7 +355,7 @@ async def lifespan(app: FastAPI):
             except Exception as ex:
                 logger.warning("Failed to reschedule Publishing pipeline app config frequency: %s", str(ex), extra={"job": "publishing"})
         else:   
-            logger.info("Publishing pipeline app config frequency has not changed (current freq: %s)", current_publishing_frequency_minutes, extra={"job": "ingestion"})
+            logger.info("Publishing pipeline app config frequency has not changed (current freq: %s mins)", current_publishing_frequency_minutes, extra={"job": "ingestion"})
 
 
     # load appConfig from repo

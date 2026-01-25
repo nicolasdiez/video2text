@@ -78,6 +78,6 @@ class TwitterClient(TwitterPort):
         resp = client.create_tweet(text=text)
         tweet_id = resp.data["id"]
 
-        logger.info("Tweet published with ID: %s", tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("Tweet published with ID: %s (tweet text: '%s'')", tweet_id, text, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return tweet_id
