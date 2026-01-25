@@ -215,8 +215,8 @@ async def seed():
             "screenName": "nicolai"
         },
         "schedulerConfig": {
-            "ingestionPipelineFrequencyMinutes": 2,
-            "publishingPipelineFrequencyMinutes": 10,
+            "ingestionPipelineFrequencyMinutes": 1440,
+            "publishingPipelineFrequencyMinutes": 1440,
             "isIngestionPipelineEnabled": True,
             "isPublishingPipelineEnabled": False
         },
@@ -248,8 +248,8 @@ async def seed():
             # build SchedulerConfig from the user_doc (use defaults if keys missing)
             sc_doc = user_doc.get("schedulerConfig", {})
             scheduler_config = SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 2)),
-                publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 10)),
+                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1440)),
+                publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
                 is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
             )

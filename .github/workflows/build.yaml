@@ -1,6 +1,6 @@
 # .github/workflows/build.yaml
 
-name: Build and Push Docker Image
+name: Build and Test Run Image (Deprecated)
 
 on:
   # push:

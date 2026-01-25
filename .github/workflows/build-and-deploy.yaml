@@ -1,10 +1,10 @@
 #.github/workflows/build-and-deploy.yaml
 
-name: Build and Deploy Image
+name: Build and Deploy to Self-Hosted Runner VM
 
 on:
   push:
-    branches: [ "main" ]                                        # workflow is triggered on each push to main branch 
+    branches: [ "main" ]                                        # workflow is triggered on each push/merge to main branch 
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push                                      # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
+      - name: Build Image and Push to GHCR                                    # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
         uses: docker/build-push-action@v6                         # 'build-push-action@v6' is a reusable GitHub Action, which under the hood runs "docker buildx build", which uses the ./Dockerfile
         with:
           context: .
