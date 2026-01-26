@@ -54,7 +54,6 @@ class Prompt:
     prompt_content: PromptContent           # nested system + user messages
     language_of_the_prompt: str             # ISO 639-2 code
     language_to_generate_tweets: str        # ISO 639-2 code
-    max_tweets_to_generate_per_video: int
     tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional; fallback to channel/user/system defaults
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

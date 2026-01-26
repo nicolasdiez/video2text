@@ -137,7 +137,6 @@ class MongoPromptRepository(PromptRepositoryPort):
             ),
             language_of_the_prompt=doc.get("languageOfThePrompt", ""),
             language_to_generate_tweets=doc.get("languageToGenerateTweets", ""),
-            max_tweets_to_generate_per_video=doc.get("maxTweetsToGeneratePerVideo", 0),
             tweet_length_policy=tweet_length_policy,
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
@@ -157,7 +156,6 @@ class MongoPromptRepository(PromptRepositoryPort):
             },
             "languageOfThePrompt": prompt.language_of_the_prompt,
             "languageToGenerateTweets": prompt.language_to_generate_tweets,
-            "maxTweetsToGeneratePerVideo": prompt.max_tweets_to_generate_per_video,
             "createdAt": prompt.created_at,
             "updatedAt": prompt.updated_at,
         }

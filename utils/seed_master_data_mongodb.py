@@ -434,7 +434,6 @@ async def seed():
         },
         "languageOfThePrompt": "English",
         "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-        "maxTweetsToGeneratePerVideo": 2,
         "tweetLengthPolicy": tweet_length_policy_doc,
         "createdAt": _dt.datetime.now(_dt.timezone.utc),
         "updatedAt": _dt.datetime.now(_dt.timezone.utc),
@@ -477,7 +476,6 @@ async def seed():
                 ),
                 language_of_the_prompt=master_prompt_doc.get("languageOfThePrompt", ""),
                 language_to_generate_tweets=master_prompt_doc.get("languageToGenerateTweets", ""),
-                max_tweets_to_generate_per_video=master_prompt_doc.get("maxTweetsToGeneratePerVideo", 0),
                 tweet_length_policy=tlp_entity,
                 created_at=master_prompt_doc.get("createdAt"),
                 updated_at=master_prompt_doc.get("updatedAt"),
@@ -638,7 +636,6 @@ async def seed():
             },
             "languageOfThePrompt": "English",
             "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-            "maxTweetsToGeneratePerVideo": 2,
             "tweetLengthPolicy": tweet_length_policy_doc,
             "createdAt": _dt.datetime.now(_dt.timezone.utc),
             "updatedAt": _dt.datetime.now(_dt.timezone.utc)
@@ -682,7 +679,6 @@ async def seed():
                     ),
                     language_of_the_prompt=prompt_doc.get("languageOfThePrompt", ""),
                     language_to_generate_tweets=prompt_doc.get("languageToGenerateTweets", ""),
-                    max_tweets_to_generate_per_video=prompt_doc.get("maxTweetsToGeneratePerVideo", 0),
                     tweet_length_policy=tlp_entity,
                     created_at=prompt_doc.get("createdAt"),
                     updated_at=prompt_doc.get("updatedAt")

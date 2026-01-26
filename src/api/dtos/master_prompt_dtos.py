@@ -31,7 +31,6 @@ class MasterPromptCreateDTO(BaseModel):
     prompt_content: PromptContentDTO
     language_of_the_prompt: str
     language_to_generate_tweets: str
-    max_tweets_to_generate_per_video: int
     tweet_length_policy: Optional[TweetLengthPolicyDTO] = None
 
 
@@ -41,7 +40,6 @@ class MasterPromptUpdateDTO(BaseModel):
     prompt_content: Optional[PromptContentDTO] = None
     language_of_the_prompt: Optional[str] = None
     language_to_generate_tweets: Optional[str] = None
-    max_tweets_to_generate_per_video: Optional[int] = None
     tweet_length_policy: Optional[TweetLengthPolicyDTO] = None
 
 
@@ -52,7 +50,6 @@ class MasterPromptResponseDTO(BaseModel):
     prompt_content: PromptContentDTO
     language_of_the_prompt: str
     language_to_generate_tweets: str
-    max_tweets_to_generate_per_video: int
     tweet_length_policy: Optional[TweetLengthPolicyDTO]
     created_at: datetime
     updated_at: datetime
