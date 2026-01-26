@@ -324,6 +324,7 @@ async def seed():
             "title": ch["title"],
             #"pollingInterval": 18,
             "maxVideosToFetchFromChannel": 2,
+            "maxTweetsToGeneratePerVideo": 2,
             "lastPolledAt": None,
             "createdAt": _dt.datetime.now(_dt.timezone.utc),
             "updatedAt": _dt.datetime.now(_dt.timezone.utc),
@@ -343,6 +344,7 @@ async def seed():
                     title=channel_doc.get("title", ""),
                     # polling_interval=channel_doc.get("pollingInterval"),
                     max_videos_to_fetch_from_channel=channel_doc.get("maxVideosToFetchFromChannel"),
+                    max_tweets_to_generate_per_video=channel_doc.get("maxTweetsToGeneratePerVideo"),
                     last_polled_at=channel_doc.get("lastPolledAt"),
                     created_at=channel_doc.get("createdAt"),
                     updated_at=channel_doc.get("updatedAt")
