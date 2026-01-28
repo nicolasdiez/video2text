@@ -15,28 +15,30 @@ from infrastructure.security.encription import encrypt_value, decrypt_value
 
 
 class MongoUserRepository(UserRepositoryPort):
+    """
+    MongoDB implementation of the UserRepositoryPort.
+    Handles persistence and retrieval of User entities.
+    """
+
     def __init__(self, database: AsyncIOMotorDatabase = db):
         self._coll = database.get_collection("users")
 
+    # ---------------------------------------------------------
+    # Basic CRUD
+    # ---------------------------------------------------------
+
     async def save(self, user: User) -> str:
+        """
+        Insert a new User document.
+        """
         doc = self._entity_to_doc(user)
         result = await self._coll.insert_one(doc)
         return str(result.inserted_id)
 
-    async def find_by_id(self, user_id: str) -> Optional[User]:
-        doc = await self._coll.find_one({"_id": ObjectId(user_id)})
-        return self._doc_to_entity(doc) if doc else None
-
-    async def find_all(self) -> List[User]:
-        cursor = self._coll.find({})
-        docs = await cursor.to_list(length=None)
-        return [self._doc_to_entity(doc) for doc in docs]
-
-    async def find_by_username(self, username: str) -> Optional[User]:
-        doc = await self._coll.find_one({"username": username})
-        return self._doc_to_entity(doc) if doc else None
-
     async def update(self, user: User) -> None:
+        """
+        Update all fields of an existing User.
+        """
         doc = self._entity_to_doc(user)
         await self._coll.update_one(
             {"_id": ObjectId(user.id)},
@@ -44,13 +46,77 @@ class MongoUserRepository(UserRepositoryPort):
         )
 
     async def delete(self, user_id: str) -> None:
+        """
+        Delete a User by ID.
+        """
         await self._coll.delete_one({"_id": ObjectId(user_id)})
 
     async def delete_all(self) -> int:
+        """
+        Delete all User documents.
+        """
         res = await self._coll.delete_many({})
         return res.deleted_count
 
+    # ---------------------------------------------------------
+    # Retrieval operations
+    # ---------------------------------------------------------
+
+    async def find_by_id(self, user_id: str) -> Optional[User]:
+        """
+        Retrieve a User by its MongoDB _id.
+        """
+        doc = await self._coll.find_one({"_id": ObjectId(user_id)})
+        return self._doc_to_entity(doc) if doc else None
+
+    async def find_all(self) -> List[User]:
+        """
+        Retrieve all Users.
+        """
+        cursor = self._coll.find({})
+        docs = await cursor.to_list(length=None)
+        return [self._doc_to_entity(doc) for doc in docs]
+
+    async def find_by_username(self, username: str) -> Optional[User]:
+        """
+        Retrieve a User by username.
+        """
+        doc = await self._coll.find_one({"username": username})
+        return self._doc_to_entity(doc) if doc else None
+
+    async def get_by_email(self, email: str) -> Optional[User]:
+        """
+        Retrieve a User by email.
+        Required for authentication.
+        """
+        doc = await self._coll.find_one({"email": email})
+        return self._doc_to_entity(doc) if doc else None
+
+    # ---------------------------------------------------------
+    # Password operations
+    # ---------------------------------------------------------
+
+    async def update_password(self, user_id: str, hashed_password: str) -> None:
+        """
+        Update only the hashed password of a User.
+        The repository NEVER hashes passwords; it only stores the hashed value.
+        """
+        await self._coll.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {
+                "hashedPassword": hashed_password,
+                "updatedAt": datetime.utcnow()
+            }}
+        )
+
+    # ---------------------------------------------------------
+    # Twitter credentials
+    # ---------------------------------------------------------
+
     async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
+        """
+        Update encrypted Twitter credentials for a User.
+        """
         await self._coll.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {
@@ -67,7 +133,16 @@ class MongoUserRepository(UserRepositoryPort):
             }}
         )
 
+    # ---------------------------------------------------------
+    # Mapping helpers
+    # ---------------------------------------------------------
+
     def _doc_to_entity(self, doc: dict) -> User:
+        """
+        Convert a MongoDB document into a User domain entity.
+        Handles decryption of Twitter credentials and nested structures.
+        """
+
         creds = doc.get("userTwitterCredentials")
         twitter_creds = None
         if creds:
@@ -81,7 +156,6 @@ class MongoUserRepository(UserRepositoryPort):
                 screen_name=creds.get("screenName"),
             )
 
-        # schedulerConfig subdocument (optional)
         sc_doc = doc.get("schedulerConfig")
         scheduler_config = None
         if sc_doc:
@@ -95,6 +169,9 @@ class MongoUserRepository(UserRepositoryPort):
         return User(
             id=str(doc["_id"]),
             username=doc["username"],
+            email=doc.get("email"),
+            hashed_password=doc.get("hashedPassword"),
+            is_active=doc.get("isActive", True),
             openai_api_key=doc.get("openaiApiKey"),
             twitter_credentials=twitter_creds,
             scheduler_config=scheduler_config,
@@ -106,8 +183,15 @@ class MongoUserRepository(UserRepositoryPort):
         )
 
     def _entity_to_doc(self, user: User) -> dict:
+        """
+        Convert a User domain entity into a MongoDB document.
+        Handles encryption of Twitter credentials and nested structures.
+        """
         doc: Dict[str, Any] = {
             "username": user.username,
+            "email": user.email,
+            "hashedPassword": user.hashed_password,
+            "isActive": user.is_active,
             "openaiApiKey": user.openai_api_key,
             "userTwitterCredentials": {
                 "oauth1AccessToken": encrypt_value(user.twitter_credentials.oauth1_access_token) if user.twitter_credentials and user.twitter_credentials.oauth1_access_token else None,
@@ -130,5 +214,6 @@ class MongoUserRepository(UserRepositoryPort):
             "createdAt": user.created_at,
             "updatedAt": user.updated_at,
         }
-        # remove keys with None values to avoid storing nulls
+
+        # Remove None values to avoid storing nulls
         return {k: v for k, v in doc.items() if v is not None}

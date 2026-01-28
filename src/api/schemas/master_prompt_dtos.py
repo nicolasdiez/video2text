@@ -1,4 +1,4 @@
-# src/api/dtos/master_prompt_dtos.py
+# src/api/schemas/master_prompt_dtos.py
 
 from typing import Optional
 from pydantic import BaseModel, Field

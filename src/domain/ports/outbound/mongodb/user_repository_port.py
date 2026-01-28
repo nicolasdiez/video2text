@@ -1,66 +1,101 @@
 # domain/ports/outbound/mongodb/user_repository_port.py
 
 from abc import ABC, abstractmethod
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 
 from domain.entities.user import User, UserTwitterCredentials
+
 
 class UserRepositoryPort(ABC):
     """
     Outbound port for User persistence in MongoDB.
-    Handles CRUD operations for the User entity.
+    Defines all required operations for reading and writing User entities.
     """
+
+    # -------------------------
+    # Basic CRUD operations
+    # -------------------------
 
     @abstractmethod
     async def save(self, user: User) -> str:
         """
-        Persiste un User y devuelve el nuevo _id como cadena.
-        """
-        ...
-
-    @abstractmethod
-    async def find_by_id(self, user_id: str) -> Optional[User]:
-        """
-        Recupera un User por su _id.
-        """
-        ...
-
-    @abstractmethod
-    async def find_all(self) -> List[User]:
-        """Devuelve todos los usuarios"""
-        ...
-
-    @abstractmethod
-    async def find_by_username(self, username: str) -> Optional[User]:
-        """
-        Recupera un User por su username.
+        Persist a new User and return the new _id as string.
         """
         ...
 
     @abstractmethod
     async def update(self, user: User) -> None:
         """
-        Actualiza un User existente.
+        Update an existing User entity.
         """
         ...
 
     @abstractmethod
     async def delete(self, user_id: str) -> None:
         """
-        Elimina un User por su _id.
+        Delete a User by its _id.
         """
         ...
 
     @abstractmethod
     async def delete_all(self) -> int:
         """
-        Delete all documents in users collection. Returns number deleted.
+        Delete all User documents. Returns number of deleted documents.
+        """
+        ...
+
+    # -------------------------
+    # Retrieval operations
+    # -------------------------
+
+    @abstractmethod
+    async def find_by_id(self, user_id: str) -> Optional[User]:
+        """
+        Retrieve a User by its _id.
         """
         ...
 
     @abstractmethod
+    async def find_all(self) -> List[User]:
+        """
+        Retrieve all Users.
+        """
+        ...
+
+    @abstractmethod
+    async def find_by_username(self, username: str) -> Optional[User]:
+        """
+        Retrieve a User by its username.
+        """
+        ...
+
+    @abstractmethod
+    async def get_by_email(self, email: str) -> Optional[User]:
+        """
+        Retrieve a User by email.
+        Required for authentication (login).
+        """
+        ...
+
+    # -------------------------
+    # Password operations
+    # -------------------------
+
+    @abstractmethod
+    async def update_password(self, user_id: str, hashed_password: str) -> None:
+        """
+        Update the hashed password of a User.
+        The repository NEVER hashes passwords; it only stores the hashed value.
+        """
+        ...
+
+    # -------------------------
+    # Twitter credentials
+    # -------------------------
+
+    @abstractmethod
     async def update_twitter_credentials(self, user_id: str, creds: UserTwitterCredentials) -> None:
         """
-        Actualiza las credenciales de Twitter de un usuario.
+        Update the Twitter credentials of a User.
         """
         ...
