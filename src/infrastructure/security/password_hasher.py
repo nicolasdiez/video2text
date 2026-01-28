@@ -1,6 +1,6 @@
 # src/infrastructure/security/password_hasher.py
 
-# Instalación necesaria --> pip install passlib[bcrypt]
+# TODO: Instalación necesaria --> pip install passlib[bcrypt]
 
 from passlib.context import CryptContext
 

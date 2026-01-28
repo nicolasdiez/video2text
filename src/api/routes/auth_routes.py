@@ -1,9 +1,9 @@
 # src/api/routes/auth_routes.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from src.api.schemas.auth_schemas import LoginRequestDTO, LoginResponseDTO, UserResponseDTO
+from src.api.schemas.auth_schemas import LoginRequestDTO, LoginResponseDTO, UserResponseDTO, ChangePasswordRequestDTO
 from src.application.services.auth_service import AuthService, get_auth_service
-from src.application.services.dependencies import get_current_user  # lo crearás en 2.x
+from src.application.services.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -36,14 +36,29 @@ async def get_me(
     return UserResponseDTO.from_domain(current_user)
 
 
-# Opcional: solo si decides soportar registro
 @router.post("/register", response_model=UserResponseDTO, summary="Register a new user", include_in_schema=False)
 async def register(
     payload: LoginRequestDTO,  # o un DTO específico de registro si añades más campos
     auth_service: AuthService = Depends(get_auth_service),
 ):
     """
-    Register a new user (optional for MVP).
+    Register a new user.
     """
     user = await auth_service.register(email=payload.email, password=payload.password)
     return UserResponseDTO.from_domain(user)
+
+
+@router.post("/change-password", summary="Change user password")
+async def change_password(
+    payload: ChangePasswordRequestDTO,
+    current_user = Depends(get_current_user),
+    auth_service: AuthService = Depends(get_auth_service),
+):
+    """
+    Change the authenticated user's password.
+    """
+    await auth_service.change_password(
+        user_id=current_user.id,
+        new_password=payload.new_password
+    )
+    return {"detail": "Password updated successfully"}

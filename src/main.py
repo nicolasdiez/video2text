@@ -1,6 +1,7 @@
 # /src/main.py
 
 # TODO:
+# - crear atributes en entity User --> is_active, hashed_password
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 

@@ -37,3 +37,11 @@ class LoginResponseDTO(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponseDTO
+
+
+class ChangePasswordRequestDTO(BaseModel):
+    """
+    DTO for password change requests.
+    """
+    new_password: str
+

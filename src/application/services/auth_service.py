@@ -3,9 +3,12 @@
 from typing import Optional
 
 from adapters.outbound.mongodb.user_repository import MongoUserRepository
+
 from infrastructure.security.password_hasher import PasswordHasher
-from security.jwt_service import JWTService
+from infrastructure.security.jwt_service import JWTService
+
 from api.schemas.auth_schemas import LoginResponseDTO, UserResponseDTO
+
 from domain.entities.user import User
 
 
@@ -100,7 +103,7 @@ class AuthService:
 def get_auth_service() -> AuthService:
     """
     Composition root for AuthService.
-    Instantiates dependencies explicitly.
+    Instantiates dependencies using configuration-driven JWTService.
     """
     user_repo = MongoUserRepository()
     password_hasher = PasswordHasher()
