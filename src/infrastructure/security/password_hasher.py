@@ -1,7 +1,5 @@
 # src/infrastructure/security/password_hasher.py
 
-# TODO: Instalación necesaria --> pip install passlib[bcrypt]
-
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

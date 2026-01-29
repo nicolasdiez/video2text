@@ -1,5 +1,7 @@
 # src/infrastructure/logging/request_context.py
 
+# this module is used to make available the "user" into every log trave
+
 import contextvars
 
 # Context variable that stores the user_id for the current request

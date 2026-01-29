@@ -100,11 +100,19 @@ if missing:
 
 
 # ===== LOGGING =====
+class UserContextFilter(logging.Filter):
+    def filter(self, record):
+        raw = get_user_id()
 
-class UserContextFilter(logging.Filter): 
-    def filter(self, record): 
-        record.user_id = get_user_id()
+        if raw:
+            # Remove leading zeros but keep at least "0" if the string is all zeros
+            cleaned = raw.lstrip("0")
+            record.user_id = cleaned if cleaned != "" else "0"
+        else:
+            record.user_id = None
+
         return True
+
 
 class EmitJsonHandler(logging.StreamHandler):
     """
@@ -163,7 +171,7 @@ if ENVIRONMENT == "DEV":
     # Easy format to read in console
     console_handler = logging.StreamHandler(sys.stdout)
     formatter = ColoredFormatter(
-    "%(log_color)s%(levelname)-5s%(reset)s | %(asctime)s | %(module)s | %(message)s",
+    "%(log_color)s%(levelname)-5s%(reset)s | %(asctime)s | user: %(user_id)s | %(module)s | %(message)s",
     log_colors={
         "DEBUG": "cyan",
         "INFO": "green",
@@ -171,9 +179,6 @@ if ENVIRONMENT == "DEV":
         "ERROR": "red",
         "CRITICAL": "bold_red",
     })
-    
-    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s %(user_id)s %(class)s %(method)s")
-
     console_handler.setFormatter(formatter)
     console_handler.addFilter(UserContextFilter())
     logger.addHandler(console_handler)
@@ -186,7 +191,7 @@ else:
     #)
     #json_handler.setFormatter(formatter)
 
-    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s %(user_id)s %(class)s %(method)s")
+    formatter = jsonlogger.JsonFormatter("%(asctime)s %(user_id)s %(levelname)s %(name)s %(message)s %(class)s %(method)s")
     json_handler = EmitJsonHandler(sys.stdout)
     json_handler.addFilter(UserContextFilter())
     logger.addHandler(json_handler)

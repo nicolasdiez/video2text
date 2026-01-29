@@ -2,8 +2,6 @@
 
 # generar un JWT_SECRET_KEY --> bash terminal --> python -c "import secrets; print(secrets.token_hex(32))"
 
-# TODO: Instalación necesaria --> pip install jose
-
 from datetime import datetime, timedelta
 from typing import Optional
 

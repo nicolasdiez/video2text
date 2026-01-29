@@ -203,7 +203,10 @@ async def seed():
     # --- user_doc uses ObjectId type for _id ---
     user_doc = {
         "_id": MASTER_USER_ID,
-        "username": "nico_seed@me.com",
+        "username": "nico",
+        "email": "nico_seed@me.com",
+        "hashedPassword": "12345",
+        "isActive": True, 
         # "openaiApiKey": "",
         "userTwitterCredentials": {
             "oauth1AccessToken": "",
@@ -257,6 +260,9 @@ async def seed():
             user_entity = User(
                 id=str(MASTER_USER_ID),
                 username=user_doc.get("username", ""),
+                email=user_doc.get("email", ""),
+                hashed_password=user_doc.get("hashedPassword", ""),
+                is_active=user_doc.get("isActive", ""),
                 # openai_api_key=user_doc.get("openaiApiKey", None),
                 twitter_credentials=creds,
                 scheduler_config=scheduler_config,
