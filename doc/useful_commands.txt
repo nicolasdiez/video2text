@@ -84,6 +84,12 @@ sudo docker logs -f CONTAINER_NAME
 # see logs realtime for the only running container
 [ "$(docker ps -q | wc -l)" -eq 1 ] && sudo docker logs -f $(docker ps -q) || echo "Error: More than one container is running."
 
+# see logs filtered by text for the only running container
+[ "$(docker ps -q | wc -l)" -eq 1 ] && sudo docker logs -f $(docker ps -q) | grep "published successfully with tweet_id" || echo "Error: More than one container is running."
+
+# see logs 5 lines before and after the specified text ""
+sudo docker logs $(docker ps -q) | grep -E -C 5 "2026-01-29 13:49:18"
+
 # see last 200 log lines
 sudo docker logs --tail 200 CONTAINER_NAME
 

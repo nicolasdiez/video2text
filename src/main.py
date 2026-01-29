@@ -1,7 +1,8 @@
 # /src/main.py
 
 # TODO:
-# - crear atributes en entity User --> is_active, hashed_password
+# - añadir a los Secrets/Variables del Environment PRO de github: JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 
@@ -27,6 +28,7 @@ from domain.entities.user import UserTwitterCredentials
 # logger
 import logging
 import inspect
+from infrastructure.logging.request_context import set_user_id
 
 # WebServer
 import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gateway Interface server)
@@ -188,7 +190,7 @@ async def lifespan(app: FastAPI):
 
 
     # Inline async function for INGESTION
-    async def ingestion_job():
+    async def ingestion_job(user_id: str):
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
         # app_frequency_minutes = float(app_config.scheduler_config.ingestion_pipeline_frequency_minutes)
@@ -241,6 +243,7 @@ async def lifespan(app: FastAPI):
 
                 # 6. Run pipeline
                 logger.info("Ingestion pipeline starting (user: %s)", user.id, extra={"job": "ingestion"})
+                set_user_id(user_id) # se aplica a todos los logs del job
                 await ingestion_pipeline_service_instance.run_for_user(user_id=user.id)
                 logger.info("Ingestion pipeline finished (user: %s)", user.id, extra={"job": "ingestion"})
                 
@@ -274,7 +277,7 @@ async def lifespan(app: FastAPI):
 
 
     # Inline async function for PUBLISHING
-    async def publishing_job():
+    async def publishing_job(user_id: str):
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
         # app_frequency_minutes = float(app_config.scheduler_config.publishing_pipeline_frequency_minutes)
@@ -327,6 +330,7 @@ async def lifespan(app: FastAPI):
 
                 # 6. Run pipeline
                 logger.info("Publishing pipeline starting (user: %s)", user.id, extra={"job": "publishing"})
+                set_user_id(user_id) # se aplica a todos los logs del job
                 await publishing_pipeline_service_instance.run_for_user(user_id=user.id)
                 logger.info("Publishing pipeline finished (user: %s)", user.id, extra={"job": "publishing"})
 

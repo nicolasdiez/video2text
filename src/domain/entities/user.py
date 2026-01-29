@@ -37,7 +37,7 @@ class User:
 
     # Core identity
     id: Optional[str] = None
-    username: str                     # You can keep this if you want, but email is now the real login field
+    username: str                     # Email is now the real login field
     email: str                        # Required for login
     hashed_password: str              # Stored hashed password (never plaintext)
     is_active: bool = True            # Required for auth flows

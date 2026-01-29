@@ -12,6 +12,7 @@ from pythonjsonlogger import jsonlogger
 from colorlog import ColoredFormatter
 import json
 import time
+from infrastructure.logging.request_context import get_user_id
 
 
 # ===== ENVIRONEMENT VARIABLES =====
@@ -100,6 +101,11 @@ if missing:
 
 # ===== LOGGING =====
 
+class UserContextFilter(logging.Filter): 
+    def filter(self, record): 
+        record.user_id = get_user_id()
+        return True
+
 class EmitJsonHandler(logging.StreamHandler):
     """
     StreamHandler que emite una sola línea JSON con los campos del record
@@ -165,7 +171,11 @@ if ENVIRONMENT == "DEV":
         "ERROR": "red",
         "CRITICAL": "bold_red",
     })
+    
+    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s %(user_id)s %(class)s %(method)s")
+
     console_handler.setFormatter(formatter)
+    console_handler.addFilter(UserContextFilter())
     logger.addHandler(console_handler)
 else:
     # JSON format for cloud deployment
@@ -176,7 +186,9 @@ else:
     #)
     #json_handler.setFormatter(formatter)
 
+    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s %(user_id)s %(class)s %(method)s")
     json_handler = EmitJsonHandler(sys.stdout)
+    json_handler.addFilter(UserContextFilter())
     logger.addHandler(json_handler)
 
 

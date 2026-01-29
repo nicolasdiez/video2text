@@ -89,7 +89,7 @@ class PublishingPipelineService(PublishingPipelinePort):
                 tweet.updated_at = now
 
                 await self.tweet_repo.update(tweet)
-                logger.info("Tweet_id %s updated in collection 'tweets'", tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Tweet_id %s updated in collection 'tweets' (_id: %s)", tweet_id, tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 5-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_publishing_finished(user_id, datetime.utcnow(), success=True)
