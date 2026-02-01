@@ -43,7 +43,7 @@ jobs:
           # cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
           # cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
-  deploy-and-test:
+  deploy-and-run-container:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
     environment: production                                      # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
@@ -58,6 +58,8 @@ jobs:
           APP_DEBUG=${{ vars.APP_DEBUG }}
           LOG_LEVEL=${{ vars.LOG_LEVEL }}
           ENVIRONMENT=${{ vars.ENVIRONMENT }}
+          JWT_ALGORITHM=${{ vars.JWT_ALGORITHM }}
+          JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${{ vars.JWT_ACCESS_TOKEN_EXPIRE_MINUTES }}
           YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           MONGO_USER=${{ secrets.MONGO_USER }}
@@ -80,6 +82,7 @@ jobs:
           YOUTUBE_OAUTH_CLIENT_ID=${{ secrets.YOUTUBE_OAUTH_CLIENT_ID }}
           YOUTUBE_OAUTH_CLIENT_SECRET=${{ secrets.YOUTUBE_OAUTH_CLIENT_SECRET }}
           YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN=${{ secrets.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           EOF
         shell: bash
 
