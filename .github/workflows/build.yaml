@@ -125,7 +125,7 @@ jobs:
       - name: Run container foreground with env-file
         run: |
           echo "Running container with .env.ci"
-          timeout 20s docker run --rm --name sut-fore -p 8000:8000 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest || true
+          timeout 20s docker run --rm --name sut-fore -p 8081:8081 --env-file .env.ci ${{ env.IMAGE_NAME }}:latest || true
           echo "Foreground run finished"
       - name: Show last containers and logs for sut-fore
         run: |
@@ -134,7 +134,7 @@ jobs:
           docker logs sut-fore || true
       - name: Start container in background (if sut-fore exited early)
         run: |
-          docker run -d --rm -p 8000:8000 --name sut ${{ env.IMAGE_NAME }}:latest || true
+          docker run -d --rm -p 8081:8081 --name sut ${{ env.IMAGE_NAME }}:latest || true
           sleep 2
           docker ps -a --filter "name=sut" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
           echo "=== initial logs sut (tail 200) ==="
@@ -148,7 +148,7 @@ jobs:
           if docker ps --filter "name=sut" --format "{{.Names}}" | grep -q sut; then
             for i in $(seq 1 20); do
               echo "healthcheck attempt $i/20"
-              status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8000/docs || echo "000")
+              status=$(curl -s -o /tmp/resp -w "%{http_code}" http://localhost:8081/docs || echo "000")
               echo "HTTP status: $status"
               if [ "$status" = "200" ]; then
                 echo "OK: show first 400 chars of body:"

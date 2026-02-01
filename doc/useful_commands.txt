@@ -36,8 +36,8 @@ docker build -t fastapi-app:local .
 # force pull latest remote image from GitHub Container Registry (GHCR) into local environment (before docker run)
 docker pull ghcr.io/nicolasdiez/video2text:latest
 
-# run remote image with docker desktop (validate by opening http://localhost:8000/docs)
-docker run -p 8000:8000 ghcr.io/nicolasdiez/video2text:latest
+# run remote image with docker desktop (validate by opening http://localhost:8081/docs)
+docker run -p 8081:8081 ghcr.io/nicolasdiez/video2text:latest
 
 # check the docker image I have locally
 docker images ghcr.io/nicolasdiez/video2text
@@ -129,11 +129,17 @@ sudo docker ps -a
 cd actions-runner/
 ./run.sh
 
-# Ver puertos y conexiones en la VM
-sudo ss -tulpen | grep 8000 || sudo netstat -tulpen | grep 8000
+# matar todos los procesos corriendo del runner
+pkill -f actions-runner
 
-# See which process/container is using port 8000
-sudo ss -ltnp 'sport = :8000'
+# Ver puertos y conexiones en la VM
+sudo ss -tulpen | grep 8081 || sudo netstat -tulpen | grep 8081
+
+# See which process/container is using port 8081
+sudo ss -ltnp 'sport = :8081'
+
+# Matar cualquier proceso asociado al puerto 8081
+sudo fuser -k 8081/tcp
 
 # Ver uso CPU / memoria / procesos pesados 
 sudo apt install -y procps && top -b -n1 | head -n 20 
@@ -239,14 +245,14 @@ logName="projects/youtube-api-project-456921/logs/docker_containers"
 https://console.cloud.google.com/apis/
 
 # auto-generated swagger by FastAPI (if shown then server is running properly)
-http://localhost:8000/docs
+http://localhost:8081/docs
 
 # curl test for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
-curl -X POST "http://localhost:8000/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
+curl -X POST "http://localhost:8081/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
 
 # curl test for POST /pipelines/ingestion/run/{user_id}
-curl -X POST "http://localhost:8000/pipelines/ingestion/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_tweets":2}'
+curl -X POST "http://localhost:8081/pipelines/ingestion/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_tweets":2}'
 
 # curl test for POST /pipelines/publishing/run/{user_id}
-curl -X POST "http://localhost:8000/pipelines/publishing/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"max_tweets_to_fetch": 10, "max_tweets_to_publish": 5}'
+curl -X POST "http://localhost:8081/pipelines/publishing/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"max_tweets_to_fetch": 10, "max_tweets_to_publish": 5}'
 
