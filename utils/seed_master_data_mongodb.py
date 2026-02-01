@@ -203,7 +203,10 @@ async def seed():
     # --- user_doc uses ObjectId type for _id ---
     user_doc = {
         "_id": MASTER_USER_ID,
-        "username": "nico_seed@me.com",
+        "username": "nico",
+        "email": "nico_seed@me.com",
+        "hashedPassword": "12345",
+        "isActive": True, 
         # "openaiApiKey": "",
         "userTwitterCredentials": {
             "oauth1AccessToken": "",
@@ -218,7 +221,7 @@ async def seed():
             "ingestionPipelineFrequencyMinutes": 1440,
             "publishingPipelineFrequencyMinutes": 1440,
             "isIngestionPipelineEnabled": True,
-            "isPublishingPipelineEnabled": False
+            "isPublishingPipelineEnabled": True
         },
         "maxTweetsToFetchFromDB": 4,
         "maxTweetsToPublish": 1,
@@ -257,6 +260,9 @@ async def seed():
             user_entity = User(
                 id=str(MASTER_USER_ID),
                 username=user_doc.get("username", ""),
+                email=user_doc.get("email", ""),
+                hashed_password=user_doc.get("hashedPassword", ""),
+                is_active=user_doc.get("isActive", ""),
                 # openai_api_key=user_doc.get("openaiApiKey", None),
                 twitter_credentials=creds,
                 scheduler_config=scheduler_config,
@@ -296,7 +302,7 @@ async def seed():
             {"youtubeChannelId": "UCvSXMi2LebwJEM1s4bz5IBA", "title": "@NewMoneyYouTube"}, 
             {"youtubeChannelId": "UC9vUu4vlIlMC0dHQCTvQPbg", "title": "@MoneyGuyShow"},
             {"youtubeChannelId": "UCAeAB8ABXGoGMbXuYPmiu2A", "title": "@TheSwedishInvestor"},
-            {"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
+            #{"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
             {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
             {"youtubeChannelId": "UCFBpVaKCC0ajGps1vf0AgBg", "title": "@humphrey"},
         ]
@@ -324,6 +330,7 @@ async def seed():
             "title": ch["title"],
             #"pollingInterval": 18,
             "maxVideosToFetchFromChannel": 2,
+            "tweetsToGeneratePerVideo": 2,
             "lastPolledAt": None,
             "createdAt": _dt.datetime.now(_dt.timezone.utc),
             "updatedAt": _dt.datetime.now(_dt.timezone.utc),
@@ -343,6 +350,7 @@ async def seed():
                     title=channel_doc.get("title", ""),
                     # polling_interval=channel_doc.get("pollingInterval"),
                     max_videos_to_fetch_from_channel=channel_doc.get("maxVideosToFetchFromChannel"),
+                    tweets_to_generate_per_video=channel_doc.get("tweetsToGeneratePerVideo"),
                     last_polled_at=channel_doc.get("lastPolledAt"),
                     created_at=channel_doc.get("createdAt"),
                     updated_at=channel_doc.get("updatedAt")
@@ -434,7 +442,6 @@ async def seed():
         },
         "languageOfThePrompt": "English",
         "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-        "maxTweetsToGeneratePerVideo": 2,
         "tweetLengthPolicy": tweet_length_policy_doc,
         "createdAt": _dt.datetime.now(_dt.timezone.utc),
         "updatedAt": _dt.datetime.now(_dt.timezone.utc),
@@ -477,7 +484,6 @@ async def seed():
                 ),
                 language_of_the_prompt=master_prompt_doc.get("languageOfThePrompt", ""),
                 language_to_generate_tweets=master_prompt_doc.get("languageToGenerateTweets", ""),
-                max_tweets_to_generate_per_video=master_prompt_doc.get("maxTweetsToGeneratePerVideo", 0),
                 tweet_length_policy=tlp_entity,
                 created_at=master_prompt_doc.get("createdAt"),
                 updated_at=master_prompt_doc.get("updatedAt"),
@@ -638,7 +644,6 @@ async def seed():
             },
             "languageOfThePrompt": "English",
             "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-            "maxTweetsToGeneratePerVideo": 2,
             "tweetLengthPolicy": tweet_length_policy_doc,
             "createdAt": _dt.datetime.now(_dt.timezone.utc),
             "updatedAt": _dt.datetime.now(_dt.timezone.utc)
@@ -682,7 +687,6 @@ async def seed():
                     ),
                     language_of_the_prompt=prompt_doc.get("languageOfThePrompt", ""),
                     language_to_generate_tweets=prompt_doc.get("languageToGenerateTweets", ""),
-                    max_tweets_to_generate_per_video=prompt_doc.get("maxTweetsToGeneratePerVideo", 0),
                     tweet_length_policy=tlp_entity,
                     created_at=prompt_doc.get("createdAt"),
                     updated_at=prompt_doc.get("updatedAt")
@@ -718,8 +722,8 @@ async def seed():
     # 4) APP CONFIG
     # -----------------------
     scheduler_config = SchedulerConfig(
-        ingestion_pipeline_frequency_minutes=1,
-        publishing_pipeline_frequency_minutes=1,
+        ingestion_pipeline_frequency_minutes=20,
+        publishing_pipeline_frequency_minutes=20,
         is_ingestion_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
     )

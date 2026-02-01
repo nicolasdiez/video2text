@@ -119,6 +119,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
             title=doc["title"],
             polling_interval=doc.get("pollingInterval"),
             max_videos_to_fetch_from_channel=doc.get("maxVideosToFetchFromChannel"),
+            tweets_to_generate_per_video=doc.get("tweetsToGeneratePerVideo"),
             last_polled_at=doc.get("lastPolledAt"),
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
@@ -137,6 +138,7 @@ class MongoChannelRepository(ChannelRepositoryPort):
             "title": channel.title,
             "pollingInterval": channel.polling_interval,
             "maxVideosToFetchFromChannel": channel.max_videos_to_fetch_from_channel,
+            "tweetsToGeneratePerVideo": channel.tweets_to_generate_per_video,
             "lastPolledAt": channel.last_polled_at,
             "createdAt": channel.created_at,
             "updatedAt": channel.updated_at,

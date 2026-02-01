@@ -31,7 +31,6 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
             ),
             language_of_the_prompt=doc["languageOfThePrompt"],
             language_to_generate_tweets=doc["languageToGenerateTweets"],
-            max_tweets_to_generate_per_video=doc["maxTweetsToGeneratePerVideo"],
             tweet_length_policy=TweetLengthPolicy(
                 mode=doc["tweetLengthPolicy"]["mode"],
                 min_length=doc["tweetLengthPolicy"].get("minLength"),
@@ -57,7 +56,6 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
             },
             "languageOfThePrompt": entity.language_of_the_prompt,
             "languageToGenerateTweets": entity.language_to_generate_tweets,
-            "maxTweetsToGeneratePerVideo": entity.max_tweets_to_generate_per_video,
             "tweetLengthPolicy": (
                 {
                     "mode": entity.tweet_length_policy.mode,

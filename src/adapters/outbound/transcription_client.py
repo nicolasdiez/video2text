@@ -30,26 +30,33 @@ class YouTubeTranscriptionClientOfficialCaptionsAPI(TranscriptionPort):
 
 
     async def transcribe(self, video_id: str, language: Optional[str] = None) -> Optional[str]:
-        """
-        Descarga y concatena la transcripción de un video.
-        """
         logger.info("Starting...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         lang = language or self.default_language
 
-        # youtube_transcript_api es síncrono, lo ejecutamos en un hilo aparte
-        transcript_list = await asyncio.to_thread(
-            YouTubeTranscriptApi.get_transcript,
-            video_id,
-            lang
-        )
+        try:
+            transcript_list = await asyncio.to_thread(
+                YouTubeTranscriptApi.get_transcript,
+                video_id,
+                lang
+            )
+        except Exception as e:
+            logger.warning("Transcript API failed: %s", str(e),
+                        extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            return None
 
-        # Unir todos los segmentos en un solo string
-        full_text = " ".join(segment["text"] for segment in transcript_list)
+        if not transcript_list:
+            # VERY IMPORTANT: return None so fallbacks trigger
+            return None
 
-        logger.info("Video transcription created successfully (youtube_video_id: %s)", video_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        full_text = " ".join(segment["text"] for segment in transcript_list).strip()
 
-        # Logging
-        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-        
+        if not full_text:
+            # Also important: empty string should not block fallbacks
+            return None
+
+        logger.info("Video transcription created successfully (youtube_video_id: %s)", video_id,
+                    extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
         return full_text
+

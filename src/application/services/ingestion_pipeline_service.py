@@ -14,8 +14,9 @@ from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
-from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort, InstructionPosition
 from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailServicePort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
@@ -28,7 +29,6 @@ from domain.entities.prompt import PromptContent
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
-from application.services.prompt_composer_service import PromptComposerService, InstructionPosition
 from application.services.channel_service import ChannelService
 
 # Specific logger for this module
@@ -55,13 +55,13 @@ class IngestionPipelineService(IngestionPipelinePort):
         transcription_client: TranscriptionPort,
         transcription_client_fallback: Optional[TranscriptionPort],
         transcription_client_fallback_2: Optional[TranscriptionPort],
-        prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
+        tweet_output_guardrail_service: TweetOutputGuardrailServicePort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
         channel_service: ChannelService,
-        prompt_composer_service: PromptComposerService
+        prompt_composer_service: PromptComposerServicePort
     ):
         self.user_repo = user_repo
         self.prompt_loader = prompt_loader
@@ -71,8 +71,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.transcription_client = transcription_client
         self.transcription_client_fallback: Optional[TranscriptionPort] = transcription_client_fallback
         self.transcription_client_fallback_2: Optional[TranscriptionPort] = transcription_client_fallback_2
-        self.prompt_repo = prompt_repo                  # TODO: Not used anymore, remove!  (now is channel_service which access to the prompts)
         self.openai_client = openai_client
+        self.tweet_output_guardrail_service = tweet_output_guardrail_service
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
@@ -103,7 +103,7 @@ class IngestionPipelineService(IngestionPipelinePort):
             for index, channel in enumerate(channels, start=1):
 
                 # 4. Fetch new videos for this channel
-                logger.info("Channel %s/%s - Process starting...", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Channel %s/%s (id: %s) - Process starting...", index, len(channels), channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 logger.info("Fetching max %s videos from channel %s", channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, channel.max_videos_to_fetch_from_channel)
                 
@@ -111,7 +111,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                 video_ids = [v.videoId for v in videos_meta]
                 max_videos_to_process = 20
                 video_ids_to_process = video_ids if len(video_ids) <= max_videos_to_process else video_ids[:max_videos_to_process] + ["...(+%d)" % (len(video_ids) - max_videos_to_process)]
-                logger.info("%s videos retrieved from channel %s (%s) — youtube_videoIds: %s", len(videos_meta), channel.youtube_channel_id, channel.title, video_ids_to_process, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("%s videos retrieved (youtubeVideoId: %s)", len(videos_meta), video_ids_to_process, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # 5. Process each video independently
                 for index2, video_meta in enumerate(videos_meta, start=1):
@@ -178,7 +178,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                             await self.video_repo.update(video)
                             logger.info("Transcription saved for video %s in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     else:
-                        logger.info("Skipping transcript generation - Video %s already has a transcript (%s chars) (video title: %s) ", video.id, len(video.transcript), video.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Skipping transcript generation - Video already has a transcript (%s chars) (video title: %s) ", len(video.transcript), video.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 8. If video has not been used for tweet generation yet, and video has a valid transcript, then generate tweets from the video and update the record
                     if (not video.tweets_generated) and video.transcript:
@@ -192,31 +192,53 @@ class IngestionPipelineService(IngestionPipelinePort):
                         if not prompt:
                             logger.info("No suitable prompt resolved for channel %s and user %s, skipping video %s", channel.id, user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
-                        logger.info("Prompt %s successfully retrieved for user %s and channel %s (video %s)", getattr(prompt, "id", None), user_id, channel.id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Prompt %s successfully retrieved", getattr(prompt, "id", None), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
                         prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
-                        logger.info("Prompt user_message loaded (+ output language + objective + transcript), for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Prompt user_message loaded (+output_language +objective +transcript)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=prompt.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
                         prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        logger.info("Prompt system_message loaded (+ objective + output length + output language) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 11. Generate raw texts for the video
-                        model="gpt-4o"
-                        # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
-                        raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
-                            prompt_user_message=prompt_user_message,
-                            prompt_system_message=prompt_system_message,
-                            model=model)
+                        # 11. Generate raw texts (tweets) for the video
+                        model = "gpt-4o"
+                        try:
+                            json_response = await self.openai_client.generate_tweets(
+                                prompt_user_message=prompt_user_message,
+                                prompt_system_message=prompt_system_message,
+                                model=model)
+                        except Exception as e:
+                            logger.error("OpenAI tweet generation failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue  # skip this video and move to the next one
+
+                        # 12. Validate tweet output using guardrails
+                        try:
+                            expected_count = channel.tweets_to_generate_per_video
+                            # validate tweet count
+                            if not self.tweet_output_guardrail_service.is_count_valid(json_response, expected_count):
+                                logger.error("Tweet count validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue  # skip this video and move to the next one
+                            # validate tweet length policy
+                            if not self.tweet_output_guardrail_service.is_length_valid(json_response, prompt.tweet_length_policy):
+                                logger.error("Tweet length validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue  # skip this video and move to the next one
+                        except Exception as e:
+                            # any unexpected error in guardrails should also skip the video
+                            logger.error("Tweet guardrail validation error for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
+
+                        # 13. Extract tweets from JSON
+                        raw_tweets_text: List[str] = [t["text"].strip() for t in json_response.get("tweets", []) if "text" in t]
                         tweet_generation_ts = datetime.utcnow()
                         logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 12. Persist tweet generation metadata
+                        # 14. Persist tweet generation metadata
                         openai_req = OpenAIRequest(
                             prompt_content=PromptContent(
                                 system_message=prompt_system_message,
@@ -236,7 +258,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         generation_id = await self.tweet_generation_repo.save(tweet_generation)
                         logger.info("Tweet generation %s saved in 'tweet_generations'", generation_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 13. Map DTO raw_tweets_text List[str] → to domain entity Tweet
+                        # 15. Map DTO raw_tweets_text List[str] → to domain entity Tweet
                         tweets: List[Tweet] = [
                             Tweet(
                                 id=None,
@@ -252,11 +274,11 @@ class IngestionPipelineService(IngestionPipelinePort):
                             for index, text in enumerate(raw_tweets_text, start=1)
                         ]
 
-                        # 14. Save Tweet entities (in batch)
+                        # 16. Save Tweet entities (in batch)
                         await self.tweet_repo.save_all(tweets)
                         logger.info("%s tweets saved in 'tweets'", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
 
-                        # 15. Update video entity
+                        # 17. Update video entity
                         video.tweets_generated = True
                         video.updated_at = datetime.utcnow()
                         await self.video_repo.update(video)
@@ -272,12 +294,12 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                 logger.info("Channel %s/%s - Process finished", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-            # 16-a. Finishing pipeline OK
+            # 18-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)
             await self.user_scheduler_runtime_repo.reset_ingestion_failures(user_id)
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
-        # 16-b. Finishing pipeline KO
+        # 18-b. Finishing pipeline KO
         except Exception:
             # increment failure counter and mark as finished with failure
             try:

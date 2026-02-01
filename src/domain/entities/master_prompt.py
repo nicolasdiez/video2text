@@ -24,7 +24,6 @@ class MasterPrompt:
 
     language_of_the_prompt: str                  # ISO 639 language code
     language_to_generate_tweets: str             # english + native name
-    max_tweets_to_generate_per_video: int
 
     tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional
 

@@ -43,15 +43,16 @@ class PromptComposerService(PromptComposerServicePort):
         return message_with_transcript
 
 
-    def add_objective(self, message: str, max_sentences: int = 3, position: InstructionPosition = InstructionPosition.BEFORE) -> str:
+    def add_objective(self, message: str, sentences: int = 3, position: InstructionPosition = InstructionPosition.BEFORE) -> str:
         """
         Prepend or append the objective block to an existing message prompt.
         - Default behavior preserves current placement: objective is prepended (BEFORE).
         - position: InstructionPosition.BEFORE | InstructionPosition.AFTER
         """
-        objective_block = (
-            "=== OBJECTIVE ===\n"
-            f"Based on the provided transcript, generate exactly {max_sentences} standalone tweets.\n\n"
+        objective_block = ( 
+            "=== OBJECTIVE ===\n" 
+            f"Based on the provided transcript, generate exactly {sentences} standalone tweets.\n" 
+            "Each tweet must be crafted to maximize virality, driving the highest possible number of likes, retweets, and new followers.\n\n"
         )
 
         pos_val = position.value if hasattr(position, "value") else str(position)

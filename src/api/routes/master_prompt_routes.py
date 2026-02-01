@@ -42,7 +42,6 @@ def dto_to_entity_create(dto: MasterPromptCreateDTO) -> MasterPrompt:
         ),
         language_of_the_prompt=dto.language_of_the_prompt,
         language_to_generate_tweets=dto.language_to_generate_tweets,
-        max_tweets_to_generate_per_video=dto.max_tweets_to_generate_per_video,
         tweet_length_policy=(
             TweetLengthPolicy(
                 mode=dto.tweet_length_policy.mode,
@@ -69,7 +68,6 @@ def entity_to_response_dto(entity: MasterPrompt) -> MasterPromptResponseDTO:
         ),
         language_of_the_prompt=entity.language_of_the_prompt,
         language_to_generate_tweets=entity.language_to_generate_tweets,
-        max_tweets_to_generate_per_video=entity.max_tweets_to_generate_per_video,
         tweet_length_policy=(
             TweetLengthPolicyDTO(
                 mode=entity.tweet_length_policy.mode,

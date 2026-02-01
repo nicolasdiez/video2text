@@ -30,9 +30,9 @@ class TweetLengthPolicy:
     """
     Minimal, extensible policy for tweet length.
     - mode: "fixed" | "range"
-    - min_length / max_length: integers in characters (or tokens if unit == tokens)
-    - target_length: optional preferred length (primary for fixed; preference for range)
-    - tolerance_percent: integer percent tolerance around target_length (default 10)
+    - min_length / max_length: integers in characters (or tokens if unit == tokens) (primary applies for 'range' mode) (only applies to 'fixed' if target is empty)
+    - target_length: optional preferred length (primary for 'fixed' mode; preference for 'range' mode)
+    - tolerance_percent: integer percent tolerance around target_length (default 10) (only applies for 'fixed' mode)
     - unit: "chars" | "tokens" (default "chars")
     """
     mode: TweetLengthMode = TweetLengthMode.FIXED
@@ -54,7 +54,6 @@ class Prompt:
     prompt_content: PromptContent           # nested system + user messages
     language_of_the_prompt: str             # ISO 639-2 code
     language_to_generate_tweets: str        # ISO 639-2 code
-    max_tweets_to_generate_per_video: int
     tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional; fallback to channel/user/system defaults
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
