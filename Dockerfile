@@ -27,7 +27,7 @@ COPY ./src ./src
 WORKDIR /app/src
 
 # Exponer puerto
-EXPOSE 8000
+EXPOSE 8081
 
 # Comando de arranque (Uvicorn en modo producción)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081"]

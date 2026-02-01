@@ -16,7 +16,7 @@ spec:
         - name: fastapi-container
           image: <tu-registro>.azurecr.io/fastapi-app:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8081
           envFrom:
             - configMapRef:
                 name: app-config
