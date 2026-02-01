@@ -73,9 +73,9 @@ from adapters.outbound.mongodb.app_config_repository import MongoAppConfigReposi
 from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository
 
 # Application Services ()
-from application.services.master_prompt_service import MasterPromptService
 from application.services.channel_service import ChannelService
 from application.services.prompt_composer_service import PromptComposerService
+from application.services.tweet_outpout_guardrail_service import TweetOutputGuardrailService
 
 # factory to get a youtube_client resource for consuming Youtube Data API (to retrieve video transcriptions) 
 from infrastructure.auth.youtube_credentials import get_youtube_client
@@ -101,13 +101,11 @@ transcription_client_fallback   = YouTubeTranscriptionClientOfficialDataAPI(yout
 transcription_client_fallback_2 = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
 prompt_repo                     = MongoPromptRepository(database=db)
 openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
+tweet_output_guardrail_service  = TweetOutputGuardrailService()
 tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
 tweet_repo                      = MongoTweetRepository(database=db)
 user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(database=db)
-
-# inject concrete Repository Adapters into the Application Services ---
 master_prompt_repo = MongoMasterPromptRepository(database=db) 
-master_prompt_service = MasterPromptService(master_prompt_repo)
 channel_service = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
 prompt_composer_service = PromptComposerService()
 
@@ -125,8 +123,8 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     transcription_client            = transcription_client,
     transcription_client_fallback   = transcription_client_fallback,
     transcription_client_fallback_2 = transcription_client_fallback,
-    prompt_repo                     = prompt_repo,  # Not used anymore, remove!  (now is channel_service which access to the prompts)
     openai_client                   = openai_client,
+    tweet_output_guardrail_service  = tweet_output_guardrail_service,
     tweet_generation_repo           = tweet_generation_repo,
     tweet_repo                      = tweet_repo,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,

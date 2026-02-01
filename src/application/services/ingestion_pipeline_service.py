@@ -14,8 +14,9 @@ from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
-from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort, InstructionPosition
 from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailServicePort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
@@ -28,7 +29,6 @@ from domain.entities.prompt import PromptContent
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 
-from application.services.prompt_composer_service import PromptComposerService, InstructionPosition
 from application.services.channel_service import ChannelService
 
 # Specific logger for this module
@@ -55,13 +55,13 @@ class IngestionPipelineService(IngestionPipelinePort):
         transcription_client: TranscriptionPort,
         transcription_client_fallback: Optional[TranscriptionPort],
         transcription_client_fallback_2: Optional[TranscriptionPort],
-        prompt_repo: PromptRepositoryPort,
         openai_client: OpenAIPort,
+        tweet_output_guardrail_service: TweetOutputGuardrailServicePort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
         channel_service: ChannelService,
-        prompt_composer_service: PromptComposerService
+        prompt_composer_service: PromptComposerServicePort
     ):
         self.user_repo = user_repo
         self.prompt_loader = prompt_loader
@@ -71,8 +71,8 @@ class IngestionPipelineService(IngestionPipelinePort):
         self.transcription_client = transcription_client
         self.transcription_client_fallback: Optional[TranscriptionPort] = transcription_client_fallback
         self.transcription_client_fallback_2: Optional[TranscriptionPort] = transcription_client_fallback_2
-        self.prompt_repo = prompt_repo                  # TODO: Not used anymore, remove!  (now is channel_service which access to the prompts)
         self.openai_client = openai_client
+        self.tweet_output_guardrail_service = tweet_output_guardrail_service
         self.tweet_generation_repo = tweet_generation_repo
         self.tweet_repo = tweet_repo
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
@@ -212,19 +212,25 @@ class IngestionPipelineService(IngestionPipelinePort):
                         json_response = await self.openai_client.generate_tweets(
                             prompt_user_message=prompt_user_message,
                             prompt_system_message=prompt_system_message,
-                            model=model
-                        )
-                        # extract tweets from JSON
+                            model=model)
+
+                        # 12. Validate model tweet output using guardrails
+                        expected_count = channel.max_tweets_to_generate_per_video
+                        # validate tweet count
+                        if not self.tweet_output_guardrail_service.is_count_valid(json_response, expected_count):
+                            logger.error("Tweet count validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            raise RuntimeError(f"Tweet count validation failed: expected {expected_count}")
+                        # validate tweet length policy
+                        if not self.tweet_output_guardrail_service.is_length_valid(json_response, prompt.tweet_length_policy):
+                            logger.error("Tweet length validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            raise RuntimeError("Tweet length validation failed")
+
+                        # 13. Extract tweets from JSON
                         raw_tweets_text: List[str] = [t["text"].strip() for t in json_response.get("tweets", []) if "text" in t]
                         tweet_generation_ts = datetime.utcnow()
                         logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 12. Validate JSON model output (guardrails)
-                        # - Contar tweets: si no hay exactamente 2 → se rechaza.
-                        # - Longitud máxima: si supera X caracteres → se descarta.
-                        # - Metodo para llamar a OpenAI isTweetOK() con un prompt muy simple que me diga si el JSON con los tweets está OK o no.
-
-                        # 12. Persist tweet generation metadata
+                        # 14. Persist tweet generation metadata
                         openai_req = OpenAIRequest(
                             prompt_content=PromptContent(
                                 system_message=prompt_system_message,
@@ -244,7 +250,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         generation_id = await self.tweet_generation_repo.save(tweet_generation)
                         logger.info("Tweet generation %s saved in 'tweet_generations'", generation_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 13. Map DTO raw_tweets_text List[str] → to domain entity Tweet
+                        # 15. Map DTO raw_tweets_text List[str] → to domain entity Tweet
                         tweets: List[Tweet] = [
                             Tweet(
                                 id=None,
@@ -260,11 +266,11 @@ class IngestionPipelineService(IngestionPipelinePort):
                             for index, text in enumerate(raw_tweets_text, start=1)
                         ]
 
-                        # 14. Save Tweet entities (in batch)
+                        # 16. Save Tweet entities (in batch)
                         await self.tweet_repo.save_all(tweets)
                         logger.info("%s tweets saved in 'tweets'", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
 
-                        # 15. Update video entity
+                        # 17. Update video entity
                         video.tweets_generated = True
                         video.updated_at = datetime.utcnow()
                         await self.video_repo.update(video)
@@ -280,12 +286,12 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                 logger.info("Channel %s/%s - Process finished", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-            # 16-a. Finishing pipeline OK
+            # 18-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)
             await self.user_scheduler_runtime_repo.reset_ingestion_failures(user_id)
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
-        # 16-b. Finishing pipeline KO
+        # 18-b. Finishing pipeline KO
         except Exception:
             # increment failure counter and mark as finished with failure
             try:
