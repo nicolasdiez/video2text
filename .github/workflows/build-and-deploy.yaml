@@ -117,7 +117,7 @@ jobs:
           echo "Checking port: $PORT"
 
           # 4) Check if any process is listening on the port
-          if ss -ltn "( sport = :$PORT )" >/dev/null 2>&1; then
+          if ss -ltn "sport = :$PORT" | grep -q LISTEN; then
             echo "Port $PORT is in use. Detecting owning docker containers (if any)..."
 
             # 5) Find docker containers that publish this host port (match common docker ps Ports format)
@@ -131,7 +131,7 @@ jobs:
               echo "Stopped containers: $CONTAINERS"
             else
               # 6) If no docker container found, detect non-docker PID using lsof/ss
-              PID=$(ss -ltnp "( sport = :$PORT )" | awk -F 'pid=' '/LISTEN/ {print $2; exit}' | cut -d',' -f1 || true)
+              PID=$(ss -ltnp "sport = :$PORT" | awk -F 'pid=' '/LISTEN/ {print $2; exit}' | cut -d',' -f1 || true)
               if [ -n "$PID" ]; then
                 echo "Port $PORT is held by non-container process PID $PID. Cannot auto-stop non-container processes."
                 ss -ltnp "( sport = :$PORT )" || true
