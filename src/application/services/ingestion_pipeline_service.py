@@ -207,14 +207,22 @@ class IngestionPipelineService(IngestionPipelinePort):
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                         # 11. Generate raw texts for the video
-                        model="gpt-4o"
+                        model = "gpt-4o"
                         # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
-                        raw_tweets_text: List[str] = await self.openai_client.generate_tweets(
+                        json_response = await self.openai_client.generate_tweets(
                             prompt_user_message=prompt_user_message,
                             prompt_system_message=prompt_system_message,
-                            model=model)
+                            model=model
+                        )
+                        # extract tweets from JSON
+                        raw_tweets_text: List[str] = [t["text"].strip() for t in json_response.get("tweets", []) if "text" in t]
                         tweet_generation_ts = datetime.utcnow()
                         logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                        # 12. Validate JSON model output (guardrails)
+                        # - Contar tweets: si no hay exactamente 2 → se rechaza.
+                        # - Longitud máxima: si supera X caracteres → se descarta.
+                        # - Metodo para llamar a OpenAI isTweetOK() con un prompt muy simple que me diga si el JSON con los tweets está OK o no.
 
                         # 12. Persist tweet generation metadata
                         openai_req = OpenAIRequest(

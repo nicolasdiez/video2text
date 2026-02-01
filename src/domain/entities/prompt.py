@@ -30,9 +30,9 @@ class TweetLengthPolicy:
     """
     Minimal, extensible policy for tweet length.
     - mode: "fixed" | "range"
-    - min_length / max_length: integers in characters (or tokens if unit == tokens)
-    - target_length: optional preferred length (primary for fixed; preference for range)
-    - tolerance_percent: integer percent tolerance around target_length (default 10)
+    - min_length / max_length: integers in characters (or tokens if unit == tokens) (primary applies for 'range' mode) (only applies to 'fixed' if target is empty)
+    - target_length: optional preferred length (primary for 'fixed' mode; preference for 'range' mode)
+    - tolerance_percent: integer percent tolerance around target_length (default 10) (only applies for 'fixed' mode)
     - unit: "chars" | "tokens" (default "chars")
     """
     mode: TweetLengthMode = TweetLengthMode.FIXED

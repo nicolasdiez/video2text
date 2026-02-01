@@ -19,6 +19,7 @@
 
 import os
 import re
+import json
 import asyncio
 
 # logging
@@ -28,34 +29,28 @@ import logging
 from openai import OpenAI
 from domain.ports.outbound.openai_port import OpenAIPort
 
-# Specific logger for this module
 logger = logging.getLogger(__name__)
 
 
 class OpenAIClient(OpenAIPort):
     """
-    Implementación de OpenAIPort usando la librería oficial openai.
+    Implementation of OpenAIPort using the official openai library.
     """
 
     def __init__(self, api_key: str | None = None):
-        
-        # load api key
+        # Load API key
         if not api_key:
             raise RuntimeError("API key is required")
         self.api_key = api_key
-        
-        # Logging
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-
-    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, model: str = "gpt-3.5-turbo") -> list[str]:
-        
-        # validate API KEY
+    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, model: str = "gpt-3.5-turbo") -> dict:
+        # Validate API key
         if not self.api_key:
             logger.error("Missing API key", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
 
-        # validate inputs early and log context
+        # Validate inputs
         if not prompt_system_message or not str(prompt_system_message).strip():
             logger.error("Empty prompt_system_message provided; aborting OpenAI call", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise ValueError("prompt_system_message must not be empty")
@@ -64,35 +59,56 @@ class OpenAIClient(OpenAIPort):
             logger.error("Empty prompt_user_message provided; aborting OpenAI call", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise ValueError("prompt_user_message must not be empty")
 
-        tweets = await asyncio.to_thread(self._call_and_process, prompt_user_message, prompt_system_message, model)
+        # Run OpenAI call in a separate thread
+        json_response = await asyncio.to_thread(self._call_and_process, prompt_user_message, prompt_system_message, model)
 
-        # Logging
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        return json_response
 
-        return tweets
 
-
-    def _call_and_process(self, prompt_user_message: str, prompt_system_message: str, model: str) -> list[str]:
-        
+    def _call_and_process(self, prompt_user_message: str, prompt_system_message: str, model: str) -> dict:
+        # Initialize OpenAI client
         client = OpenAI(api_key=self.api_key)
 
+        # Build messages
         system_message = {"role": "system", "content": prompt_system_message}
         user_message = {"role": "user", "content": prompt_user_message}
 
+        # Call OpenAI Chat Completions API
         try:
             response = client.chat.completions.create(
                 model=model,
                 messages=[system_message, user_message],
-                temperature=1.3,            #  0.0 to 2.0 --> Nivel de creatividad/aleatoriedad. Valores bajos → respuestas más deterministas y “seguras”. Valores altos → más creatividad y variación, pero también más riesgo de desviarse del tema.
-                presence_penalty=0.5,       # -2.0 to 2.0 --> Penaliza o incentiva introducir nuevos temas no mencionados antes. Valores positivos → fomenta variedad temática. Valores negativos → favorece quedarse en los mismos temas.
-                frequency_penalty=0.4       # -2.0 to 2.0 --> Penaliza o incentiva repetir las mismas palabras o frases. Valores positivos → reduce repeticiones. Valores negativos → permite o fomenta repeticiones.
+                temperature=1.3,
+                presence_penalty=0.5,
+                frequency_penalty=0.4
             )
         except Exception as e:
             logger.exception("OpenAI API call failed", extra={"method": inspect.currentframe().f_code.co_name, "error": str(e)})
             raise RuntimeError(f"OpenAI API call failed: {e}") from e
 
+        # Extract raw content from the first choice
         raw_output = response.choices[0].message.content
-        lines = [line.strip() for line in raw_output.splitlines() if line.strip()]
-        tweets = [re.sub(r"^[\d\.\-\)\s]+", "", line) for line in lines]
 
-        return tweets
+        # Best-effort cleanup: strip whitespace
+        raw_output = raw_output.strip()
+
+        # Try to parse JSON directly
+        try:
+            json_response = json.loads(raw_output)
+            return json_response
+        except Exception:
+            # If direct parsing fails, try to extract the first JSON object from the text
+            start = raw_output.find("{")
+            end = raw_output.rfind("}")
+            if start != -1 and end != -1 and end > start:
+                candidate = raw_output[start:end + 1]
+                try:
+                    json_response = json.loads(candidate)
+                    return json_response
+                except Exception:
+                    logger.error("JSON parsing failed after extraction attempt. Raw output: %s", raw_output)
+                    raise RuntimeError("OpenAI returned non-parseable JSON even after extraction attempt.")
+            else:
+                logger.error("JSON parsing failed. Raw output has no JSON object. Raw output: %s", raw_output)
+                raise RuntimeError("OpenAI returned no JSON object in the response.")
