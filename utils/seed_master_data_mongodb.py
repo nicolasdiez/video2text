@@ -221,7 +221,7 @@ async def seed():
             "ingestionPipelineFrequencyMinutes": 1440,
             "publishingPipelineFrequencyMinutes": 1440,
             "isIngestionPipelineEnabled": True,
-            "isPublishingPipelineEnabled": False
+            "isPublishingPipelineEnabled": True
         },
         "maxTweetsToFetchFromDB": 4,
         "maxTweetsToPublish": 1,
@@ -722,8 +722,8 @@ async def seed():
     # 4) APP CONFIG
     # -----------------------
     scheduler_config = SchedulerConfig(
-        ingestion_pipeline_frequency_minutes=1,
-        publishing_pipeline_frequency_minutes=1,
+        ingestion_pipeline_frequency_minutes=20,
+        publishing_pipeline_frequency_minutes=20,
         is_ingestion_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
     )
