@@ -302,7 +302,7 @@ async def seed():
             {"youtubeChannelId": "UCvSXMi2LebwJEM1s4bz5IBA", "title": "@NewMoneyYouTube"}, 
             {"youtubeChannelId": "UC9vUu4vlIlMC0dHQCTvQPbg", "title": "@MoneyGuyShow"},
             {"youtubeChannelId": "UCAeAB8ABXGoGMbXuYPmiu2A", "title": "@TheSwedishInvestor"},
-            {"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
+            #{"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
             {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
             {"youtubeChannelId": "UCFBpVaKCC0ajGps1vf0AgBg", "title": "@humphrey"},
         ]
@@ -330,7 +330,7 @@ async def seed():
             "title": ch["title"],
             #"pollingInterval": 18,
             "maxVideosToFetchFromChannel": 2,
-            "maxTweetsToGeneratePerVideo": 2,
+            "tweetsToGeneratePerVideo": 2,
             "lastPolledAt": None,
             "createdAt": _dt.datetime.now(_dt.timezone.utc),
             "updatedAt": _dt.datetime.now(_dt.timezone.utc),
@@ -350,7 +350,7 @@ async def seed():
                     title=channel_doc.get("title", ""),
                     # polling_interval=channel_doc.get("pollingInterval"),
                     max_videos_to_fetch_from_channel=channel_doc.get("maxVideosToFetchFromChannel"),
-                    max_tweets_to_generate_per_video=channel_doc.get("maxTweetsToGeneratePerVideo"),
+                    tweets_to_generate_per_video=channel_doc.get("tweetsToGeneratePerVideo"),
                     last_polled_at=channel_doc.get("lastPolledAt"),
                     created_at=channel_doc.get("createdAt"),
                     updated_at=channel_doc.get("updatedAt")

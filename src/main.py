@@ -1,8 +1,8 @@
 # /src/main.py
 
 # TODO:
-# - añadir a los Secrets/Variables del Environment PRO de github: JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-
+# - change naming of entidad "Prompt" por "UserPrompt"
+# - change naming in entity "Channel" from "tweetsToGeneratePerVideo" to "tweetsToGeneratePerVideo"
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 

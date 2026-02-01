@@ -197,33 +197,41 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=channel.max_tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
                         prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+output_language +objective +transcript)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=channel.max_tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
                         prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # 11. Generate raw texts for the video
+                        # 11. Generate raw texts (tweets) for the video
                         model = "gpt-4o"
-                        # raw_tweets_text: List[str] = ["tweet de prueba 1", "tweet de prueba 2"]     #debugging
-                        json_response = await self.openai_client.generate_tweets(
-                            prompt_user_message=prompt_user_message,
-                            prompt_system_message=prompt_system_message,
-                            model=model)
+                        try:
+                            json_response = await self.openai_client.generate_tweets(
+                                prompt_user_message=prompt_user_message,
+                                prompt_system_message=prompt_system_message,
+                                model=model)
+                        except Exception as e:
+                            logger.error("OpenAI tweet generation failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue  # skip this video and move to the next one
 
-                        # 12. Validate model tweet output using guardrails
-                        expected_count = channel.max_tweets_to_generate_per_video
-                        # validate tweet count
-                        if not self.tweet_output_guardrail_service.is_count_valid(json_response, expected_count):
-                            logger.error("Tweet count validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            raise RuntimeError(f"Tweet count validation failed: expected {expected_count}")
-                        # validate tweet length policy
-                        if not self.tweet_output_guardrail_service.is_length_valid(json_response, prompt.tweet_length_policy):
-                            logger.error("Tweet length validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            raise RuntimeError("Tweet length validation failed")
+                        # 12. Validate tweet output using guardrails
+                        try:
+                            expected_count = channel.tweets_to_generate_per_video
+                            # validate tweet count
+                            if not self.tweet_output_guardrail_service.is_count_valid(json_response, expected_count):
+                                logger.error("Tweet count validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue  # skip this video and move to the next one
+                            # validate tweet length policy
+                            if not self.tweet_output_guardrail_service.is_length_valid(json_response, prompt.tweet_length_policy):
+                                logger.error("Tweet length validation failed for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue  # skip this video and move to the next one
+                        except Exception as e:
+                            # any unexpected error in guardrails should also skip the video
+                            logger.error("Tweet guardrail validation error for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
 
                         # 13. Extract tweets from JSON
                         raw_tweets_text: List[str] = [t["text"].strip() for t in json_response.get("tweets", []) if "text" in t]
