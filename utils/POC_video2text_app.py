@@ -144,7 +144,7 @@ def load_prompt_from_file(prompt_file_name):
         return f.read()
     
 
-def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
+def call_openai_api(prompt: str, sentences: int = 5, model: str = "gpt-3.5-turbo") -> list[str]:
     
     api_key = load_openai_api_key()
     
@@ -153,13 +153,13 @@ def call_openai_api(prompt: str, max_sentences: int = 5, model: str = "gpt-3.5-t
 
     client = OpenAI(api_key=api_key)
 
-    # Wrap the prompt with an instruction to output max_sentences sentences, one per line
+    # Wrap the prompt with an instruction to output sentences sentences, one per line
     system_message = {
         "role": "system",
         "content": (
             "You are a helpful assistant."
             "Summarize the following transcript into "
-            f"{max_sentences} independent, education-focused sentences "
+            f"{sentences} independent, education-focused sentences "
             "designed for Twitter. Output each sentence on its own line, "
             "without numbering or bullet points."
         )
@@ -317,7 +317,7 @@ if __name__ == "__main__":
 
     print(f"Prompt base + Video transcript:\n{prompt_with_transcript}")
 
-    tweets = call_openai_api(prompt_with_transcript, max_sentences=5)
+    tweets = call_openai_api(prompt_with_transcript, sentences=5)
     tweets = load_tweets_debugging()
 
     for idx, tweet in enumerate(tweets, start=1):

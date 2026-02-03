@@ -146,7 +146,7 @@ class PromptComposerService(PromptComposerServicePort):
         elif mode_str.lower() == "range":
             # In range mode, ignore `target` — the model should produce lengths between min and max.
             min_val = min_len if min_len is not None else 80
-            max_val = max_len if max_len is not None else 140
+            max_val = max_len if max_len is not None else 240
             instruction = (
                 "=== OUTPUT LENGTH ===\n"
                 f"Each tweet must be between {min_val} and {max_val} {unit_val}.\n\n"

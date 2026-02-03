@@ -2,7 +2,8 @@
 
 # TODO:
 # - change naming of entidad "Prompt" por "UserPrompt"
-# - change naming in entity "Channel" from "tweetsToGeneratePerVideo" to "tweetsToGeneratePerVideo"
+# - change naming in entity "Channel" from "maxTweetsToGeneratePerVideo" to "tweetsToGeneratePerVideo"
+# - separar la condicion is_running de enough_time_passed
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 
@@ -122,7 +123,7 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     video_repo                      = video_repo,
     transcription_client            = transcription_client,
     transcription_client_fallback   = transcription_client_fallback,
-    transcription_client_fallback_2 = transcription_client_fallback,
+    transcription_client_fallback_2 = transcription_client_fallback_2,
     openai_client                   = openai_client,
     tweet_output_guardrail_service  = tweet_output_guardrail_service,
     tweet_generation_repo           = tweet_generation_repo,
