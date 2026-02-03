@@ -61,7 +61,7 @@ class PipelineService:
             # 3.3 Llamada a OpenAI para generar tweets
             tweets = await self.openai.generate_tweets(
                 prompt=prompt,
-                max_sentences=max_tweets,
+                sentences=max_tweets,
                 model="gpt-3.5-turbo"
             )
             print(f"[PipelineService] {len(tweets)} tweets sugeridos para video {video.videoId}")

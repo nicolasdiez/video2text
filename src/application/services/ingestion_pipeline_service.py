@@ -103,7 +103,8 @@ class IngestionPipelineService(IngestionPipelinePort):
             for index, channel in enumerate(channels, start=1):
 
                 # 4. Fetch new videos for this channel
-                logger.info("Channel %s/%s (id: %s) - Process starting...", index, len(channels), channel.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Channel %s/%s - Process starting...", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Channel ID: %s / Channel name: %s", channel.id, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 logger.info("Fetching max %s videos from channel %s", channel.max_videos_to_fetch_from_channel, channel.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 videos_meta: List[VideoMetadata] = await self.video_source.fetch_new_videos(channel.youtube_channel_id, channel.max_videos_to_fetch_from_channel)
                 
@@ -117,6 +118,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                 for index2, video_meta in enumerate(videos_meta, start=1):
                     
                     logger.info("Video %s/%s - Process starting...", index2, len(videos_meta), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.info("Video ID: %s / Video title: %s", video_meta.videoId, video_meta.title, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                     # 6. Map DTO VideoMetadata → to domain entity Video, and persist
                     video = await self.video_repo.find_by_youtube_video_id_and_user_id(video_meta.videoId, user_id=user_id)
@@ -197,11 +199,11 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
                         prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=prompt.prompt_content.user_message, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
                         prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+output_language +objective +transcript)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", max_sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=prompt.prompt_content.system_message, tweet_length_policy=prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
                         prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

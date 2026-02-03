@@ -47,13 +47,13 @@ class TweetOutputGuardrailService(TweetOutputGuardrailServicePort):
                     min_len = policy.target_length - tolerance
                     max_len = policy.target_length + tolerance
                 else:
-                    # Fallback to min/max if target_length is not provided
+                    # Fallback to min/max if target_length is not provided 
                     min_len = policy.min_length or 0
                     max_len = policy.max_length or 9999
 
             elif policy.mode == TweetLengthMode.RANGE:
                 min_len = policy.min_length or 0
-                max_len = policy.max_length or 9999
+                max_len = int(policy.max_length * 1.25) if policy.max_length else 9999  # added 25% margin in max length
 
             else:
                 logger.error("Unknown TweetLengthMode '%s'", policy.mode, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

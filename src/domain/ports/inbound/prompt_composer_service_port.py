@@ -23,7 +23,7 @@ class PromptComposerServicePort(ABC):
         pass
 
     @abstractmethod
-    def add_objective(self, message: str, max_sentences: int = 3, position: InstructionPosition = InstructionPosition.BEFORE) -> str:
+    def add_objective(self, message: str, sentences: int = 3, position: InstructionPosition = InstructionPosition.BEFORE) -> str:
         """
         Prepend or append the objective block to an existing message prompt.
         """

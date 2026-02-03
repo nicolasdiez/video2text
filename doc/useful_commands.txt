@@ -60,6 +60,9 @@ sudo docker stop CONTAINER_NAME
 # stop all running containers
 docker stop $(docker ps -q)
 
+# kill all running containers (USAR rm mejor que stop, es más limpio)
+docker rm -f $(docker ps -q)
+
 # pause container from running (freeze process, without stopping or re-starting)
 sudo docker pause CONTAINER_NAME
 
@@ -248,7 +251,7 @@ https://console.cloud.google.com/apis/
 http://localhost:8081/docs
 
 # curl test for POST /pipelines/fetch-videos-generate-tweets/run/{channel_id}
-curl -X POST "http://localhost:8081/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_sentences":2}'
+curl -X POST "http://localhost:8081/pipelines/fetch-videos-generate-tweets/run/UCJQQVLyM6wtPleV4wFBK06g" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"sentences":2}'
 
 # curl test for POST /pipelines/ingestion/run/{user_id}
 curl -X POST "http://localhost:8081/pipelines/ingestion/run/64e8b0f3a1b2c3d4e5f67891" -H "Content-Type: application/json" -d '{"prompt_file":"shortsentences-from-transcript.txt","max_videos":1,"max_tweets":2}'
