@@ -191,7 +191,7 @@ else:
     #)
     #json_handler.setFormatter(formatter)
 
-    formatter = jsonlogger.JsonFormatter("%(asctime)s %(user_id)s %(levelname)s %(name)s %(message)s %(class)s %(method)s")
+    formatter = jsonlogger.JsonFormatter("%(asctime)s %(user)s %(levelname)s %(name)s %(message)s %(class)s %(method)s")
     json_handler = EmitJsonHandler(sys.stdout)
     json_handler.addFilter(UserContextFilter())
     logger.addHandler(json_handler)
