@@ -237,11 +237,11 @@ async def lifespan(app: FastAPI):
                 # normalizo valor de elapsed_minutes para el caso de que sea None no falle el logger
                 elapsed_minutes = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
                 decision = "Yes" if should_run else "No"
-                logger.info("Ingestion pipeline schedule check: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes, extra={"job": "ingestion"})
+                logger.info("Ingestion pipeline: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes, extra={"job": "ingestion"})
                 logger.info("Ingestion pipeline should run now? %s", decision, extra={"job": "ingestion"})
 
                 if not should_run:
-                    logger.info("Skipping Ingestion pipeline (already running or within frequency window)", extra={"job": "ingestion"})
+                    logger.info("Skipping Ingestion pipeline (already running or within freq)", extra={"job": "ingestion"})
                     continue
 
                 # 6. Run pipeline
@@ -257,7 +257,7 @@ async def lifespan(app: FastAPI):
                 logger.info("Next user's scheduled Ingestion pipeline starting at: %s", next_start.isoformat(), extra={"job": "ingestion"})
             
             except Exception as e:
-                logger.error("Ingestion pipeline failed: %s", user.id, str(e), extra={"error": str(e), "job": "ingestion"})
+                logger.error("Ingestion pipeline failed: %s", str(e), extra={"job": "ingestion"})
     
         # 8. Refresh app config from repository and reschedule job if frequency changed
         # get current app job/pipeline frequency
@@ -328,11 +328,11 @@ async def lifespan(app: FastAPI):
                 # normalizo valor de elapsed_minutes para el caso de que sea None no falle el logger
                 elapsed_minutes = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
                 decision = "Yes" if should_run else "No"
-                logger.info("Publishing pipeline schedule check: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes, extra={"job": "publishing"})
+                logger.info("Publishing pipeline: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes, extra={"job": "publishing"})
                 logger.info("Publishing pipeline should run now? %s", decision, extra={"job": "publishing"})
                 
                 if not should_run:
-                    logger.info("Skipping Publishing pipeline (already running or within frequency window)", extra={"job": "publishing"})
+                    logger.info("Skipping Publishing pipeline (already running or within freq)", extra={"job": "publishing"})
                     continue
 
                 # 6. Run pipeline
@@ -348,7 +348,7 @@ async def lifespan(app: FastAPI):
                 logger.info("Next user's scheduled Publishing pipeline starting at: %s", next_start.isoformat(), extra={"job": "publishing"})
 
             except Exception as e:
-                logger.error("Publishing pipeline failed: %s", str(e), extra={"error": str(e), "job": "publishing"})
+                logger.error("Publishing pipeline failed: %s", str(e), extra={"job": "publishing"})
 
         # 8. Refresh app config from repository and reschedule job if frequency changed
         # get current app job/pipeline frequency
