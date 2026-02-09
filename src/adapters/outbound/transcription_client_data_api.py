@@ -1,8 +1,7 @@
-# adapters/outbound/transcription_client_official.py
+# adapters/outbound/transcription_client_data_api.py
 """
 Adapter that uses the YouTube Data API (googleapiclient) to list and download captions.
-The adapter expects an injected `youtube_client` (googleapiclient.discovery.Resource)
-constructed elsewhere (e.g., with an app-owned OAuth refresh token).
+The adapter expects an injected `youtube_client` (googleapiclient.discovery.Resource) constructed elsewhere (e.g., with an app-owned OAuth refresh token).
 """
 
 import inspect

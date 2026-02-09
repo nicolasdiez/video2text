@@ -145,7 +145,7 @@ class IngestionPipelineService(IngestionPipelinePort):
 
                         # Try primary transcription client (YouTube Captions API -timedtext-)
                         try:
-                            logger.info("Attempting primary transcription (YouTube Official Captions API -timedtext-) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                            logger.info("Attempting primary transcription client for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                             transcript = await self.transcription_client.transcribe(video.youtube_video_id, language=['en','es'])
                         except Exception as e:
                             logger.warning("Primary transcription client failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
@@ -153,7 +153,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # If primary didn't return a usable transcript try first fallback, but only if client exists
                         if self.transcription_client_fallback:
                             if not transcript:
-                                logger.info("Primary transcription unavailable, attempting 1st fallback (Youtube Official Data API) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                logger.info("Primary transcription unavailable, attempting 1st fallback client for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                                 try:
                                     transcript = await self.transcription_client_fallback.transcribe(video.youtube_video_id, language=['en','es'])
                                 except Exception as e:
@@ -162,7 +162,7 @@ class IngestionPipelineService(IngestionPipelinePort):
                         # If secondary didn't return a usable transcript (or client didn't even exist), try second fallback, but only if client exists
                         if self.transcription_client_fallback_2:                    
                             if not transcript:
-                                logger.info("First fallback transcription client failed, attempting 2nd fallback (Youtube Official Public Player API -ytInitialPlayerResponse- + ASR) for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+                                logger.info("First fallback transcription client failed, attempting 2nd fallback for video %s", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
                                 try:
                                     transcript = await self.transcription_client_fallback_2.transcribe(video.youtube_video_id, language=['en','es'])
                                 except Exception as e:

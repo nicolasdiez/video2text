@@ -1,4 +1,6 @@
-# adapters/outbound/transcription_client.py
+# adapters/outbound/transcription_client_captions_api.py
+
+# IMPORTANT --> Este es básicamente el unico metodo oficial, estable y fiable para recuperar transcripts de videos YT a nivel productivo.
 
 import os
 import asyncio
@@ -46,13 +48,13 @@ class YouTubeTranscriptionClientOfficialCaptionsAPI(TranscriptionPort):
             return None
 
         if not transcript_list:
-            # VERY IMPORTANT: return None so fallbacks trigger
+            # VERY IMPORTANT: return None so fallbacks trigger in the consumer (i.e. ingestion pipeline)
             return None
 
         full_text = " ".join(segment["text"] for segment in transcript_list).strip()
 
         if not full_text:
-            # Also important: empty string should not block fallbacks
+            # Also important: empty string should not block fallbacks in the consumer (i.e. ingestion pipeline)
             return None
 
         logger.info("Video transcription created successfully (youtube_video_id: %s)", video_id,

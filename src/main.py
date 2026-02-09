@@ -1,9 +1,10 @@
 # /src/main.py
 
 # TODO:
+# - implementar “Context‑Aware Tweet Generation” con RAG (antes de generar tweets, lanzar semantic query a vectorDB y pasar los 10 tweets similares como contexto en el prompt. tras generar tweets --> embeddings model --> persist in vectorDB)
 # - change naming of entidad "Prompt" por "UserPrompt"
-# - change naming in entity "Channel" from "maxTweetsToGeneratePerVideo" to "tweetsToGeneratePerVideo"
-# - separar la condicion is_running de enough_time_passed
+
+# - en main, separar la condicion is_running de enough_time_passed
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
 # - en los routers para que el usuario haga cambios en sus channels --> usar los metodos del channel_service.py (ej. update_channel_prompt()...)
 
@@ -56,9 +57,10 @@ from adapters.outbound.file_prompt_loader import FilePromptLoader
 from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
-from adapters.outbound.transcription_client import YouTubeTranscriptionClientOfficialCaptionsAPI
-from adapters.outbound.transcription_client_official import YouTubeTranscriptionClientOfficialDataAPI
-from adapters.outbound.transcription_client_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR
+from adapters.outbound.transcription_client_captions_api import YouTubeTranscriptionClientOfficialCaptionsAPI
+from adapters.outbound.transcription_client_data_api import YouTubeTranscriptionClientOfficialDataAPI
+from adapters.outbound.transcription_client_public_player_api_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR
+from adapters.outbound.transcription_client_android_player_api_ASR import YouTubeTranscriptionClientAndroidPlayerAPI_ASR
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
 from adapters.outbound.openai_client import OpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
@@ -92,27 +94,24 @@ except RuntimeError as exc:
     youtube_client = None
 
 # --- Repo adapters & service instantiation ---
-user_repo                       = MongoUserRepository(database=db)
-prompt_loader                   = FilePromptLoader(prompts_dir="prompts")
-channel_repo                    = MongoChannelRepository(database=db)
-video_source                    = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
-video_repo                      = MongoVideoRepository(database=db)
-transcription_client            = YouTubeTranscriptionClientOfficialCaptionsAPI(default_language="es")
-transcription_client_fallback   = YouTubeTranscriptionClientOfficialDataAPI(youtube_client=youtube_client) if youtube_client else None
-transcription_client_fallback_2 = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
-prompt_repo                     = MongoPromptRepository(database=db)
-openai_client                   = OpenAIClient(api_key=config.OPENAI_API_KEY)
-tweet_output_guardrail_service  = TweetOutputGuardrailService()
-tweet_generation_repo           = MongoTweetGenerationRepository(db=db)
-tweet_repo                      = MongoTweetRepository(database=db)
-user_scheduler_runtime_repo     = MongoUserSchedulerRuntimeStatusRepository(database=db)
-master_prompt_repo = MongoMasterPromptRepository(database=db) 
-channel_service = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
-prompt_composer_service = PromptComposerService()
-
-# if no official Youtube API transcription client, warn in log
-if transcription_client is None:
-    logger.warning("YouTube official transcription client not configured, using fallback #1: YouTube Data API and fallback #2: YouTube Public Player API (+ASR)", extra={"mod": __name__})
+user_repo                                   = MongoUserRepository(database=db)
+prompt_loader                               = FilePromptLoader(prompts_dir="prompts")
+channel_repo                                = MongoChannelRepository(database=db)
+video_source                                = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
+video_repo                                  = MongoVideoRepository(database=db)
+transcription_client_captions_api           = YouTubeTranscriptionClientOfficialCaptionsAPI(default_language="es")
+transcription_client_data_api               = YouTubeTranscriptionClientOfficialDataAPI(youtube_client=youtube_client) if youtube_client else None
+transcription_client_public_player_api_asr  = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
+transcription_client_android_player_api_asr = YouTubeTranscriptionClientAndroidPlayerAPI_ASR(model_name="small", device="cpu")
+prompt_repo                                 = MongoPromptRepository(database=db)
+openai_client                               = OpenAIClient(api_key=config.OPENAI_API_KEY)
+tweet_output_guardrail_service              = TweetOutputGuardrailService()
+tweet_generation_repo                       = MongoTweetGenerationRepository(db=db)
+tweet_repo                                  = MongoTweetRepository(database=db)
+user_scheduler_runtime_repo                 = MongoUserSchedulerRuntimeStatusRepository(database=db)
+master_prompt_repo                          = MongoMasterPromptRepository(database=db) 
+channel_service                             = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
+prompt_composer_service                     = PromptComposerService()
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
@@ -121,9 +120,9 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
     channel_repo                    = channel_repo,
     video_source                    = video_source,
     video_repo                      = video_repo,
-    transcription_client            = transcription_client,
-    transcription_client_fallback   = transcription_client_fallback,
-    transcription_client_fallback_2 = transcription_client_fallback_2,
+    transcription_client            = transcription_client_captions_api,
+    transcription_client_fallback   = transcription_client_public_player_api_asr,
+    transcription_client_fallback_2 = transcription_client_data_api,
     openai_client                   = openai_client,
     tweet_output_guardrail_service  = tweet_output_guardrail_service,
     tweet_generation_repo           = tweet_generation_repo,
@@ -227,8 +226,8 @@ async def lifespan(app: FastAPI):
                 elapsed_minutes = (now - ingestion_last_started_at).total_seconds() / 60.0 if ingestion_last_started_at else None
                 # normal condition: enough time has passed AND pipeline is not running
                 enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
-                # protection condition: pipeline stuck (elapsed > 2x frequency)
-                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 2)
+                # protection condition: pipeline stuck (elapsed > 1x frequency)
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 1)
                 # first run condition: no previous execution recorded 
                 first_run = elapsed_minutes is None
                 
@@ -318,8 +317,8 @@ async def lifespan(app: FastAPI):
                 elapsed_minutes = (now - publishing_last_started_at).total_seconds() / 60.0 if publishing_last_started_at else None
                 # normal condition: enough time has passed AND pipeline is not running
                 enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
-                # protection condition: pipeline stuck (elapsed > 2x frequency)
-                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 2)
+                # protection condition: pipeline stuck (elapsed > 1x frequency)
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 1)
                 # first run condition: no previous execution recorded 
                 first_run = elapsed_minutes is None
 

@@ -1,4 +1,4 @@
-# adapters/outbound/transcription_client_ASR.py
+# adapters/outbound/transcription_client_public_player_api_ASR_ffmpeg.py (with ffmpeg - more complex)
 
 """
 ASR-based transcription adapter for YouTube videos. (ASR = Automatic Speech Recognition)
@@ -35,7 +35,7 @@ from domain.ports.outbound.transcription_port import TranscriptionPort
 logger = logging.getLogger(__name__)
 
 
-class YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(TranscriptionPort):
+class YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR_ffmpeg(TranscriptionPort):
     """
     ASR transcription adapter that downloads YouTube audio streams and runs a local Whisper model.
 
