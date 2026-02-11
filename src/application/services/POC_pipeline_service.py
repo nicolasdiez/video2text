@@ -7,7 +7,7 @@
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.outbound.transcription_port import TranscriptionPort
 from domain.ports.outbound.openai_port import OpenAIPort
-from domain.ports.outbound.twitter_port import TwitterPublicationPort
+from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 
 from typing import List

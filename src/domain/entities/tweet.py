@@ -68,5 +68,11 @@ class Tweet:
     # Performance metrics (optional, filled after scraping)
     twitter_stats: Optional[TwitterStats] = None
 
+    # IDs of the embeddings vectors
+    embedding_ids: Optional[Dict[str, str]] = None
+
+    # { "growth_score": { "engagement": 0.7, "style_alignment": 0.9, "topic_relevance": 0.8, "overall": 0.82 } }
+    growth_score: Optional[Dict[str, float]] = None
+
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[str] = None

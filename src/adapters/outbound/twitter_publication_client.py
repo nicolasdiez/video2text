@@ -10,7 +10,7 @@ import logging
 
 import config
 
-from domain.ports.outbound.twitter_port import TwitterPublicationPort
+from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from functools import wraps
 
 DEBUG = bool(config.APP_DEBUG)
