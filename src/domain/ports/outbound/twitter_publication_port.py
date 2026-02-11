@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-class TwitterPort(ABC):
+class TwitterPublicationPort(ABC):
     """
     Puerto que abstrae la publicación de tweets (X).
     """

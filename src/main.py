@@ -1,8 +1,9 @@
 # /src/main.py
 
 # TODO:
-# - implementar “Context‑Aware Tweet Generation” con RAG (antes de generar tweets, lanzar semantic query a vectorDB y pasar los 10 tweets similares como contexto en el prompt. tras generar tweets --> embeddings model --> persist in vectorDB)
-# - change naming of entidad "Prompt" por "UserPrompt"
+# - implementar “Context‑Aware Tweet Generation” con RAG (ANTES de generar tweets, lanzar semantic query a vectorDB y pasar los 10 tweets similares como contexto en el prompt. DESPUES de generar tweets --> embedding_model(tweet) --> persist vector in vectorDB)
+# - implementar "RAG para “Tweet Style Optimization” basado en rendimiento real"
+# - change naming of entidad "Prompt" por "UserPrompt" (channel.selected_prompt_id)
 
 # - en main, separar la condicion is_running de enough_time_passed
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)
@@ -69,7 +70,7 @@ from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import M
 
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
-from adapters.outbound.twitter_client import TwitterClient
+from adapters.outbound.twitter_publication_client import TwitterPublicationClient
 
 # Repository adapters (for wiring with DB instance)
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
@@ -137,7 +138,7 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 
 # --- Publishing adapters & service instantiation ---
-twitter_client = TwitterClient(
+twitter_publication_client = TwitterPublicationClient(
     oauth1_api_key      = config.X_OAUTH1_API_KEY,
     oauth1_api_secret   = config.X_OAUTH1_API_SECRET
 )
@@ -146,7 +147,7 @@ twitter_client = TwitterClient(
 publishing_pipeline_service_instance = PublishingPipelineService(
     user_repo                       = user_repo,
     tweet_repo                      = tweet_repo,
-    twitter_client                  = twitter_client,
+    twitter_publication_client                  = twitter_publication_client,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
 )
 

@@ -11,7 +11,7 @@ import logging
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
-from domain.ports.outbound.twitter_port import TwitterPort
+from domain.ports.outbound.twitter_port import TwitterPublicationPort
 from domain.entities.tweet import Tweet
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
 
@@ -32,12 +32,12 @@ class PublishingPipelineService(PublishingPipelinePort):
         self,
         user_repo: UserRepositoryPort,
         tweet_repo: TweetRepositoryPort,
-        twitter_client: TwitterPort,
+        twitter_publication_client: TwitterPublicationPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
     ):
         self.user_repo = user_repo
         self.tweet_repo = tweet_repo
-        self.twitter_client = twitter_client
+        self.twitter_publication_client = twitter_publication_client
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
 
     async def run_for_user(self, user_id: str) -> None:
@@ -79,7 +79,7 @@ class PublishingPipelineService(PublishingPipelinePort):
                     continue
                 
                 # Publish tweet with user credentials
-                tweet_id = await self.twitter_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
+                tweet_id = await self.twitter_publication_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
                 logger.info("Tweet %s/%s published successfully with tweet_id %s", index, len(tweets_to_publish), tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
 
                 now = datetime.utcnow()

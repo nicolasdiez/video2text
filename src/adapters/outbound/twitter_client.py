@@ -1,4 +1,4 @@
-# adapters/outbound/twitter_client.py
+# adapters/outbound/twitter_publication_client.py
 
 import os
 import asyncio
@@ -10,7 +10,7 @@ import logging
 
 import config
 
-from domain.ports.outbound.twitter_port import TwitterPort
+from domain.ports.outbound.twitter_port import TwitterPublicationPort
 from functools import wraps
 
 DEBUG = bool(config.APP_DEBUG)
@@ -22,15 +22,15 @@ def skip_if_debug(fn):
     @wraps(fn)
     async def wrapper(self, *args, **kwargs):
         if DEBUG:
-            logger.info("[DEBUG] Se omitió TwitterClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            logger.info("[DEBUG] Se omitió TwitterPublicationClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
             return None
         return await fn(self, *args, **kwargs)
     return wrapper
 
 
-class TwitterClient(TwitterPort):
+class TwitterPublicationClient(TwitterPublicationPort):
     """
-    Implementación de TwitterPort usando tweepy.Client v2.
+    Implementación de TwitterPublicationPort usando tweepy.Client v2.
     Se inicializa con credenciales de aplicación (OAuth1 API key/secret).
     Las credenciales de usuario (access_token, access_token_secret) se pasan en cada publish().
     """
@@ -48,7 +48,7 @@ class TwitterClient(TwitterPort):
         self.oauth1_api_secret  = oauth1_api_secret
         
         # Logging
-        logger.info("TwitterClient initialized with app credentials",extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info("TwitterPublicationClient initialized with app credentials",extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
 

@@ -7,7 +7,7 @@
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.outbound.transcription_port import TranscriptionPort
 from domain.ports.outbound.openai_port import OpenAIPort
-from domain.ports.outbound.twitter_port import TwitterPort
+from domain.ports.outbound.twitter_port import TwitterPublicationPort
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 
 from typing import List
@@ -28,13 +28,13 @@ class PipelineService:
         transcriber: TranscriptionPort,
         prompt_loader: PromptLoaderPort,
         openai_client: OpenAIPort,
-        twitter_client: TwitterPort,
+        twitter_publication_client: TwitterPublicationPort,
     ):
         self.video_source   = video_source
         self.transcriber    = transcriber
         self.prompt_loader  = prompt_loader
         self.openai         = openai_client
-        self.twitter        = twitter_client
+        self.twitter        = twitter_publication_client
 
 
     async def run_for_channel(self, channel_id: str, prompt_file: str, max_videos: int = 10, max_tweets: int = 5) -> None:
