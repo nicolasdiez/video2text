@@ -11,7 +11,7 @@ import logging
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
-from domain.ports.outbound.twitter_port import TwitterPublicationPort
+from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from domain.entities.tweet import Tweet
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
 

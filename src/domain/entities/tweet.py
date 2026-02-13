@@ -26,7 +26,6 @@ class TwitterStats:
     Supports both basic metrics (Apify) and advanced metrics (Bright Data or future providers).
     Each metric is a MetricValue, allowing multiple providers to contribute independently.
     """
-
     # Basic metrics (Apify)
     likes: Optional[MetricValue] = None
     retweets: Optional[MetricValue] = None
@@ -49,12 +48,33 @@ class TwitterStats:
     raw: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
 
+@dataclass
+class TweetEmbeddingRefs:
+    """
+    Represents the reference IDs of the embedding stored in the vectorDB
+    """
+    tweet_text_id: Optional[str] = None
+    video_transcript_id: Optional[str] = None
+    creator_style_id: Optional[str] = None
+
+
+@dataclass
+class GrowthScore:
+    """
+    Represents the metrics used to determine the growth score of a Tweet (i.e the impact of a Tweet)
+    """
+    engagement: Optional[float] = None
+    style_alignment: Optional[float] = None
+    topic_relevance: Optional[float] = None
+    overall: Optional[float] = None
+    version: Optional[str] = None
+
+
 @dataclass(kw_only=True)
 class Tweet:
     """
     Domain entity representing a generated or published tweet.
     """
-
     id: Optional[str] = None
     user_id: str
     video_id: str
@@ -68,11 +88,11 @@ class Tweet:
     # Performance metrics (optional, filled after scraping)
     twitter_stats: Optional[TwitterStats] = None
 
-    # IDs of the embeddings vectors
-    embedding_ids: Optional[Dict[str, str]] = None
+    # References to the embedding IDs related to the Tweet stored in the vectorDB 
+    embedding_refs: Optional[TweetEmbeddingRefs] = None
 
-    # { "growth_score": { "engagement": 0.7, "style_alignment": 0.9, "topic_relevance": 0.8, "overall": 0.82 } }
-    growth_score: Optional[Dict[str, float]] = None
+    # Growth score computed from twitter_stats (performance metrics)
+    growth_score: Optional[GrowthScore] = None
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[str] = None

@@ -1,4 +1,4 @@
-# src/domain/ports/prompt_service_port.py
+# src/domain/ports/inbound/prompt_service_port.py
 
 from abc import ABC, abstractmethod
 from typing import Optional, List

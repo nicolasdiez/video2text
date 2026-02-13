@@ -1,4 +1,4 @@
-# src/domain/ports/channel_service_port.py
+# src/domain/ports/inbound/channel_service_port.py
 
 from abc import ABC, abstractmethod
 from typing import Optional

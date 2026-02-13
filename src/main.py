@@ -72,6 +72,10 @@ from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import M
 from application.services.publishing_pipeline_service import PublishingPipelineService
 from adapters.outbound.twitter_publication_client import TwitterPublicationClient
 
+# Stats pipeline
+from application.services.stats_pipeline_service import StatsPipelineService
+from adapters.outbound.twitter_stats.twitter_stats_client_apify_apidojo_tweet_scraper import TwitterStatsClientApifyApidojoTweetScraper
+
 # Repository adapters (for wiring with DB instance)
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
 from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository
@@ -94,7 +98,7 @@ except RuntimeError as exc:
     logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
     youtube_client = None
 
-# --- Repo adapters & service instantiation ---
+# Ingestion and Publishing pipelines --- Repo adapters & service instantiation ---
 user_repo                                   = MongoUserRepository(database=db)
 prompt_loader                               = FilePromptLoader(prompts_dir="prompts")
 channel_repo                                = MongoChannelRepository(database=db)
@@ -113,6 +117,10 @@ user_scheduler_runtime_repo                 = MongoUserSchedulerRuntimeStatusRep
 master_prompt_repo                          = MongoMasterPromptRepository(database=db) 
 channel_service                             = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
 prompt_composer_service                     = PromptComposerService()
+
+# Stats pipeline --- Repo adapters & service instantiation ---
+stats_provider = TwitterStatsClientApifyApidojoTweetScraper(apify_token=config.APIFY_API_TOKEN)
+
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(

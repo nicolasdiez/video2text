@@ -6,7 +6,13 @@ from typing import List, Optional, Dict, Any
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.tweet import Tweet, TwitterStats, MetricValue
+from domain.entities.tweet import (
+    Tweet,
+    TwitterStats,
+    MetricValue,
+    TweetEmbeddingRefs,
+    GrowthScore,
+)
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.entities.user import TweetFetchSortOrder
 
@@ -14,6 +20,7 @@ from infrastructure.mongodb import db
 
 
 class MongoTweetRepository(TweetRepositoryPort):
+    
     def __init__(self, database: AsyncIOMotorDatabase = db):
         self._coll = database.get_collection("tweets")
 
@@ -75,6 +82,38 @@ class MongoTweetRepository(TweetRepositoryPort):
         )
         return [self._doc_to_entity(doc) async for doc in cursor]
 
+    async def find_published_by_user(
+        self,
+        user_id: str,
+        limit: Optional[int] = None,
+        order: TweetFetchSortOrder = TweetFetchSortOrder.newest_first,
+    ) -> List[Tweet]:
+
+        query = {"userId": ObjectId(user_id), "published": True}
+
+        # RANDOM ORDER
+        if order == TweetFetchSortOrder.random:
+            pipeline = [{"$match": query}]
+            if limit:
+                pipeline.append({"$sample": {"size": limit}})
+
+            cursor = self._coll.aggregate(pipeline)
+            return [self._doc_to_entity(doc) async for doc in cursor]
+
+        # SORT ORDER
+        sort_dir = 1 if order == TweetFetchSortOrder.oldest_first else -1
+
+        cursor = self._coll.find(query).sort("publishedAt", sort_dir)
+
+        if limit:
+            cursor = cursor.limit(limit)
+
+        items: List[Tweet] = []
+        async for doc in cursor:
+            items.append(self._doc_to_entity(doc))
+
+        return items
+
     # ---------------------------------------------------------
     # UPDATE
     # ---------------------------------------------------------
@@ -87,7 +126,7 @@ class MongoTweetRepository(TweetRepositoryPort):
         )
 
     # ---------------------------------------------------------
-    # SERIALIZATION HELPERS
+    # SERIALIZATION HELPERS — METRICS
     # ---------------------------------------------------------
 
     def _metric_to_doc(self, metric: Optional[MetricValue]) -> Optional[Dict[str, Any]]:
@@ -99,6 +138,16 @@ class MongoTweetRepository(TweetRepositoryPort):
             "provider": metric.provider,
             "fetchedAt": metric.fetched_at,
         }
+
+    def _metric_from_doc(self, doc: Optional[Dict[str, Any]]) -> Optional[MetricValue]:
+        if not doc:
+            return None
+
+        return MetricValue(
+            value=doc.get("value"),
+            provider=doc.get("provider"),
+            fetched_at=doc.get("fetchedAt")
+        )
 
     def _stats_to_doc(self, stats: Optional[TwitterStats]) -> Optional[Dict[str, Any]]:
         if stats is None:
@@ -123,16 +172,6 @@ class MongoTweetRepository(TweetRepositoryPort):
 
             "raw": stats.raw or {}
         }
-
-    def _metric_from_doc(self, doc: Optional[Dict[str, Any]]) -> Optional[MetricValue]:
-        if not doc:
-            return None
-
-        return MetricValue(
-            value=doc.get("value"),
-            provider=doc.get("provider"),
-            fetched_at=doc.get("fetchedAt")
-        )
 
     def _stats_from_doc(self, doc: Optional[Dict[str, Any]]) -> Optional[TwitterStats]:
         if not doc:
@@ -159,6 +198,58 @@ class MongoTweetRepository(TweetRepositoryPort):
         )
 
     # ---------------------------------------------------------
+    # SERIALIZATION HELPERS — EMBEDDING REFS
+    # ---------------------------------------------------------
+
+    def _embedding_refs_to_doc(self, refs: Optional[TweetEmbeddingRefs]) -> Optional[Dict[str, Any]]:
+        if refs is None:
+            return None
+
+        return {
+            "tweetTextId": refs.tweet_text_id,
+            "videoTranscriptId": refs.video_transcript_id,
+            "creatorStyleId": refs.creator_style_id,
+        }
+
+    def _embedding_refs_from_doc(self, doc: Optional[Dict[str, Any]]) -> Optional[TweetEmbeddingRefs]:
+        if not doc:
+            return None
+
+        return TweetEmbeddingRefs(
+            tweet_text_id=doc.get("tweetTextId"),
+            video_transcript_id=doc.get("videoTranscriptId"),
+            creator_style_id=doc.get("creatorStyleId"),
+        )
+
+    # ---------------------------------------------------------
+    # SERIALIZATION HELPERS — GROWTH SCORE
+    # ---------------------------------------------------------
+
+    def _growth_score_to_doc(self, score: Optional[GrowthScore]) -> Optional[Dict[str, Any]]:
+        if score is None:
+            return None
+
+        return {
+            "engagement": score.engagement,
+            "styleAlignment": score.style_alignment,
+            "topicRelevance": score.topic_relevance,
+            "overall": score.overall,
+            "version": score.version,
+        }
+
+    def _growth_score_from_doc(self, doc: Optional[Dict[str, Any]]) -> Optional[GrowthScore]:
+        if not doc:
+            return None
+
+        return GrowthScore(
+            engagement=doc.get("engagement"),
+            style_alignment=doc.get("styleAlignment"),
+            topic_relevance=doc.get("topicRelevance"),
+            overall=doc.get("overall"),
+            version=doc.get("version"),
+        )
+
+    # ---------------------------------------------------------
     # ENTITY <-> DOCUMENT
     # ---------------------------------------------------------
 
@@ -174,8 +265,8 @@ class MongoTweetRepository(TweetRepositoryPort):
             published_at=doc.get("publishedAt"),
             twitter_id=doc.get("twitterId"),
             twitter_stats=self._stats_from_doc(doc.get("twitterStats")),
-            embedding_ids=doc.get("embeddingIds"),
-            growth_score=doc.get("growthScore"),
+            embedding_refs=self._embedding_refs_from_doc(doc.get("embeddingRefs")),
+            growth_score=self._growth_score_from_doc(doc.get("growthScore")),
             created_at=doc.get("createdAt", datetime.utcnow()),
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
@@ -191,8 +282,8 @@ class MongoTweetRepository(TweetRepositoryPort):
             "publishedAt": tweet.published_at,
             "twitterId": tweet.twitter_id,
             "twitterStats": self._stats_to_doc(tweet.twitter_stats),
-            "embeddingIds": tweet.embedding_ids,
-            "growthScore": tweet.growth_score,
+            "embeddingRefs": self._embedding_refs_to_doc(tweet.embedding_refs),
+            "growthScore": self._growth_score_to_doc(tweet.growth_score),
             "createdAt": tweet.created_at,
             "updatedAt": tweet.updated_at,
         }
