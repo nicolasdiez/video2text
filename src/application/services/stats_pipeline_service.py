@@ -20,7 +20,7 @@ class StatsPipelineService(StatsPipelinePort):
     """
     Orchestrates the statistics pipeline:
       - Validate user exists
-      - Fetch all published tweets
+      - Fetch published tweets
       - Retrieve updated performance metrics
       - Compute growth score
       - Persist updated tweet entities
@@ -57,8 +57,9 @@ class StatsPipelineService(StatsPipelinePort):
             logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 2. Fetch published tweets of the user
-            tweets: List[Tweet] = await self.tweet_repo.find_published_by_user(user_id=user.id, limit=user.max_tweets_to_fetch_from_db, order=user.tweet_fetch_sort_order or TweetFetchSortOrder.newest_first)
-            logger.info("Fetched %s published tweets (limit: %s)", len(tweets), user.max_tweets_to_fetch_from_db, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            max_days_back = 60
+            tweets: List[Tweet] = await self.tweet_repo.find_published_by_user(user_id=user.id, order=user.tweet_fetch_sort_order or TweetFetchSortOrder.newest_first, max_days_back=max_days_back)
+            logger.info("Fetched %s published tweets (max days back: %s)", len(tweets), max_days_back, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 3. Process each tweet
             for index, tweet in enumerate(tweets, start=1):
@@ -84,7 +85,6 @@ class StatsPipelineService(StatsPipelinePort):
                     growth_score = await self.growth_score_calculator.compute_growth_score(tweet)
                     if growth_score:
                         tweet.growth_score = growth_score
-
                     logger.info("Computed growth score for tweet %s/%s", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
                     logger.exception("Failed to compute growth score for tweet_id %s", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -108,6 +108,5 @@ class StatsPipelineService(StatsPipelinePort):
                 await self.user_scheduler_runtime_repo.mark_stats_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
                 logger.exception("Failed updating user runtime status after stats pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-
             logger.exception("Stats pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise

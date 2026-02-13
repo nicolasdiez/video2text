@@ -20,7 +20,7 @@ from infrastructure.mongodb import db
 
 
 class MongoTweetRepository(TweetRepositoryPort):
-    
+
     def __init__(self, database: AsyncIOMotorDatabase = db):
         self._coll = database.get_collection("tweets")
 
@@ -87,9 +87,15 @@ class MongoTweetRepository(TweetRepositoryPort):
         user_id: str,
         limit: Optional[int] = None,
         order: TweetFetchSortOrder = TweetFetchSortOrder.newest_first,
+        max_days_back: Optional[int] = None,
     ) -> List[Tweet]:
 
         query = {"userId": ObjectId(user_id), "published": True}
+
+        # Optional date filter: only tweets published within the last X days
+        if max_days_back is not None:
+            cutoff = datetime.utcnow() - timedelta(days=max_days_back)
+            query["publishedAt"] = {"$gte": cutoff}
 
         # RANDOM ORDER
         if order == TweetFetchSortOrder.random:

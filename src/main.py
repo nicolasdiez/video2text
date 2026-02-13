@@ -75,6 +75,7 @@ from adapters.outbound.twitter_publication_client import TwitterPublicationClien
 # Stats pipeline
 from application.services.stats_pipeline_service import StatsPipelineService
 from adapters.outbound.twitter_stats.twitter_stats_client_apify_apidojo_tweet_scraper import TwitterStatsClientApifyApidojoTweetScraper
+from application.services.growth_score_calculator_service import GrowthScoreCalculatorService
 
 # Repository adapters (for wiring with DB instance)
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
@@ -98,7 +99,9 @@ except RuntimeError as exc:
     logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
     youtube_client = None
 
-# Ingestion and Publishing pipelines --- Repo adapters & service instantiation ---
+# --- Repo adapters & service instantiation ---
+
+# Ingestion and Publishing pipelines 
 user_repo                                   = MongoUserRepository(database=db)
 prompt_loader                               = FilePromptLoader(prompts_dir="prompts")
 channel_repo                                = MongoChannelRepository(database=db)
@@ -117,10 +120,6 @@ user_scheduler_runtime_repo                 = MongoUserSchedulerRuntimeStatusRep
 master_prompt_repo                          = MongoMasterPromptRepository(database=db) 
 channel_service                             = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
 prompt_composer_service                     = PromptComposerService()
-
-# Stats pipeline --- Repo adapters & service instantiation ---
-stats_provider = TwitterStatsClientApifyApidojoTweetScraper(apify_token=config.APIFY_API_TOKEN)
-
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
@@ -155,12 +154,23 @@ twitter_publication_client = TwitterPublicationClient(
 publishing_pipeline_service_instance = PublishingPipelineService(
     user_repo                       = user_repo,
     tweet_repo                      = tweet_repo,
-    twitter_publication_client                  = twitter_publication_client,
+    twitter_publication_client      = twitter_publication_client,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
 )
 
 # Inject the instance of PublishingPipelineService (with all the Adapters) into the pipeline controller 
 pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_instance
+
+# Stats pipeline
+stats_provider = TwitterStatsClientApifyApidojoTweetScraper(apify_token=config.APIFY_API_TOKEN_PERSONAL)
+growth_score_calculator = GrowthScoreCalculatorService()
+stats_pipeline_service = StatsPipelineService(
+    user_repo=user_repo,
+    tweet_repo=tweet_repo,
+    stats_provider=stats_provider,
+    growth_score_calculator=growth_score_calculator,
+    user_scheduler_runtime_repo=user_scheduler_runtime_repo,
+)
 
 # --- AppConfig adapter ---
 app_config_repo = MongoAppConfigRepository(database=db)
@@ -196,7 +206,7 @@ async def lifespan(app: FastAPI):
     # ===== END TEMPORARY BLOCK =====
 
 
-    # Inline async function for INGESTION
+    # Inline async function for INGESTION PIPELINE
     async def ingestion_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -287,7 +297,7 @@ async def lifespan(app: FastAPI):
 
 
 
-    # Inline async function for PUBLISHING
+    # Inline async function for PUBLISHING PIPELINE
     async def publishing_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -377,16 +387,104 @@ async def lifespan(app: FastAPI):
             logger.debug("Publishing pipeline app config frequency has not changed (current freq: %s mins)", current_publishing_frequency_minutes, extra={"job": "ingestion"})
 
 
+
+    # Inline async function for STATS PIPELINE
+    async def stats_job():
+        # 1. Get app-level config
+        app_config = await app_config_repo.get_config()
+        default_user_frequency_minutes = 1440
+
+        users = await user_repo.find_all()
+        now = datetime.utcnow()
+
+        for user in users:
+            try:
+                set_user_id(str(user.id))
+
+                # 2. Check if pipeline is enabled
+                user_scheduler_config = getattr(user, "scheduler_config", None)
+                if user_scheduler_config and hasattr(user_scheduler_config, "is_stats_pipeline_enabled") and user_scheduler_config.is_stats_pipeline_enabled is False:
+                    logger.info("Skipping Stats pipeline (disabled by user config)", extra={"job": "stats"})
+                    continue
+
+                app_scheduler_config = app_config.scheduler_config
+                if not app_scheduler_config or not hasattr(app_scheduler_config, "is_stats_pipeline_enabled") or app_scheduler_config.is_stats_pipeline_enabled is False:
+                    logger.info("Skipping Stats pipeline (disabled by app_config or app_config missing)", extra={"job": "stats"})
+                    continue
+
+                # 3. Determine effective frequency
+                user_frequency_minutes = getattr(user.scheduler_config, "stats_pipeline_frequency_minutes", None)
+                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else default_user_frequency_minutes
+
+                # 4. Retrieve runtime status
+                user_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                stats_last_started_at = getattr(user_runtime_status, "last_stats_pipeline_started_at", None) if user_runtime_status else None
+                is_running = getattr(user_runtime_status, "is_stats_pipeline_running", False) if user_runtime_status else False
+
+                # 5. Determine if pipeline should run
+                elapsed_minutes = (now - stats_last_started_at).total_seconds() / 60.0 if stats_last_started_at else None
+                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 1)
+                first_run = elapsed_minutes is None
+
+                should_run = first_run or enough_time_passed or stuck_protection
+
+                elapsed_minutes_str = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
+                decision = "Yes" if should_run else "No"
+
+                logger.info("Stats pipeline: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes_str, extra={"job": "stats"})
+                logger.info("Stats pipeline should run now? %s", decision, extra={"job": "stats"})
+
+                if not should_run:
+                    logger.info("Skipping Stats pipeline (already running or within freq)", extra={"job": "stats"})
+                    continue
+
+                # 6. Run pipeline
+                logger.info("Stats pipeline starting", extra={"job": "stats"})
+                set_user_id(user.id)
+                await stats_pipeline_service.run_for_user(user_id=user.id)
+                logger.info("Stats pipeline finished", extra={"job": "stats"})
+
+                # 7. Update next scheduled run
+                finish_time = datetime.utcnow()
+                next_start = finish_time + timedelta(minutes=effective_frequency_minutes)
+                await user_scheduler_runtime_repo.update_by_user_id(user.id, {"nextScheduledStatsPipelineStartingAt": next_start})
+                logger.info("Next user's scheduled Stats pipeline starting at: %s", next_start.isoformat(), extra={"job": "stats"})
+
+            except Exception as e:
+                logger.error("Stats pipeline failed: %s", str(e), extra={"job": "stats"})
+
+        # 8. Refresh app config and reschedule job if needed
+        # get current app job/pipeline frequency
+        job = scheduler.get_job("stats_job")
+        current_stats_frequency_minutes = job.trigger.interval.total_seconds() / 60
+        logger.debug("Checking if Stats pipeline app config frequency has changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
+        # get app configuration frequency from repo
+        new_app_config = await app_config_repo.get_config()
+        new_stats_frequency_minutes = new_app_config.scheduler_config.stats_pipeline_frequency_minutes
+        # if there is a new app pipeline config then reschedule job
+        if float(new_stats_frequency_minutes) != float(current_stats_frequency_minutes):
+            try:
+                scheduler.reschedule_job("stats_job", trigger="interval", minutes=new_stats_frequency_minutes)
+                logger.info("Rescheduled Stats pipeline app config frequency to %s minutes", new_stats_frequency_minutes, extra={"job": "stats"})
+            except Exception as ex:
+                logger.warning("Failed to reschedule Stats pipeline app config frequency: %s", str(ex), extra={"job": "stats"})
+        else:
+            logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
+
+
     # load appConfig from repo
     app_config = await app_config_repo.get_config()
     ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
     publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
+    stats_pipeline_frequency_minutes = app_config.scheduler_config.stats_pipeline_frequency_minutes
     logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes)
     
     # setup job execution frequency
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes, id="ingestion_job")
     scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
-    
+    scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
+
     # start scheduler.
     scheduler.start()
     logger.info("APScheduler started")
