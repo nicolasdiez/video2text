@@ -25,11 +25,17 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
                 publishing_pipeline_frequency_minutes=int(
                     scheduler_config.get("publishingPipelineFrequencyMinutes", 2)
                 ),
+                stats_pipeline_frequency_minutes=int(
+                    scheduler_config.get("statsPipelineFrequencyMinutes", 2)
+                ),
                 is_ingestion_pipeline_enabled=bool(
                     scheduler_config.get("isIngestionPipelineEnabled", True)
                 ),
                 is_publishing_pipeline_enabled=bool(
                     scheduler_config.get("isPublishingPipelineEnabled", True)
+                ),
+                is_stats_pipeline_enabled=bool(
+                    scheduler_config.get("isStatsPipelineEnabled", True)
                 ),
             )
         )
@@ -46,8 +52,10 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
                     "schedulerConfig": {
                         "ingestionPipelineFrequencyMinutes": sc.ingestion_pipeline_frequency_minutes,
                         "publishingPipelineFrequencyMinutes": sc.publishing_pipeline_frequency_minutes,
+                        "statsPipelineFrequencyMinutes": sc.stats_pipeline_frequency_minutes,
                         "isIngestionPipelineEnabled": sc.is_ingestion_pipeline_enabled,
                         "isPublishingPipelineEnabled": sc.is_publishing_pipeline_enabled,
+                        "isStatsPipelineEnabled": sc.is_stats_pipeline_enabled,
                     }
                 }
             },

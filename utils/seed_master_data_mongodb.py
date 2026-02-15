@@ -220,8 +220,10 @@ async def seed():
         "schedulerConfig": {
             "ingestionPipelineFrequencyMinutes": 1440,
             "publishingPipelineFrequencyMinutes": 1440,
+            "statsPipelineFrequencyMinutes": 1440,
             "isIngestionPipelineEnabled": True,
-            "isPublishingPipelineEnabled": True
+            "isPublishingPipelineEnabled": True,
+            "isStatsPipelineEnabled": True
         },
         "maxTweetsToFetchFromDB": 4,
         "maxTweetsToPublish": 1,
@@ -251,10 +253,12 @@ async def seed():
             # build SchedulerConfig from the user_doc (use defaults if keys missing)
             sc_doc = user_doc.get("schedulerConfig", {})
             scheduler_config = SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1440)),
+                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1240)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
+                stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 1140)),
                 is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
+                is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
             )
 
             user_entity = User(
@@ -724,8 +728,10 @@ async def seed():
     scheduler_config = SchedulerConfig(
         ingestion_pipeline_frequency_minutes=20,
         publishing_pipeline_frequency_minutes=20,
+        stats_pipeline_frequency_minutes=20,
         is_ingestion_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
+        is_stats_pipeline_enabled=True,
     )
     app_config = AppConfig(scheduler_config=scheduler_config)
     app_config_repo = MongoAppConfigRepository(db)
@@ -741,8 +747,10 @@ async def seed():
                 "schedulerConfig": {
                     "ingestionPipelineFrequencyMinutes": scheduler_config.ingestion_pipeline_frequency_minutes,
                     "publishingPipelineFrequencyMinutes": scheduler_config.publishing_pipeline_frequency_minutes,
+                    "statsPipelineFrequencyMinutes": scheduler_config.stats_pipeline_frequency_minutes,
                     "isIngestionPipelineEnabled": scheduler_config.is_ingestion_pipeline_enabled,
-                    "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled
+                    "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
+                    "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
                 }
             },
             upsert=True
@@ -770,14 +778,19 @@ async def seed():
             "userId": MASTER_USER_ID,
             "isIngestionPipelineRunning": False,
             "isPublishingPipelineRunning": False,
+            "isStatsPipelineRunning": False,
             "lastIngestionPipelineStartedAt": None,
             "lastIngestionPipelineFinishedAt": None,
             "lastPublishingPipelineStartedAt": None,
             "lastPublishingPipelineFinishedAt": None,
+            "lastStatsPipelineStartedAt": None,
+            "lastStatsPipelineFinishedAt": None,
             "nextScheduledIngestionPipelineStartingAt": None,
             "nextScheduledPublishingPipelineStartingAt": None,
+            "nextScheduledStatsPipelineStartingAt": None,
             "consecutiveFailuresIngestionPipeline": 0,
             "consecutiveFailuresPublishingPipeline": 0,
+            "consecutiveFailuresStatsPipeline": 0,
             "createdAt": datetime.now(_dt.timezone.utc),
         }
 
