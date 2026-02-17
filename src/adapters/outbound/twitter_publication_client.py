@@ -1,8 +1,7 @@
-# adapters/outbound/twitter_publication_client.py
-
 import os
 import asyncio
 import tweepy
+import random
 
 # logging
 import inspect
@@ -18,12 +17,38 @@ DEBUG = bool(config.APP_DEBUG)
 # Specific logger for this module
 logger = logging.getLogger(__name__)
 
+
+def _generate_fake_tweet_id() -> str:
+    """
+    Generates a valid-looking Twitter Snowflake ID (18-19 digits).
+    Example: 2020243890524078182
+    """
+    # Twitter snowflakes are 64-bit integers. Range approx: 2^63 → 9.22e18
+    return str(random.randint(10**18, 10**19 - 1))
+
+
 def skip_if_debug(fn):
     @wraps(fn)
     async def wrapper(self, *args, **kwargs):
         if DEBUG:
-            logger.info("[DEBUG] Se omitió TwitterPublicationClient publish con args=%s, kwargs=%s", args, kwargs, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-            return None
+            logger.info(
+                "[DEBUG] Se omitió TwitterPublicationClient publish con args=%s, kwargs=%s",
+                args,
+                kwargs,
+                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name}
+            )
+            # ID of an existing valid dummy tweet
+            return "2023032187466183103" #"2019141630763073856"
+        
+            # Returns a fake tweet_id so the consumers behaves normally
+            # fake_id = _generate_fake_tweet_id()
+            # logger.info(
+            #    "[DEBUG] Returning fake tweet_id=%s",
+            #    fake_id,
+            #    extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name}
+            # )
+            #return fake_id
+
         return await fn(self, *args, **kwargs)
     return wrapper
 
@@ -43,13 +68,14 @@ class TwitterPublicationClient(TwitterPublicationPort):
         self.oauth1_api_key = oauth1_api_key
         self.oauth1_api_secret = oauth1_api_secret
         
-        # load credentials
-        self.oauth1_api_key     = oauth1_api_key
-        self.oauth1_api_secret  = oauth1_api_secret
-        
-        # Logging
-        logger.info("TwitterPublicationClient initialized with app credentials",extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info(
+            "TwitterPublicationClient initialized with app credentials",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
+        )
+        logger.info(
+            "Finished OK",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
+        )
 
 
     @skip_if_debug
@@ -58,11 +84,20 @@ class TwitterPublicationClient(TwitterPublicationPort):
         Publica un tweet en nombre de un usuario.
         Se construye un cliente tweepy con las credenciales de app + usuario.
         """
-        tweet_id = await asyncio.to_thread(self._publish_sync, text, oauth1_access_token, oauth1_access_token_secret)
+        tweet_id = await asyncio.to_thread(
+            self._publish_sync,
+            text,
+            oauth1_access_token,
+            oauth1_access_token_secret
+        )
 
-        logger.info("Publish finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info(
+            "Publish finished OK",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
+        )
 
         return tweet_id
+
 
     def _publish_sync(self, text: str, oauth1_access_token: str, oauth1_access_token_secret: str) -> str:
         """
@@ -78,6 +113,11 @@ class TwitterPublicationClient(TwitterPublicationPort):
         resp = client.create_tweet(text=text)
         tweet_id = resp.data["id"]
 
-        logger.info("Tweet published with ID: %s (tweet text: '%s')", tweet_id, text, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+        logger.info(
+            "Tweet published with ID: %s (tweet text: '%s')",
+            tweet_id,
+            text,
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
+        )
 
         return tweet_id

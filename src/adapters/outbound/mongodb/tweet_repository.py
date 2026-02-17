@@ -1,6 +1,6 @@
 # adapters/outbound/mongo/tweet_repository.py
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 
 from bson import ObjectId
@@ -166,6 +166,7 @@ class MongoTweetRepository(TweetRepositoryPort):
             "quotes": self._metric_to_doc(stats.quotes),
             "impressions": self._metric_to_doc(stats.impressions),
             "bookmarks": self._metric_to_doc(stats.bookmarks),
+            "authorFollowers": self._metric_to_doc(stats.author_followers),
 
             "profileVisits": self._metric_to_doc(stats.profile_visits),
             "detailExpands": self._metric_to_doc(stats.detail_expands),
@@ -190,6 +191,7 @@ class MongoTweetRepository(TweetRepositoryPort):
             quotes=self._metric_from_doc(doc.get("quotes")),
             impressions=self._metric_from_doc(doc.get("impressions")),
             bookmarks=self._metric_from_doc(doc.get("bookmarks")),
+            author_followers=self._metric_from_doc(doc.get("authorFollowers")),
 
             profile_visits=self._metric_from_doc(doc.get("profileVisits")),
             detail_expands=self._metric_from_doc(doc.get("detailExpands")),

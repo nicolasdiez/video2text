@@ -478,7 +478,7 @@ async def lifespan(app: FastAPI):
     ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
     publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
     stats_pipeline_frequency_minutes = app_config.scheduler_config.stats_pipeline_frequency_minutes
-    logger.info("Loaded application config from DB: ingestion_freq=%s min, publishing_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes)
+    logger.info("Loaded DB app config: ingestion_freq=%s min, publishing_freq=%s min, stats_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes, stats_pipeline_frequency_minutes)
     
     # setup job execution frequency
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes, id="ingestion_job")

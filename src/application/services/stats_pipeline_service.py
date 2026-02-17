@@ -67,25 +67,32 @@ class StatsPipelineService(StatsPipelinePort):
                     logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     continue
 
-                # Fetch stats from provider
+                # Fetch stats from twitter stats provider
                 try:
+                    tweet.twitter_id = "2023075568980488581"
                     stats = await self.stats_provider.fetch_tweet_stats(tweet.twitter_id)
                     logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
                     logger.exception("Failed to fetch stats for tweet_id %s", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     continue
 
+                # Skip if stats is None
+                if stats is None:
+                    logger.warning("Stats is None for tweet_id %s, skipping update and growth score", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    continue
+
                 # Update tweet stats
                 now = datetime.utcnow()
                 tweet.twitter_stats = stats
                 tweet.updated_at = now
+                logger.info("Updated tweet stats in collection 'tweets' (twitter_id: %s)", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                 # Compute growth score
                 try:
                     growth_score = await self.growth_score_calculator.compute_growth_score(tweet)
                     if growth_score:
                         tweet.growth_score = growth_score
-                    logger.info("Computed growth score for tweet %s/%s", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.info("Computed growth score for tweet %s/%s: %s", index, len(tweets), tweet.growth_score, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
                     logger.exception("Failed to compute growth score for tweet_id %s", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 

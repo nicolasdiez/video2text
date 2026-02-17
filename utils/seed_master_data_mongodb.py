@@ -2,7 +2,7 @@
 
 # ---- HOW TO USE THIS SCRIPT ----- 
 # cd /d/software_projects/video2text
-# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=true SEED_CLEAN_VIDEOS=true SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true python utils/seed_master_data_mongodb.py
+# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=false SEED_CLEAN_VIDEOS=false SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true python utils/seed_master_data_mongodb.py
 # (WARNING!! ----> check deletion flags SEED_CLEAN_!! when true the entire collection will be erased before seeding the master data):
 
 

@@ -33,6 +33,7 @@ class TwitterStats:
     quotes: Optional[MetricValue] = None
     impressions: Optional[MetricValue] = None
     bookmarks: Optional[MetricValue] = None
+    author_followers: Optional[MetricValue] = None
 
     # Advanced metrics (Bright Data or future providers)
     profile_visits: Optional[MetricValue] = None
@@ -51,7 +52,7 @@ class TwitterStats:
 @dataclass
 class TweetEmbeddingRefs:
     """
-    Represents the reference IDs of the embedding stored in the vectorDB
+    Represents the reference ID of the embedding stored in the vectorDB
     """
     tweet_text_id: Optional[str] = None
     video_transcript_id: Optional[str] = None
@@ -85,7 +86,7 @@ class Tweet:
     published_at: Optional[datetime] = None     # Publication timestamp in X
     twitter_id: Optional[str] = None            # ID of the tweet in X
 
-    # Performance metrics (optional, filled after scraping)
+    # Performance metrics (optional, filled after scraping the metrics from Twitter)
     twitter_stats: Optional[TwitterStats] = None
 
     # References to the embedding IDs related to the Tweet stored in the vectorDB 

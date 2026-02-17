@@ -1,5 +1,3 @@
-# src/application/services/growth_score_calculator_service.py
-
 from typing import Optional, Dict
 
 from domain.entities.tweet import Tweet, GrowthScore
@@ -98,23 +96,57 @@ class GrowthScoreCalculatorService(GrowthScoreCalculatorPort):
     def _compute_engagement_score(self, tweet: Tweet) -> Optional[float]:
         """
         Compute engagement score from twitter_stats.
-        Simple heuristic: normalize engagement metrics.
+        Updated heuristic:
+        - combine engagement metrics (likes, retweets, replies, quotes, bookmarks)
+        - normalize by author followers to get a relative engagement rate
+        - scale to 0–1 range using a realistic engagement curve
         """
         stats = tweet.twitter_stats
         if not stats:
             return None
 
+        # Basic engagement metrics
         likes = stats.likes.value if stats.likes else 0
         retweets = stats.retweets.value if stats.retweets else 0
         replies = stats.replies.value if stats.replies else 0
         quotes = stats.quotes.value if stats.quotes else 0
+        bookmarks = stats.bookmarks.value if stats.bookmarks else 0
 
-        raw = likes + (2 * retweets) + replies + quotes
-        if raw == 0:
-            return 0.0
+        # Followers of the author (critical for normalization)
+        followers = stats.author_followers.value if stats.author_followers else 0
+        followers = max(followers, 1)  # avoid division by zero
 
-        # Simple normalization (placeholder)
-        return min(raw / 1000, 1.0)
+        # Weighted engagement formula
+        raw_engagement = (
+            likes +
+            (2 * retweets) +
+            replies +
+            quotes +
+            (0.5 * bookmarks)
+        )
+
+        # Engagement rate relative to audience size
+        engagement_rate = raw_engagement / followers
+
+        # ---------------------------------------------------------
+        # Scale to 0–1 range using a realistic engagement curve.
+        #
+        # engagement_rate = raw_engagement / followers
+        #
+        # Examples:
+        #   0% engagement   → 0.00 → score = 0.0
+        #   0.1% engagement → 0.001 → score = 0.01
+        #   5% engagement   → 0.05  → score = 0.50
+        #   10% engagement  → 0.10  → score = 1.00 (capped)
+        #   20% engagement  → 0.20  → score = 2.00 (capped)
+        #
+        # This curve avoids saturating too early and differentiates
+        # between normal, good, and exceptional tweets.
+        # ---------------------------------------------------------
+        score = min(engagement_rate * 10, 1.0)
+
+        return score
+
 
     async def _compute_style_alignment_score(self, tweet: Tweet) -> Optional[float]:
         """
@@ -129,6 +161,7 @@ class GrowthScoreCalculatorService(GrowthScoreCalculatorPort):
 
         # TODO: call vector store to compute cosine similarity
         return 0.8
+
 
     async def _compute_topic_relevance_score(self, tweet: Tweet) -> Optional[float]:
         """

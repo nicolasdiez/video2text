@@ -162,8 +162,10 @@ class MongoUserRepository(UserRepositoryPort):
             scheduler_config = SchedulerConfig(
                 ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 10)),
+                stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 10)),
                 is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
+                is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
             )
 
         return User(
@@ -205,8 +207,10 @@ class MongoUserRepository(UserRepositoryPort):
             "schedulerConfig": {
                 "ingestionPipelineFrequencyMinutes": user.scheduler_config.ingestion_pipeline_frequency_minutes,
                 "publishingPipelineFrequencyMinutes": user.scheduler_config.publishing_pipeline_frequency_minutes,
+                "statsPipelineFrequencyMinutes": user.scheduler_config.stats_pipeline_frequency_minutes,
                 "isIngestionPipelineEnabled": user.scheduler_config.is_ingestion_pipeline_enabled,
                 "isPublishingPipelineEnabled": user.scheduler_config.is_publishing_pipeline_enabled,
+                "isStatsPipelineEnabled": user.scheduler_config.is_stats_pipeline_enabled,
             } if user.scheduler_config else None,
             "maxTweetsToFetchFromDB": user.max_tweets_to_fetch_from_db,
             "maxTweetsToPublish": user.max_tweets_to_publish,
