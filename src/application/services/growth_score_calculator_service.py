@@ -140,8 +140,7 @@ class GrowthScoreCalculatorService(GrowthScoreCalculatorPort):
         #   10% engagement  → 0.10  → score = 1.00 (capped)
         #   20% engagement  → 0.20  → score = 2.00 (capped)
         #
-        # This curve avoids saturating too early and differentiates
-        # between normal, good, and exceptional tweets.
+        # This curve avoids saturating too early and differentiates between normal, good, and exceptional tweets.
         # ---------------------------------------------------------
         score = min(engagement_rate * 10, 1.0)
 

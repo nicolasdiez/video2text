@@ -3,7 +3,7 @@
 import inspect
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from domain.ports.inbound.stats_pipeline_port import StatsPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
@@ -11,7 +11,7 @@ from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryP
 from domain.ports.outbound.twitter_stats.twitter_stats_port import TwitterStatsPort
 from domain.ports.inbound.growth_score_calculator_port import GrowthScoreCalculatorPort
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
-from domain.entities.tweet import Tweet
+from domain.entities.tweet import Tweet, TwitterStats, MetricValue
 from domain.entities.user import TweetFetchSortOrder
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,24 @@ class StatsPipelineService(StatsPipelinePort):
         self.growth_score_calculator = growth_score_calculator
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
 
+    def _get_latest_fetched_at(self, stats: TwitterStats) -> Optional[datetime]:
+        """ 
+        Extract the most recent fetched_at across all metrics in TwitterStats. 
+        Helps decide whether stats are recent enough to avoid fetching again. 
+        """
+        if not stats:
+            return None
+
+        timestamps = []
+
+        for field_name in stats.__dataclass_fields__:
+            value = getattr(stats, field_name)
+            if isinstance(value, MetricValue) and value.fetched_at:
+                timestamps.append(value.fetched_at)
+
+        return max(timestamps) if timestamps else None
+
+
     async def run_for_user(self, user_id: str) -> None:
         try:
             # 0. Starting pipeline
@@ -67,9 +85,21 @@ class StatsPipelineService(StatsPipelinePort):
                     logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     continue
 
+                # Skip if stats are fresh (within FRESHNESS_MINUTES mins)
+                FRESHNESS_MINUTES = 60
+                if tweet.twitter_stats:
+                    latest_ts = self._get_latest_fetched_at(tweet.twitter_stats)
+
+                    if latest_ts:
+                        age_minutes = (datetime.utcnow() - latest_ts).total_seconds() / 60
+                        
+                        if age_minutes < FRESHNESS_MINUTES:
+                            logger.info("Skipping tweet %s/%s (stats freshness: %.1f mins old < %s mins)", index, len(tweets), age_minutes, FRESHNESS_MINUTES)
+                            continue
+
                 # Fetch stats from twitter stats provider
                 try:
-                    tweet.twitter_id = "2023075568980488581"
+                    tweet.twitter_id = "2023075568980488581"    # debug twitter id (real)
                     stats = await self.stats_provider.fetch_tweet_stats(tweet.twitter_id)
                     logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
