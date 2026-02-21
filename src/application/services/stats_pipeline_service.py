@@ -75,12 +75,16 @@ class StatsPipelineService(StatsPipelinePort):
             logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 2. Fetch published tweets of the user
-            max_days_back = 60
+            max_days_back = 6000
             tweets: List[Tweet] = await self.tweet_repo.find_published_by_user(user_id=user.id, order=user.tweet_fetch_sort_order or TweetFetchSortOrder.newest_first, max_days_back=max_days_back)
             logger.info("Fetched %s published tweets (max days back: %s)", len(tweets), max_days_back, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 3. Process each tweet
             for index, tweet in enumerate(tweets, start=1):
+                
+                logger.info("Stats tweet %s/%s - Process starting...", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.info("Tweet _id: %s (twiteer id: %s)", tweet.id, tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
                 if not tweet.twitter_id:
                     logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     continue
@@ -89,10 +93,8 @@ class StatsPipelineService(StatsPipelinePort):
                 FRESHNESS_MINUTES = 60
                 if tweet.twitter_stats:
                     latest_ts = self._get_latest_fetched_at(tweet.twitter_stats)
-
                     if latest_ts:
                         age_minutes = (datetime.utcnow() - latest_ts).total_seconds() / 60
-                        
                         if age_minutes < FRESHNESS_MINUTES:
                             logger.info("Skipping tweet %s/%s (stats freshness: %.1f mins old < %s mins)", index, len(tweets), age_minutes, FRESHNESS_MINUTES)
                             continue
@@ -132,6 +134,8 @@ class StatsPipelineService(StatsPipelinePort):
                     logger.info("Updated tweet stats in DB (tweet_id: %s, _id: %s)", tweet.twitter_id, tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
                     logger.exception("Failed to update tweet in DB (tweet_id: %s)", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                logger.info("Stats tweet %s/%s - Process finished", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 4-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_stats_finished(user_id, datetime.utcnow(), success=True)

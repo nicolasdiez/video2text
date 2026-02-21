@@ -184,7 +184,6 @@ scheduler = AsyncIOScheduler()
 async def lifespan(app: FastAPI):
 
     # ===== START TEMPORARY BLOCK =====
-    # =================================================================================
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this block when frontend/endpoints for user credential management is ready
     USER_ID = "000000000000000000000001" # Nico
@@ -202,7 +201,6 @@ async def lifespan(app: FastAPI):
     )
     await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
     logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
-    # =================================================================================
     # ===== END TEMPORARY BLOCK =====
 
 
@@ -471,6 +469,7 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Stats pipeline app config frequency: %s", str(ex), extra={"job": "stats"})
         else:
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
+
 
 
     # load appConfig from repo

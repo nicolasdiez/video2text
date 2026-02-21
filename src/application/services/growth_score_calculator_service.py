@@ -129,22 +129,23 @@ class GrowthScoreCalculatorService(GrowthScoreCalculatorPort):
         engagement_rate = raw_engagement / followers
 
         # ---------------------------------------------------------
-        # Scale to 0–1 range using a realistic engagement curve.
+        # Scale to 0–1 range using a realistic engagement curve (relative to the number of followers of the account).
         #
         # engagement_rate = raw_engagement / followers
         #
         # Examples:
-        #   0% engagement   → 0.00 → score = 0.0
-        #   0.1% engagement → 0.001 → score = 0.01
-        #   5% engagement   → 0.05  → score = 0.50
-        #   10% engagement  → 0.10  → score = 1.00 (capped)
-        #   20% engagement  → 0.20  → score = 2.00 (capped)
+        #   0% engagement   → 0.00 → score = 0.0            --> poor tweet
+        #   0.1% engagement → 0.001 → score = 0.01          --> poor tweet
+        #   2% engagement → 0.02 → score = 0.02             --> normal tweet
+        #   8% engagement   → 0.08  → score = 0.80          --> very good tweet
+        #   10% engagement  → 0.10  → score = 1.00 (capped) --> amazing tweet
+        #   20% engagement  → 0.20  → score = 2.00 (capped) --> amazing tweet
         #
         # This curve avoids saturating too early and differentiates between normal, good, and exceptional tweets.
         # ---------------------------------------------------------
-        score = min(engagement_rate * 10, 1.0)
+        engagement_score = min(engagement_rate * 10, 1.0)
 
-        return score
+        return engagement_score
 
 
     async def _compute_style_alignment_score(self, tweet: Tweet) -> Optional[float]:

@@ -62,14 +62,15 @@ class TweetEmbeddingRefs:
 @dataclass
 class GrowthScore:
     """
-    Represents the metrics used to determine the growth score of a Tweet (i.e the impact of a Tweet)
+    Represents the metrics used to determine the growth score of a Tweet
+    (i.e., the impact and quality of the tweet).
     """
-    engagement: Optional[float] = None
-    style_alignment: Optional[float] = None
-    topic_relevance: Optional[float] = None
-    overall: Optional[float] = None
-    version: Optional[str] = None
-
+    engagement: Optional[float] = None        # How strongly the audience interacted (0–1)
+    style_alignment: Optional[float] = None   # How well the tweet matches the creator's style (0–1)
+    topic_relevance: Optional[float] = None   # How relevant the tweet is to the chosen topic (0–1)
+    overall: Optional[float] = None           # Final combined score summarizing tweet quality (0–1)
+    version: Optional[str] = None             # Version of the scoring algorithm used
+    
 
 @dataclass(kw_only=True)
 class Tweet:

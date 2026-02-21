@@ -6,7 +6,7 @@
 
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.outbound.transcription_port import TranscriptionPort
-from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.outbound.llm_port import LLMPort
 from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 
@@ -27,7 +27,7 @@ class PipelineService:
         video_source: VideoSourcePort,
         transcriber: TranscriptionPort,
         prompt_loader: PromptLoaderPort,
-        openai_client: OpenAIPort,
+        openai_client: LLMPort,
         twitter_publication_client: TwitterPublicationPort,
     ):
         self.video_source   = video_source
