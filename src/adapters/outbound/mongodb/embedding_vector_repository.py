@@ -1,4 +1,4 @@
-# src/adapters/outbound/mongodb/mongo_embedding_vector_repository.py
+# src/adapters/outbound/mongodb/embedding_vector_repository.py
 
 from datetime import datetime
 from typing import Optional

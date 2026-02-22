@@ -15,7 +15,7 @@ from domain.ports.outbound.mongodb.channel_repository_port import ChannelReposit
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
 from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort, InstructionPosition
-from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.outbound.llm_port import LLMPort
 from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailServicePort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
@@ -55,7 +55,7 @@ class IngestionPipelineService(IngestionPipelinePort):
         transcription_client: TranscriptionPort,
         transcription_client_fallback: Optional[TranscriptionPort],
         transcription_client_fallback_2: Optional[TranscriptionPort],
-        openai_client: OpenAIPort,
+        openai_client: LLMPort,
         tweet_output_guardrail_service: TweetOutputGuardrailServicePort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,

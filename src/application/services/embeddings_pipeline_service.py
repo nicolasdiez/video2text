@@ -35,8 +35,8 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
         user_repo: UserRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         video_repo: VideoRepositoryPort,
-        embedding_repo: EmbeddingVectorRepositoryPort,
-        embedding_client: EmbeddingVectorPort,
+        embeddings_repo: EmbeddingVectorRepositoryPort,
+        embeddings_client: EmbeddingVectorPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
         embedding_model: str,
         tweet_max_days_back_calculate_embeddings: Optional[int] = None,
@@ -44,8 +44,8 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
         self.user_repo = user_repo
         self.tweet_repo = tweet_repo
         self.video_repo = video_repo
-        self.embedding_repo = embedding_repo
-        self.embedding_client = embedding_client
+        self.embeddings_repo = embeddings_repo
+        self.embeddings_client = embeddings_client
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
         self.embedding_model = embedding_model
         self.tweet_max_days_back_calculate_embeddings = tweet_max_days_back_calculate_embeddings
@@ -77,15 +77,15 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
             for index, tweet in enumerate(tweets, start=1):
                 logger.info("Processing tweet %s/%s (_id: %s)", index, len(tweets), tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # Ensure embedding_refs exists
+                # Ensure embedding_refs attribute exists
                 if tweet.embedding_refs is None:
                     tweet.embedding_refs = tweet.embedding_refs.__class__()  # TweetEmbeddingRefs()
 
-                # 3.a. Embedding for tweet text
+                # 3.a. Calculate embedding for tweet text
                 if tweet.text and not tweet.embedding_refs.tweet_text_id:
                     try:
                         logger.info("Generating embedding for tweet text...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                        vector = await self.embedding_client.get_embedding(tweet.text, self.embedding_model)
+                        vector = await self.embeddings_client.get_embedding(tweet.text, self.embedding_model)
 
                         embedding = EmbeddingVector(
                             id=None,
@@ -94,19 +94,19 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                             vector=vector,
                             created_at=datetime.utcnow(),
                         )
-                        embedding_id = await self.embedding_repo.save(embedding)
+                        embedding_id = await self.embeddings_repo.save(embedding)
                         tweet.embedding_refs.tweet_text_id = embedding_id
 
                     except Exception:
                         logger.exception("Failed generating embedding for tweet text (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # 3.b. Embedding for video transcript
+                # 3.b. Calculate embedding for video transcript
                 if tweet.video_id and not tweet.embedding_refs.video_transcript_id:
                     try:
                         video = await self.video_repo.find_by_id(tweet.video_id)
                         if video and video.transcript:
                             logger.info("Generating embedding for video transcript...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            vector = await self.embedding_client.get_embedding(video.transcript, self.embedding_model)
+                            vector = await self.embeddings_client.get_embedding(video.transcript, self.embedding_model)
 
                             embedding = EmbeddingVector(
                                 id=None,
@@ -115,7 +115,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                                 vector=vector,
                                 created_at=datetime.utcnow(),
                             )
-                            embedding_id = await self.embedding_repo.save(embedding)
+                            embedding_id = await self.embeddings_repo.save(embedding)
                             tweet.embedding_refs.video_transcript_id = embedding_id
                         else:
                             logger.info("No transcript found for video_id %s, skipping transcript embedding", tweet.video_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

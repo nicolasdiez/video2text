@@ -1,4 +1,4 @@
-# src/domain/ports/llm_port.py
+# src/domain/ports/outbound/llm_port.py
 
 from abc import ABC, abstractmethod
 

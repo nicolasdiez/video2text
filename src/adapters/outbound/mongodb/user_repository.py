@@ -1,4 +1,4 @@
-# adapters/outbound/mongo/user_repository.py
+# src/adapters/outbound/mongodb/user_repository.py
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any

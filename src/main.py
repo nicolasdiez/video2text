@@ -63,7 +63,7 @@ from adapters.outbound.transcription_client_data_api import YouTubeTranscription
 from adapters.outbound.transcription_client_public_player_api_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR
 from adapters.outbound.transcription_client_android_player_api_ASR import YouTubeTranscriptionClientAndroidPlayerAPI_ASR
 from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository
-from adapters.outbound.openai_client import OpenAIClient
+from adapters.outbound.llm_openai_client import LLMOpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import MongoUserSchedulerRuntimeStatusRepository
@@ -76,6 +76,11 @@ from adapters.outbound.twitter_publication_client import TwitterPublicationClien
 from application.services.stats_pipeline_service import StatsPipelineService
 from adapters.outbound.twitter_stats.twitter_stats_client_apify_apidojo_tweet_scraper import TwitterStatsClientApifyApidojoTweetScraper
 from application.services.growth_score_calculator_service import GrowthScoreCalculatorService
+
+# Embeddings pipeline
+from application.services.embeddings_pipeline_service import EmbeddingsPipelineService
+from adapters.outbound.mongodb.embedding_vector_repository import MongoEmbeddingVectorRepository
+from adapters.outbound.embedding_vector_openai_client import EmbeddingVectorOpenAIClient
 
 # Repository adapters (for wiring with DB instance)
 from adapters.outbound.mongodb.app_config_repository import MongoAppConfigRepository
@@ -101,7 +106,7 @@ except RuntimeError as exc:
 
 # --- Repo adapters & service instantiation ---
 
-# Ingestion and Publishing pipelines 
+# Ingestion, Publishing, Stats, Embeddings pipelines 
 user_repo                                   = MongoUserRepository(database=db)
 prompt_loader                               = FilePromptLoader(prompts_dir="prompts")
 channel_repo                                = MongoChannelRepository(database=db)
@@ -112,7 +117,7 @@ transcription_client_data_api               = YouTubeTranscriptionClientOfficial
 transcription_client_public_player_api_asr  = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
 transcription_client_android_player_api_asr = YouTubeTranscriptionClientAndroidPlayerAPI_ASR(model_name="small", device="cpu")
 prompt_repo                                 = MongoPromptRepository(database=db)
-openai_client                               = OpenAIClient(api_key=config.OPENAI_API_KEY)
+openai_client                               = LLMOpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_output_guardrail_service              = TweetOutputGuardrailService()
 tweet_generation_repo                       = MongoTweetGenerationRepository(db=db)
 tweet_repo                                  = MongoTweetRepository(database=db)
@@ -145,9 +150,9 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 
 # --- Publishing adapters & service instantiation ---
-twitter_publication_client = TwitterPublicationClient(
-    oauth1_api_key      = config.X_OAUTH1_API_KEY,
-    oauth1_api_secret   = config.X_OAUTH1_API_SECRET
+twitter_publication_client  = TwitterPublicationClient(
+    oauth1_api_key          = config.X_OAUTH1_API_KEY,
+    oauth1_api_secret       = config.X_OAUTH1_API_SECRET
 )
 
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
@@ -164,12 +169,28 @@ pipeline_controller.publishing_pipeline_service = publishing_pipeline_service_in
 # Stats pipeline
 stats_provider = TwitterStatsClientApifyApidojoTweetScraper(apify_token=config.APIFY_API_TOKEN_PERSONAL)
 growth_score_calculator = GrowthScoreCalculatorService()
+
 stats_pipeline_service = StatsPipelineService(
-    user_repo=user_repo,
-    tweet_repo=tweet_repo,
-    stats_provider=stats_provider,
-    growth_score_calculator=growth_score_calculator,
-    user_scheduler_runtime_repo=user_scheduler_runtime_repo,
+    user_repo                   = user_repo,
+    tweet_repo                  = tweet_repo,
+    stats_provider              = stats_provider,
+    growth_score_calculator     = growth_score_calculator,
+    user_scheduler_runtime_repo = user_scheduler_runtime_repo,
+)
+
+# Embeddings pipeline
+embeddings_repo = MongoEmbeddingVectorRepository(database=db)
+embeddings_client = EmbeddingVectorOpenAIClient(api_key=config.OPENAI_API_KEY, base_url = "https://api.openai.com/v1")
+
+embeddings_pipeline_servive = EmbeddingsPipelineService(
+    user_repo                                   = user_repo,
+    tweet_repo                                  = tweet_repo,
+    video_repo                                  = video_repo,
+    embedding_repo                              = embeddings_repo,
+    embeddings_client                           = embeddings_client,
+    user_scheduler_runtime_repo                 = user_scheduler_runtime_repo,
+    embedding_model                             = "text-embedding-3-small",
+    tweet_max_days_back_calculate_embeddings    = 60,
 )
 
 # --- AppConfig adapter ---
@@ -204,7 +225,7 @@ async def lifespan(app: FastAPI):
     # ===== END TEMPORARY BLOCK =====
 
 
-    # Inline async function for INGESTION PIPELINE
+    # ===== Inline async function for INGESTION PIPELINE =====
     async def ingestion_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -295,7 +316,7 @@ async def lifespan(app: FastAPI):
 
 
 
-    # Inline async function for PUBLISHING PIPELINE
+    # ===== Inline async function for PUBLISHING PIPELINE =====
     async def publishing_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -386,7 +407,7 @@ async def lifespan(app: FastAPI):
 
 
 
-    # Inline async function for STATS PIPELINE
+    # ===== Inline async function for STATS PIPELINE =====
     async def stats_job():
         # 1. Get app-level config
         app_config = await app_config_repo.get_config()
@@ -469,7 +490,13 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Stats pipeline app config frequency: %s", str(ex), extra={"job": "stats"})
         else:
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
-
+    
+    
+    # ===== Inline async function for EMBEDDINGS PIPELINE =====
+    async def embeddings_job():
+        # 1. Get app-level config
+        app_config = await app_config_repo.get_config()
+        default_user_frequency_minutes = 1440
 
 
     # load appConfig from repo
