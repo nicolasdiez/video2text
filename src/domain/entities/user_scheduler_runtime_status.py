@@ -21,6 +21,7 @@ class UserSchedulerRuntimeStatus:
     is_ingestion_pipeline_running: bool = False
     is_publishing_pipeline_running: bool = False
     is_stats_pipeline_running: bool = False
+    is_embeddings_pipeline_running: bool = False
 
     # Ingestion timestamps
     last_ingestion_pipeline_started_at: Optional[datetime] = None
@@ -33,16 +34,22 @@ class UserSchedulerRuntimeStatus:
     # Stats timestamps
     last_stats_pipeline_started_at: Optional[datetime] = None
     last_stats_pipeline_finished_at: Optional[datetime] = None
+    
+    # Embeddings timestamps
+    last_embeddings_pipeline_started_at: Optional[datetime] = None
+    last_embeddings_pipeline_finished_at: Optional[datetime] = None
 
     # Next scheduled runs
     next_scheduled_ingestion_pipeline_starting_at: Optional[datetime] = None
     next_scheduled_publishing_pipeline_starting_at: Optional[datetime] = None
-    next_scheduled_stats_pipeline_starting_at: Optional[datetime] = None  # NEW
+    next_scheduled_stats_pipeline_starting_at: Optional[datetime] = None
+    next_scheduled_embeddings_pipeline_starting_at: Optional[datetime] = None
 
     # Failure counters
     consecutive_failures_ingestion_pipeline: int = 0
     consecutive_failures_publishing_pipeline: int = 0
-    consecutive_failures_stats_pipeline: int = 0  # NEW
+    consecutive_failures_stats_pipeline: int = 0
+    consecutive_failures_embeddings_pipeline: int = 0
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
@@ -59,6 +66,8 @@ class UserSchedulerRuntimeStatus:
             raise TypeError("is_publishing_pipeline_running must be a boolean")
         if not isinstance(self.is_stats_pipeline_running, bool):
             raise TypeError("is_stats_pipeline_running must be a boolean")
+        if not isinstance(self.is_embeddings_pipeline_running, bool):
+            raise TypeError("is_embeddings_pipeline_running must be a boolean")
 
         # Failure counters
         if not isinstance(self.consecutive_failures_ingestion_pipeline, int) or self.consecutive_failures_ingestion_pipeline < 0:
@@ -67,6 +76,8 @@ class UserSchedulerRuntimeStatus:
             raise ValueError("consecutive_failures_publishing_pipeline must be a non-negative integer")
         if not isinstance(self.consecutive_failures_stats_pipeline, int) or self.consecutive_failures_stats_pipeline < 0:
             raise ValueError("consecutive_failures_stats_pipeline must be a non-negative integer")
+        if not isinstance(self.consecutive_failures_embeddings_pipeline, int) or self.consecutive_failures_stats_pipeline < 0:
+            raise ValueError("consecutive_failures_embeddings_pipeline must be a non-negative integer")
 
         # Timestamps
         if not isinstance(self.created_at, datetime):

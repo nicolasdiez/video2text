@@ -1,4 +1,4 @@
-# adapters/outbound/transcription_client_public_player_api_ASR.py 
+# src/adapters/outbound/transcription_client_public_player_api_ASR.py 
 # (WITHOUT ffmpeg - simpler and more reliable, in theory)
 
 """

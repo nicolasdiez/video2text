@@ -118,7 +118,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-20" value="OpenAIClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-20" value="LLMOpenAIClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="682" y="580" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-32" value="publish (text: str, limit: int)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="6GBo-MGXtRTwtD-Rmwj8-21" target="6GBo-MGXtRTwtD-Rmwj8-30" edge="1">

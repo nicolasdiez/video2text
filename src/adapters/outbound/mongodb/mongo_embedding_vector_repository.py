@@ -21,7 +21,6 @@ class MongoEmbeddingVectorRepository(EmbeddingVectorRepositoryPort):
         return EmbeddingVector(
             id=str(doc["_id"]),
             tweet_id=doc["tweet_id"],
-            user_id=doc["user_id"],
             type=EmbeddingType(doc["type"]),            
             vector=doc["vector"],
             created_at=doc["created_at"],
@@ -30,7 +29,6 @@ class MongoEmbeddingVectorRepository(EmbeddingVectorRepositoryPort):
     async def save(self, embedding: EmbeddingVector) -> str:
         doc = {
             "tweet_id": embedding.tweet_id,
-            "user_id": embedding.user_id,
             "type": embedding.type.value,
             "vector": embedding.vector,
             "created_at": embedding.created_at or datetime.utcnow(),

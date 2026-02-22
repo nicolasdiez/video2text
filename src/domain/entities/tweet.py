@@ -56,6 +56,17 @@ class TweetEmbeddingRefs:
     """
     tweet_text_id: Optional[str] = None
     video_transcript_id: Optional[str] = None
+
+    # Embedding representing the creator's personal writing style. 
+    # Not used yet. In the future, this will store a vector derived from 
+    # multiple tweets of the user, allowing the system to generate content 
+    # that matches the creator's tone, voice, communication personality and stylistic patterns.
+    # Servirá para permitir que el sistema genere tweets que: 
+    # - suenen como el usuario, no como un modelo genérico
+    # - mantengan coherencia estilística
+    # - respeten su tono, humor, ritmo, vocabulario
+    # - se adapten a su “marca personal”
+    # In summary --> creator_style_id permitirá personalizar la generación de contenido para cada usuario.
     creator_style_id: Optional[str] = None
 
 
@@ -70,7 +81,7 @@ class GrowthScore:
     topic_relevance: Optional[float] = None   # How relevant the tweet is to the chosen topic (0–1)
     overall: Optional[float] = None           # Final combined score summarizing tweet quality (0–1)
     version: Optional[str] = None             # Version of the scoring algorithm used
-    
+
 
 @dataclass(kw_only=True)
 class Tweet:

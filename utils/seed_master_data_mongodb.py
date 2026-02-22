@@ -221,9 +221,11 @@ async def seed():
             "ingestionPipelineFrequencyMinutes": 1440,
             "publishingPipelineFrequencyMinutes": 1440,
             "statsPipelineFrequencyMinutes": 1440,
+            "embeddingsPipelineFrequencyMinutes": 1440,
             "isIngestionPipelineEnabled": True,
             "isPublishingPipelineEnabled": True,
-            "isStatsPipelineEnabled": True
+            "isStatsPipelineEnabled": True,
+            "isEmbeddingsPipelineEnabled": True
         },
         "maxTweetsToFetchFromDB": 4,
         "maxTweetsToPublish": 1,
@@ -256,9 +258,11 @@ async def seed():
                 ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1240)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
                 stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 1140)),
+                embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 1000)),
                 is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
                 is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
+                is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
             )
 
             user_entity = User(
@@ -540,70 +544,11 @@ async def seed():
     # Example: saved_channel_ids = ["645a1f2b...", "645a1f2c...", ...]
 
     SYSTEM_MESSAGE = (
-    === WHO YOU ARE ===
-    You are a witty, insightful financial educator who writes engaging, human-sounding tweets that spark curiosity and conversation.
-
-    === MANDATORY CONTENT RULES ===
-    1. Each tweet must reference at least one specific detail from the transcript (e.g., names, events, strategies, dates, figures, or quotes).
-    2. Avoid generic advice — every tweet must clearly tie back to the video's narrative.
-    3. Each tweet must deliver the maximum possible value to the reader — no empty promotion, channel mentions, or filler.
-    4. That value can be in the form of a learning, a practical tip, an educational takeaway, or a thought-provoking reflection that leaves the reader thinking about the topic.
-    5. Model your tweets closely on the style, tone, and structure of the examples provided below (STYLE EXAMPLES GOOD).
-    6. Each tweet must stand alone and provide immediate value to the reader.
-    7. Do not invite the reader to watch the video or to 'learn more later'.
-    8. Avoid vague calls like 'profundicemos juntos' or 'descubre más' (see below: STYLE EXAMPLES BAD).
-    9. Instead, include a concrete insight, fact, or reflection directly in the tweet.
-
-    === STYLE & TONE ===
-    - Speak like a friend interested in personal finance, using clear, approachable language.
-    - Conversational and engaging.
-    - Keep each tweet in a human voice: use contractions and colloquial expressions common in Spain.
-    - Voice: conversational, close, no unnecessary technicalities (Example voice: "Sounds odd? Check this out…")
-    - Intelligent sense of humor where appropriate.
-    - Occasional emojis and relevant hashtags.
-    - Use "you" instead of "sir/ma'am" to keep the tone direct and familiar.
-    - Vary the structure: some tweets as questions, others as impactful statements, others as quotes.
-    - Avoid offensive or vulgar words that sound bad in Spanish (e.g., "vejestorio", etc.).
-    - You may use common financial terms if the tweet requires them (e.g., long position, short position, etc.).
-    - Use simple metaphors (e.g., "it's like saving in a jar") to explain complex ideas.
-
-    === OUTPUT FORMAT ===
-    - Do NOT number the tweets.
-    - Each tweet on its own line.
-    - No introductions or explanations — only the tweets.
-
-    === STYLE EXAMPLES GOOD (Spanish) ===
-    - "Las correcciones bursátiles pueden ser oportunidades de oro. Como dice Buffett: cuando llueve oro, mejor coge una bañera, no una cucharita. 🌧️💵 #CorrecciónDeMercado"
-    - "Warren Buffett acumula efectivo, no para adivinar el mercado, sino para aprovechar oportunidades únicas cuando los precios caen. La paciencia tiene recompensa. 💰📉 #SabiduríaInversora #InversiónEnValor"
-    - "Las correcciones de mercado suelen venir provocadas por factores externos, no solo por sobrevaloración. Estar preparado supera al 'market timing'. 🧠📊 #MercadoDeValores #InversiónALargoPlazo"
-    - "Diversificar y pensar a largo plazo es clave para surfear la volatilidad. Cabalga las olas, no persigas la marea. 🌊📈 #LibertadFinanciera #InvierteInteligente"
-    - "En las caídas del mercado, el efectivo es el rey 👑. Las inversiones de Buffett en 2008 en Goldman Sachs y GE demostraron que la oportunidad llega a los que están preparados. 🔑💼 #EfectivoEnMano #SabiduríaBuffett"
-    - "¿Y si la próxima gran oportunidad llega en plena crisis? Los inversores pacientes ya saben la respuesta. ⏳📉 #InversiónInteligente"
-    - "Los CDOs (Collateralized Debt Obligation) empaquetaban hipotecas basura como si fueran oro. En 2008 aprendimos que el envoltorio no cambia la realidad. 🎭💣 #CrisisFinanciera #RiesgoEstructural"
-    - "Si una inversión es tan compleja que nadie puede explicártela en 2 frases, cuidado: puede esconder un riesgo enorme. Ahí están los CDOs en la crisis 2008. ⚠️📉 #InversiónInteligente #Lección2008"
-    
-    === STYLE EXAMPLES BAD (Spanish) ===
-    - "Compra esto ahora, es la mejor inversión del año, enlace aquí."
-    - "Gran vídeo, suscríbete y comparte con todos tus amigos!!!"
-    - "Invertir es fácil, solo sigue estos pasos y serás rico en 30 días."
-    - "Este mercado va a subir seguro, confía en mí y pon todo tu dinero."
-    - "Resumen: cosas importantes, mira el vídeo para más info."
-    - "Opinión personal: yo creo que esto es lo mejor, no lo dudes."
-    - "Tweet genérico sin detalle: 'La diversificación es buena, invierte hoy'."
-    - "Demasiado técnico y largo: explicación de 3 párrafos con jerga y sin gancho."
     )
 
     USER_MESSAGE = (
-    You are given a transcript of a video. 
-    Your task is to generate independent sentences, or texts, suitable for posting on Twitter (X). 
-    Each sentence or text must be educational, meaningful, and targeted to a financial investing audience. 
-    You may use a touch of humor if it helps boost engagement. 
-    Include relevant hashtags and emojis when they enhance clarity or engagement. 
-    Take into account everything described in the SYSTEM_MESSAGE.
     )
-    # Do not include any introduction or explanation — output only the tweets, one per line.
 
-    # Result array: will contain the saved prompt IDs (strings) created for each channel
     saved_prompt_ids = []
 
     # Try to import prompt repo and domain entity once
@@ -729,9 +674,11 @@ async def seed():
         ingestion_pipeline_frequency_minutes=20,
         publishing_pipeline_frequency_minutes=20,
         stats_pipeline_frequency_minutes=20,
+        embeddings_pipeline_frequency_minutes=20,
         is_ingestion_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
         is_stats_pipeline_enabled=True,
+        is_embeddings_pipeline_enabled=True,
     )
     app_config = AppConfig(scheduler_config=scheduler_config)
     app_config_repo = MongoAppConfigRepository(db)
@@ -748,9 +695,11 @@ async def seed():
                     "ingestionPipelineFrequencyMinutes": scheduler_config.ingestion_pipeline_frequency_minutes,
                     "publishingPipelineFrequencyMinutes": scheduler_config.publishing_pipeline_frequency_minutes,
                     "statsPipelineFrequencyMinutes": scheduler_config.stats_pipeline_frequency_minutes,
+                    "embeddingsPipelineFrequencyMinutes": scheduler_config.embeddings_pipeline_frequency_minutes,
                     "isIngestionPipelineEnabled": scheduler_config.is_ingestion_pipeline_enabled,
                     "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
                     "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
+                    "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddigns_pipeline_enabled,
                 }
             },
             upsert=True
@@ -776,21 +725,34 @@ async def seed():
         # Document shape aligned with the design
         status_doc = {
             "userId": MASTER_USER_ID,
+
             "isIngestionPipelineRunning": False,
             "isPublishingPipelineRunning": False,
             "isStatsPipelineRunning": False,
+            "isEmbeddingsPipelineRunning": False,
+
             "lastIngestionPipelineStartedAt": None,
             "lastIngestionPipelineFinishedAt": None,
+
             "lastPublishingPipelineStartedAt": None,
             "lastPublishingPipelineFinishedAt": None,
+
             "lastStatsPipelineStartedAt": None,
             "lastStatsPipelineFinishedAt": None,
+
+            "lastEmbeddingsPipelineStartedAt": None,
+            "lastEmbeddingsPipelineFinishedAt": None,
+
             "nextScheduledIngestionPipelineStartingAt": None,
             "nextScheduledPublishingPipelineStartingAt": None,
             "nextScheduledStatsPipelineStartingAt": None,
+            "nextScheduledEmbeddingsPipelineStartingAt": None,
+
             "consecutiveFailuresIngestionPipeline": 0,
             "consecutiveFailuresPublishingPipeline": 0,
             "consecutiveFailuresStatsPipeline": 0,
+            "consecutiveFailuresEmbeddingsPipeline": 0,
+
             "createdAt": datetime.now(_dt.timezone.utc),
         }
 

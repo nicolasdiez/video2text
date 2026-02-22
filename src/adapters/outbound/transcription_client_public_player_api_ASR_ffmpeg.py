@@ -1,4 +1,4 @@
-# adapters/outbound/transcription_client_public_player_api_ASR_ffmpeg.py (with ffmpeg - more complex)
+# src/adapters/outbound/transcription_client_public_player_api_ASR_ffmpeg.py (with ffmpeg - more complex)
 
 """
 ASR-based transcription adapter for YouTube videos. (ASR = Automatic Speech Recognition)

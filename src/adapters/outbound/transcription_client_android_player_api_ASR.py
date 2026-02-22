@@ -1,4 +1,4 @@
-# adapters/outbound/transcription_client_android_player_api_ASR.py
+# src/adapters/outbound/transcription_client_android_player_api_ASR.py
 
 """
 YouTube ASR transcription client using yt-dlp with the Android player client.

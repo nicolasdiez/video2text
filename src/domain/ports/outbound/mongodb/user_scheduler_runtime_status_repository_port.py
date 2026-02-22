@@ -144,7 +144,7 @@ class UserSchedulerRuntimeStatusRepositoryPort(ABC):
         raise NotImplementedError
 
     # ---------------------------------------------------------
-    # STATS PIPELINE (NEW)
+    # STATS PIPELINE
     # ---------------------------------------------------------
 
     @abstractmethod
@@ -178,3 +178,40 @@ class UserSchedulerRuntimeStatusRepositoryPort(ABC):
         Reset consecutiveFailuresStatsPipeline to 0.
         """
         raise NotImplementedError
+    
+    # ---------------------------------------------------------
+    # EMBEDDINGS PIPELINE
+    # ---------------------------------------------------------
+
+    @abstractmethod
+    async def mark_embeddings_started(self, user_id: UserId, started_at: Any) -> None:
+        """
+        Atomically mark embeddings pipeline as running and set last started timestamp.
+        Should set isEmbeddingsPipelineRunning = True and update updated_at.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def mark_embeddings_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
+        """
+        Atomically mark embeddings pipeline as finished.
+        If success=True: reset consecutiveFailuresEmbeddingsPipeline.
+        If success=False: increment consecutiveFailuresEmbeddingsPipeline.
+        Always update updated_at.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def increment_embeddings_failures(self, user_id: UserId, by: int = 1) -> None:
+        """
+        Atomically increment the consecutiveFailuresEmbeddingsPipeline counter.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def reset_embeddings_failures(self, user_id: UserId) -> None:
+        """
+        Reset consecutiveFailuresEmbeddingsPipeline to 0.
+        """
+        raise NotImplementedError
+

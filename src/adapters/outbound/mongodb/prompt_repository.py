@@ -1,4 +1,4 @@
-# adapters/outbound/mongodb/prompt_repository.py
+# src/adapters/outbound/mongodb/prompt_repository.py
 
 from datetime import datetime
 from typing import List, Optional

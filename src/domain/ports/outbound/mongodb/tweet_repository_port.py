@@ -55,6 +55,18 @@ class TweetRepositoryPort(ABC):
         ...
 
     @abstractmethod
+    async def find_by_user(
+        self,
+        user_id: str,
+        max_days_back: Optional[int] = None
+    ) -> List[Tweet]:
+        """
+        Fetch all tweets belonging to a given user.
+        Supports optional `max_days_back` to restrict results to tweets created within the last X days.
+        """
+        ...
+
+    @abstractmethod
     async def update(self, tweet: Tweet) -> None:
         """
         Updates an existing tweet.

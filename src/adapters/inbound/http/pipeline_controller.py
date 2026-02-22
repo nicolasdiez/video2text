@@ -1,4 +1,4 @@
-# adapters/inbound/http/pipeline_controller.py
+# src/adapters/inbound/http/pipeline_controller.py
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel

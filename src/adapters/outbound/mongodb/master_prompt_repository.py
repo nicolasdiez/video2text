@@ -1,4 +1,4 @@
-# src/infrastructure/repositories/mongo_master_prompt_repository.py
+# src/adapters/outbound/mongodb/mongo_master_prompt_repository.py
 
 from typing import Any, Dict, List, Optional
 from bson import ObjectId

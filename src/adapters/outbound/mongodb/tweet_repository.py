@@ -1,4 +1,4 @@
-# adapters/outbound/mongo/tweet_repository.py
+# src/adapters/outbound/mongodb/tweet_repository.py
 
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
@@ -119,6 +119,30 @@ class MongoTweetRepository(TweetRepositoryPort):
             items.append(self._doc_to_entity(doc))
 
         return items
+
+    async def find_by_user(
+        self,
+        user_id: str,
+        max_days_back: Optional[int] = None
+    ) -> List[Tweet]:
+        """
+        Fetch all tweets belonging to a given user.
+        If `max_days_back` is provided, restrict results to tweets created
+        within the last X days.
+        """
+
+        query = {"user_id": user_id}
+
+        # Apply date filter if needed
+        if max_days_back is not None:
+            cutoff_date = datetime.utcnow() - timedelta(days=max_days_back)
+            query["created_at"] = {"$gte": cutoff_date}
+
+        cursor = self.collection.find(query)
+
+        docs = await cursor.to_list(length=None)
+
+        return [Tweet.from_dict(doc) for doc in docs]
 
     # ---------------------------------------------------------
     # UPDATE

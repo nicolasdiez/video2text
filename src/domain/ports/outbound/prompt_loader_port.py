@@ -1,4 +1,4 @@
-# domain/ports/prompt_loader_port.py
+# src/domain/ports/outbound/prompt_loader_port.py
 
 
 from abc import ABC, abstractmethod

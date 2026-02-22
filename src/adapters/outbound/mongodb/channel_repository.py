@@ -1,4 +1,4 @@
-# adapters/outbound/mongodb/channel_repository.py
+# src/adapters/outbound/mongodb/channel_repository.py
 
 from datetime import datetime
 from typing import List, Optional, Any, Dict

@@ -1,4 +1,4 @@
-# adapters/outbound/openai_client.py
+# src/adapters/outbound/openai_client.py
 
 # Models available (code name) | Strength / Best for                 | Cost tier (qualitative) | Notes
 # -----------------------------------------------------------------------------------------------
@@ -27,20 +27,22 @@ import inspect
 import logging
 
 from openai import OpenAI
-from domain.ports.outbound.openai_port import OpenAIPort
+from domain.ports.outbound.llm_port import LLMPort
 
 logger = logging.getLogger(__name__)
 
 
-class OpenAIClient(OpenAIPort):
+class LLMOpenAIClient(LLMPort):
     """
-    Implementation of OpenAIPort using the official openai library.
+    Implementation of LLMPort using the official openai library.
     """
 
     def __init__(self, api_key: str | None = None):
+        
         # Load API key
         if not api_key:
-            raise RuntimeError("API key is required")
+            raise RuntimeError("API key (OpenAI) is required")
+        
         self.api_key = api_key
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 

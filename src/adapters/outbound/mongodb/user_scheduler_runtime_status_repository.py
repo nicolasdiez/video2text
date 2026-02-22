@@ -332,3 +332,72 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
             {"$set": {"consecutiveFailuresStatsPipeline": 0, "updatedAt": datetime.utcnow()}},
             upsert=False
         )
+
+    # -----------------------
+    # Convenience atomic operations — EMBEDDINGS
+    # -----------------------
+
+    async def mark_embeddings_started(self, user_id: UserId, started_at: Any) -> None:
+        oid = _to_object_id(user_id)
+        await self._coll.update_one(
+            {"userId": oid},
+            {
+                "$set": {
+                    "isEmbeddingsPipelineRunning": True,
+                    "lastEmbeddingsPipelineStartedAt": started_at,
+                    "updatedAt": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+
+
+    async def mark_embeddings_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
+        oid = _to_object_id(user_id)
+
+        if success:
+            update = {
+                "$set": {
+                    "isEmbeddingsPipelineRunning": False,
+                    "lastEmbeddingsPipelineFinishedAt": finished_at,
+                    "consecutiveFailuresEmbeddingsPipeline": 0,
+                    "updatedAt": datetime.utcnow()
+                }
+            }
+        else:
+            update = {
+                "$set": {
+                    "isEmbeddingsPipelineRunning": False,
+                    "lastEmbeddingsPipelineFinishedAt": finished_at,
+                    "updatedAt": datetime.utcnow()
+                },
+                "$inc": {"consecutiveFailuresEmbeddingsPipeline": 1}
+            }
+
+        await self._coll.update_one({"userId": oid}, update, upsert=True)
+
+
+    async def increment_embeddings_failures(self, user_id: UserId, by: int = 1) -> None:
+        oid = _to_object_id(user_id)
+        await self._coll.update_one(
+            {"userId": oid},
+            {
+                "$inc": {"consecutiveFailuresEmbeddingsPipeline": int(by)},
+                "$set": {"updatedAt": datetime.utcnow()}
+            },
+            upsert=True
+        )
+
+
+    async def reset_embeddings_failures(self, user_id: UserId) -> None:
+        oid = _to_object_id(user_id)
+        await self._coll.update_one(
+            {"userId": oid},
+            {
+                "$set": {
+                    "consecutiveFailuresEmbeddingsPipeline": 0,
+                    "updatedAt": datetime.utcnow()
+                }
+            },
+            upsert=False
+        )

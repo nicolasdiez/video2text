@@ -1,4 +1,4 @@
-# adapters/outbound/transcription_client_captions_api.py
+# src/adapters/outbound/transcription_client_captions_api.py
 
 # IMPORTANT --> Este es básicamente el unico metodo oficial, estable y fiable para recuperar transcripts de videos YT a nivel productivo.
 

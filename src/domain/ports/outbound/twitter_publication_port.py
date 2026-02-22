@@ -1,4 +1,4 @@
-# src/domain/ports/twitter_port.py
+# src/domain/ports/outbound/twitter_port.py
 
 from abc import ABC, abstractmethod
 

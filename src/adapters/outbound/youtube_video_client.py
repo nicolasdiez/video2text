@@ -1,4 +1,4 @@
-# adapters/outbound/youtube_video_client.py
+# src/adapters/outbound/youtube_video_client.py
 
 import os
 
