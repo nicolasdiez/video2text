@@ -6,7 +6,7 @@
 from enum import Enum
 from typing import Optional
 
-from domain.entities.prompt import Prompt, TweetLengthPolicy
+from domain.entities.user_prompt import UserPrompt, TweetLengthPolicy
 from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort
 
 

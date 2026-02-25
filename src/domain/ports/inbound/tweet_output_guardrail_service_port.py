@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Dict
-from domain.entities.prompt import TweetLengthPolicy
+from domain.entities.user_prompt import TweetLengthPolicy
 
 
 class TweetOutputGuardrailServicePort(ABC):

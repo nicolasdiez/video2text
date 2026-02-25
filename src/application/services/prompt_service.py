@@ -5,10 +5,10 @@
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
 
 from typing import Optional, List
-from domain.entities.prompt import Prompt
+from domain.entities.user_prompt import UserPrompt
 from domain.entities.channel import Channel
-from domain.ports.inbound.prompt_service_port import PromptServicePort
-from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.inbound.user_prompt_service_port import PromptServicePort
+from domain.ports.outbound.mongodb.user_prompt_repository_port import PromptRepositoryPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 
 

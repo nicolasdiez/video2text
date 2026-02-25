@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from .prompt import PromptContent, TweetLengthPolicy
+from .user_prompt import PromptContent, TweetLengthPolicy
 
 
 @dataclass(kw_only=True)
@@ -23,9 +23,9 @@ class MasterPrompt:
     prompt_content: PromptContent                # nested system + user messages
 
     language_of_the_prompt: str                  # ISO 639 language code
-    language_to_generate_tweets: str             # english + native name
+    # language_to_generate_tweets: str             # english + native name
 
-    tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional
+    # tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

@@ -5,7 +5,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.master_prompt import MasterPrompt
-from domain.entities.prompt import PromptContent, TweetLengthPolicy
+from domain.entities.user_prompt import PromptContent, TweetLengthPolicy
 from domain.ports.outbound.mongodb.master_prompt_repository_port import MasterPromptRepositoryPort
 
 

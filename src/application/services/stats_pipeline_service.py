@@ -90,6 +90,7 @@ class StatsPipelineService(StatsPipelinePort):
                     continue
 
                 # Skip if stats are fresh (within FRESHNESS_MINUTES mins)
+                # TODO: Add also a min number of days after tweet published to go and scrape the data (let the tweet perform for some days before get its stats)
                 FRESHNESS_MINUTES = 60
                 if tweet.twitter_stats:
                     latest_ts = self._get_latest_fetched_at(tweet.twitter_stats)

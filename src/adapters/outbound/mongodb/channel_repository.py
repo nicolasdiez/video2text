@@ -49,18 +49,11 @@ class MongoChannelRepository(ChannelRepositoryPort):
         raw = await self._collection.find_one({"youtubeChannelId": youtube_channel_id})
         return self._to_entity(raw) if raw else None
 
-    async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
+    async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]: 
         """
         Retrieve channels that reference the given user prompt ID in selectedPromptId.
         """
         cursor = self._collection.find({"selectedPromptId": ObjectId(prompt_id)})
-        return [self._to_entity(doc) async for doc in cursor]
-
-    async def find_by_selected_master_prompt_id(self, master_prompt_id: str) -> List[Channel]:
-        """
-        Retrieve channels that reference the given master prompt ID in selectedMasterPromptId.
-        """
-        cursor = self._collection.find({"selectedMasterPromptId": ObjectId(master_prompt_id)})
         return [self._to_entity(doc) async for doc in cursor]
 
     async def find_all(self) -> List[Channel]:
@@ -108,14 +101,12 @@ class MongoChannelRepository(ChannelRepositoryPort):
     def _to_entity(self, doc: dict) -> Channel:
         """
         Convert a Mongo document into a Channel entity.
-        Handles optional selected_prompt_id and selected_master_prompt_id.
         """
         return Channel(
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             youtube_channel_id=doc["youtubeChannelId"],
             selected_prompt_id=str(doc.get("selectedPromptId")) if doc.get("selectedPromptId") is not None else None,
-            selected_master_prompt_id=str(doc.get("selectedMasterPromptId")) if doc.get("selectedMasterPromptId") is not None else None,
             title=doc["title"],
             polling_interval=doc.get("pollingInterval"),
             max_videos_to_fetch_from_channel=doc.get("maxVideosToFetchFromChannel"),
@@ -134,7 +125,6 @@ class MongoChannelRepository(ChannelRepositoryPort):
             "userId": ObjectId(channel.user_id) if channel.user_id else None,
             "youtubeChannelId": channel.youtube_channel_id,
             "selectedPromptId": ObjectId(channel.selected_prompt_id) if channel.selected_prompt_id else None,
-            "selectedMasterPromptId": ObjectId(channel.selected_master_prompt_id) if channel.selected_master_prompt_id else None,
             "title": channel.title,
             "pollingInterval": channel.polling_interval,
             "maxVideosToFetchFromChannel": channel.max_videos_to_fetch_from_channel,

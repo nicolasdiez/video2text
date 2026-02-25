@@ -49,13 +49,6 @@ class ChannelRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def find_by_selected_master_prompt_id(self, master_prompt_id: str) -> List[Channel]:
-        """
-        Retrieve channels that reference the given master prompt ID in selected_master_prompt_id.
-        """
-        ...
-
-    @abstractmethod
     async def find_all(self) -> List[Channel]:
         """
         Retrieve all channels.

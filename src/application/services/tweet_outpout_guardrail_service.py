@@ -4,7 +4,7 @@ import logging
 import inspect
 from typing import Dict
 from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailServicePort
-from domain.entities.prompt import TweetLengthPolicy, TweetLengthMode, TweetLengthUnit
+from domain.entities.user_prompt import TweetLengthPolicy, TweetLengthMode, TweetLengthUnit
 
 logger = logging.getLogger(__name__)
 

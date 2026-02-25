@@ -10,7 +10,7 @@ import logging
 
 from domain.ports.inbound.channel_service_port import ChannelServicePort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
-from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.outbound.mongodb.user_prompt_repository_port import PromptRepositoryPort
 from domain.ports.outbound.mongodb.master_prompt_repository_port import MasterPromptRepositoryPort
 
 from domain.entities.channel import Channel

@@ -427,7 +427,7 @@ async def seed():
     try:
         from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository  # type: ignore
         from domain.entities.master_prompt import MasterPrompt  # type: ignore
-        from domain.entities.prompt import PromptContent, TweetLengthPolicy, TweetLengthMode, TweetLengthUnit  # type: ignore
+        from domain.entities.user_prompt import PromptContent, TweetLengthPolicy, TweetLengthMode, TweetLengthUnit  # type: ignore
         master_prompt_repo = MongoMasterPromptRepository(db)
         repo_master_prompt_available = True
     except Exception:

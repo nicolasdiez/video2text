@@ -1,4 +1,4 @@
-# src/adapters/outbound/mongodb/prompt_repository.py
+# src/adapters/outbound/mongodb/user_prompt_repository.py
 
 from datetime import datetime
 from typing import List, Optional
@@ -6,18 +6,18 @@ from typing import List, Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from domain.entities.prompt import (
+from domain.entities.user_prompt import (
     Prompt,
     PromptContent,
     TweetLengthPolicy,
     TweetLengthMode,
     TweetLengthUnit,
 )
-from domain.ports.outbound.mongodb.prompt_repository_port import PromptRepositoryPort
+from domain.ports.outbound.mongodb.user_prompt_repository_port import UserPromptRepositoryPort
 from infrastructure.mongodb import db
 
 
-class MongoPromptRepository(PromptRepositoryPort):
+class MongoPromptRepository(UserPromptRepositoryPort):
     """
     MongoDB adapter for PromptRepositoryPort. Maps between Prompt entities and Mongo documents.
     """
@@ -36,35 +36,6 @@ class MongoPromptRepository(PromptRepositoryPort):
     async def find_by_user_id(self, user_id: str) -> List[Prompt]:
         cursor = self._collection.find({"userId": ObjectId(user_id)})
         return [self._to_entity(doc) async for doc in cursor]
-
-    async def find_by_channel_id(self, channel_id: str) -> List[Prompt]:
-        cursor = self._collection.find({"channelId": ObjectId(channel_id)})
-        return [self._to_entity(doc) async for doc in cursor]
-    
-    async def find_by_user_and_channel(self, user_id: str, channel_id: str) -> List[Prompt]:
-        """
-        Retrieve all Prompts for a given user_id and channel_id.
-        Returns an empty list if none found. Does not raise if multiple prompts exist.
-        """
-        # Build query with safe ObjectId conversion when possible
-        try:
-            user_q = ObjectId(user_id)
-        except Exception:
-            user_q = user_id
-
-        try:
-            channel_q = ObjectId(channel_id)
-        except Exception:
-            channel_q = channel_id
-
-        cursor = self._collection.find({
-            "userId": user_q,
-            "channelId": channel_q
-        })
-
-        prompts = [self._to_entity(doc) async for doc in cursor]
-        return prompts
-
 
     async def update(self, prompt: Prompt) -> None:
         """
@@ -130,7 +101,7 @@ class MongoPromptRepository(PromptRepositoryPort):
         return Prompt(
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
-            channel_id=str(doc["channelId"]),
+            master_prompt_id=str(doc["masterPromptId"]),
             prompt_content=PromptContent(
                 system_message=doc.get("promptContent", {}).get("systemMessage", ""),
                 user_message=doc.get("promptContent", {}).get("userMessage", "")
@@ -149,7 +120,7 @@ class MongoPromptRepository(PromptRepositoryPort):
         """
         doc = {
             "userId": ObjectId(prompt.user_id),
-            "channelId": ObjectId(prompt.channel_id),
+            "masterPromptId": ObjectId(prompt.master_prompt_id),
             "promptContent": {
                 "systemMessage": prompt.prompt_content.system_message,
                 "userMessage": prompt.prompt_content.user_message,

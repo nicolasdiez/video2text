@@ -1,4 +1,4 @@
-# src/domain/entities/prompt.py
+# src/domain/entities/user_prompt.py
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -44,16 +44,21 @@ class TweetLengthPolicy:
 
 
 @dataclass(kw_only=True)
-class Prompt:
+class UserPrompt:
     """
     Domain entity representing a prompt configuration for tweet generation.
     """
     id: Optional[str] = None                # maps to _id / ObjectId
     user_id: str                            # FK → users._id
-    channel_id: str                         # FK → channels._id
+    # channel_id: str                       # FK → channels._id
+    master_prompt_id: Optional[str] = None  # FK → master_prompts._id (opcional)
+    
     prompt_content: PromptContent           # nested system + user messages
+    
     language_of_the_prompt: str             # ISO 639-2 code
     language_to_generate_tweets: str        # ISO 639-2 code
+    
     tweet_length_policy: Optional[TweetLengthPolicy] = None  # optional; fallback to channel/user/system defaults
+    
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

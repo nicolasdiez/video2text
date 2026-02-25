@@ -1,51 +1,51 @@
-# src/domain/ports/inbound/prompt_service_port.py
+# src/domain/ports/inbound/user_prompt_service_port.py
 
 from abc import ABC, abstractmethod
 from typing import Optional, List
 
-from domain.entities.prompt import Prompt
+from domain.entities.user_prompt import UserPrompt
 from domain.entities.channel import Channel
 
 
-class PromptServicePort(ABC):
+class UserPromptServicePort(ABC):
     """
-    Inbound port for prompt-related operations.
+    Inbound port for user prompt-related operations.
     Defines the application-level actions that the PromptService must implement.
     """
 
     @abstractmethod
-    async def get_prompt(self, prompt_id: str) -> Optional[Prompt]:
+    async def get_prompt(self, prompt_id: str) -> Optional[UserPrompt]:
         """
-        Retrieve a prompt by its ID.
-        """
-        pass
-
-    @abstractmethod
-    async def create_prompt(self, prompt: Prompt) -> str:
-        """
-        Create a new prompt and return its ID.
+        Retrieve a UserPrompt by its ID.
         """
         pass
 
     @abstractmethod
-    async def update_prompt(self, prompt: Prompt) -> None:
+    async def create_prompt(self, prompt: UserPrompt) -> str:
         """
-        Update an existing prompt.
+        Create a new UserPrompt and return its ID.
+        """
+        pass
+
+    @abstractmethod
+    async def update_prompt(self, prompt: UserPrompt) -> None:
+        """
+        Update an existing UserPrompt.
         """
         pass
 
     @abstractmethod
     async def delete_prompt(self, prompt_id: str) -> None:
         """
-        Delete a prompt and clear selected_prompt_id in any channels referencing it.
+        Delete a UserPrompt and clear selected_prompt_id in any channels referencing it.
         """
         pass
 
     @abstractmethod
     async def delete_all_prompts(self) -> int:
         """
-        Delete all prompts and clear selected_prompt_id in all channels.
-        Returns the number of deleted prompts.
+        Delete all UserPrompts and clear selected_prompt_id in all channels.
+        Returns the number of deleted UserPrompts.
         """
         pass
 

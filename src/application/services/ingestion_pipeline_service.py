@@ -24,8 +24,8 @@ from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port
 
 from domain.entities.video import Video
 from domain.entities.channel import Channel
-from domain.entities.prompt import Prompt
-from domain.entities.prompt import PromptContent
+from domain.entities.user_prompt import UserPrompt
+from domain.entities.user_prompt import PromptContent
 from domain.entities.tweet import Tweet
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
 

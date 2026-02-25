@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from domain.entities.prompt import PromptContent
+from domain.entities.user_prompt import PromptContent
 
 @dataclass
 class OpenAIRequest:

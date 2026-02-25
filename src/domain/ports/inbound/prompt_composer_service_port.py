@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from enum import Enum
-from domain.entities.prompt import TweetLengthPolicy
+from domain.entities.user_prompt import TweetLengthPolicy
 
 class InstructionPosition(str, Enum):
     BEFORE = "before"
