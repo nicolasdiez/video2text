@@ -14,9 +14,9 @@ from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 from domain.ports.outbound.mongodb.video_repository_port import VideoRepositoryPort
 from domain.ports.outbound.video_source_port import VideoSourcePort, VideoMetadata
-from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort, InstructionPosition
+from domain.ports.inbound.prompt_composer_port import PromptComposerPort, InstructionPosition
 from domain.ports.outbound.llm_port import LLMPort
-from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailServicePort
+from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailPort
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
 from domain.ports.outbound.transcription_port import TranscriptionPort
@@ -56,12 +56,12 @@ class IngestionPipelineService(IngestionPipelinePort):
         transcription_client_fallback: Optional[TranscriptionPort],
         transcription_client_fallback_2: Optional[TranscriptionPort],
         openai_client: LLMPort,
-        tweet_output_guardrail_service: TweetOutputGuardrailServicePort,
+        tweet_output_guardrail_service: TweetOutputGuardrailPort,
         tweet_generation_repo: TweetGenerationRepositoryPort,
         tweet_repo: TweetRepositoryPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
         channel_service: ChannelService,
-        prompt_composer_service: PromptComposerServicePort
+        prompt_composer_service: PromptComposerPort
     ):
         self.user_repo = user_repo
         self.prompt_loader = prompt_loader

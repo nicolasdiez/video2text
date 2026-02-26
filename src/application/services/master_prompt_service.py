@@ -5,11 +5,11 @@ from bson import ObjectId
 from datetime import datetime
 
 from domain.entities.master_prompt import MasterPrompt
-from domain.ports.inbound.master_prompt_service_port import MasterPromptServicePort
+from domain.ports.inbound.master_prompt_port import MasterPromptPort
 from domain.ports.outbound.mongodb.master_prompt_repository_port import MasterPromptRepositoryPort
 
 
-class MasterPromptService(MasterPromptServicePort):
+class MasterPromptService(MasterPromptPort):
     """
     Application service implementing business logic for master prompts.
     """

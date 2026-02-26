@@ -1,4 +1,6 @@
-# application/services/prompt_composer_service.py
+# src/application/services/prompt_composer_service.py
+
+# Service that implements helper methods to build different parts of a prompt.
 
 # Important Reminder:
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
@@ -7,14 +9,14 @@ from enum import Enum
 from typing import Optional
 
 from domain.entities.user_prompt import UserPrompt, TweetLengthPolicy
-from domain.ports.inbound.prompt_composer_service_port import PromptComposerServicePort
+from domain.ports.inbound.prompt_composer_port import PromptComposerPort
 
 
 class InstructionPosition(str, Enum):
     BEFORE = "before"
     AFTER = "after"
 
-class PromptComposerService(PromptComposerServicePort):
+class PromptComposerService(PromptComposerPort):
     """
     Service to compose different variations of a prompt from a Prompt entity and additional runtime data like the transcript.
     """

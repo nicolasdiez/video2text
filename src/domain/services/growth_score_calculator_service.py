@@ -9,10 +9,10 @@
 # === Domain Service === 
 # NO es orquestación. Es lógica de dominio pura.
 # No toca repositorios.
-# No toca infraestructura.
+# No toca infraestructura (APIs...).
 # No tiene efectos secundarios.
 # Solo contiene reglas del dominio que no pertenecen a una entidad concreta.
-# Ej: "si el canal es de finanzas, aplica este ajuste"
+# Ej: "si el canal es de finanzas, aplica este ajuste", "Combinación de objetos del dominio para producir un resultado del dominio"
 
 
 from typing import Optional, Dict
