@@ -19,4 +19,4 @@ class EmbeddingVectorPort(ABC):
         :param model: identifier of the embedding model to use
         :return: list of floats representing the embedding vector
         """
-        pass
+        raise NotImplementedError

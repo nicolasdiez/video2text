@@ -47,6 +47,7 @@ class TweetLengthPolicy:
 class UserPrompt:
     """
     Domain entity representing a prompt configuration for tweet generation.
+    It does not represent a complete prompt, because it may depend on a MasterPrompt, from which inherits the PromptContent.
     """
     id: Optional[str] = None                # maps to _id / ObjectId
     user_id: str                            # FK → users._id

@@ -1,8 +1,6 @@
 # src/application/services/prompt_composer_service.py
 
-# Service that implements helper methods to build different parts of a prompt.
-
-# Important Reminder:
+# Reminder:
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
 
 from enum import Enum
@@ -19,6 +17,7 @@ class InstructionPosition(str, Enum):
 class PromptComposerService(PromptComposerPort):
     """
     Service to compose different variations of a prompt from a Prompt entity and additional runtime data like the transcript.
+    It implements several helper methods to build different parts of a prompt.
     """
     
     def add_transcript(self, message: str, transcript: str, position: InstructionPosition = InstructionPosition.AFTER) -> str:

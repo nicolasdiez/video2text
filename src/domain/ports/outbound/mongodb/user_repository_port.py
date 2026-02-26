@@ -21,28 +21,28 @@ class UserRepositoryPort(ABC):
         """
         Persist a new User and return the new _id as string.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def update(self, user: User) -> None:
         """
         Update an existing User entity.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, user_id: str) -> None:
         """
         Delete a User by its _id.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def delete_all(self) -> int:
         """
         Delete all User documents. Returns number of deleted documents.
         """
-        ...
+        raise NotImplementedError
 
     # -------------------------
     # Retrieval operations
@@ -53,21 +53,21 @@ class UserRepositoryPort(ABC):
         """
         Retrieve a User by its _id.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_all(self) -> List[User]:
         """
         Retrieve all Users.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_username(self, username: str) -> Optional[User]:
         """
         Retrieve a User by its username.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def get_by_email(self, email: str) -> Optional[User]:
@@ -75,7 +75,7 @@ class UserRepositoryPort(ABC):
         Retrieve a User by email.
         Required for authentication (login).
         """
-        ...
+        raise NotImplementedError
 
     # -------------------------
     # Password operations
@@ -87,7 +87,7 @@ class UserRepositoryPort(ABC):
         Update the hashed password of a User.
         The repository NEVER hashes passwords; it only stores the hashed value.
         """
-        ...
+        raise NotImplementedError
 
     # -------------------------
     # Twitter credentials
@@ -98,4 +98,4 @@ class UserRepositoryPort(ABC):
         """
         Update the Twitter credentials of a User.
         """
-        ...
+        raise NotImplementedError

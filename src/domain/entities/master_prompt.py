@@ -10,10 +10,12 @@ from .user_prompt import PromptContent, TweetLengthPolicy
 @dataclass(kw_only=True)
 class MasterPrompt:
     """
-    Domain entity representing a global (master) prompt configuration
-    shared across all users and channels.
+    Domain entity representing a global (master) prompt configuration shared across all users.
 
     Mirrors the structure of the MongoDB collection master_prompts.
+    
+    It is not a complete usable prompt, because it lacks the language_to_generate_tweets and the tweet_length_policy, 
+    which are mandatory fields of a valid and usable prompt.
     """
 
     id: Optional[str] = None                     # maps to _id / ObjectId

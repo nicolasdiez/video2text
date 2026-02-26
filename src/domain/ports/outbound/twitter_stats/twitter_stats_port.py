@@ -21,4 +21,4 @@ class TwitterStatsPort(ABC):
         :param tweet_id: ID of the tweet to retrieve metrics for
         :return: A dictionary with tweet metrics, or None if the provider fails
         """
-        pass
+        raise NotImplementedError

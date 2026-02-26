@@ -16,18 +16,18 @@ class EmbeddingVectorRepositoryPort(ABC):
         """
         Persist a new embedding vector and return its generated ID.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def get_by_tweet_and_type(self, tweet_id: str, type: EmbeddingType) -> Optional[EmbeddingVector]:
         """
         Retrieve an embedding vector for a given tweet and embedding type.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     async def delete_by_tweet(self, tweet_id: str) -> None:
         """
         Delete all embeddings associated with a given tweet.
         """
-        pass
+        raise NotImplementedError

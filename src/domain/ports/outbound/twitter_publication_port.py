@@ -15,4 +15,4 @@ class TwitterPublicationPort(ABC):
         :param text: contenido del tweet
         :return: ID del tweet publicado
         """
-        pass
+        raise NotImplementedError

@@ -21,4 +21,4 @@ class StatsPipelinePort(ABC):
           3) fetch updated stats using the configured provider(s)
           4) update each tweet entity with the new metrics
         """
-        ...
+        raise NotImplementedError

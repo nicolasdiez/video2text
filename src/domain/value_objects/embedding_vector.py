@@ -1,6 +1,6 @@
 # src/domain/value_objects/embedding_vector.py
 
-# TODO: valorar convertir este VO en un Entity.
+# TODO: valorar convertir este VO en un Entity xq finalmente tiene id y se persiste en una indexed vectorDB ("embeddings")
 
 from dataclasses import dataclass
 from datetime import datetime

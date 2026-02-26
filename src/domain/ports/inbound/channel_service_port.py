@@ -23,4 +23,4 @@ class ChannelServicePort(ABC):
         - A channel cannot select both a user prompt and a master prompt.
         - A channel must select at least one of them.
         """
-        pass
+        raise NotImplementedError

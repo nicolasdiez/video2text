@@ -16,21 +16,21 @@ class ChannelRepositoryPort(ABC):
         """
         Persist a new Channel entity. Returns the generated document ID as a string.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_id(self, channel_id: str) -> Optional[Channel]:
         """
         Retrieve a Channel by its ID. Returns None if not found.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_user_id(self, user_id: str) -> List[Channel]:
         """
         List all Channels associated with a given user ID.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_youtube_channel_id(
@@ -39,28 +39,28 @@ class ChannelRepositoryPort(ABC):
         """
         Retrieve a Channel by its YouTube channel ID.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_selected_prompt_id(self, prompt_id: str) -> List[Channel]:
         """
         Retrieve channels that reference the given user prompt ID in selected_prompt_id.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_all(self) -> List[Channel]:
         """
         Retrieve all channels.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def update(self, channel: Channel) -> None:
         """
         Update an existing Channel document using a full Channel entity.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def update_by_id(self, channel_id: ObjectId, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -71,18 +71,18 @@ class ChannelRepositoryPort(ABC):
         :param update_data: Dict with fields to update (partial updates supported).
         :return: The updated channel document or None if not found.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, channel_id: str) -> None:
         """
         Delete a Channel by its ID.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def delete_all(self) -> int:
         """
         Delete all documents in channels collection. Returns number deleted.
         """
-        ...
+        raise NotImplementedError

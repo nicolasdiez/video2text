@@ -7,12 +7,12 @@
 from typing import Optional, List
 from domain.entities.user_prompt import UserPrompt
 from domain.entities.channel import Channel
-from domain.ports.inbound.user_prompt_service_port import UserPromptServicePort
+from domain.ports.inbound.user_prompt_port import UserPromptPort
 from domain.ports.outbound.mongodb.user_prompt_repository_port import UserPromptRepositoryPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 
 
-class UserPromptService (UserPromptServicePort):
+class UserPromptService (UserPromptPort):
     """
     Application-level service responsible for orchestrating user prompt-related operations.
     - Coordinates user prompt and channel repositories.

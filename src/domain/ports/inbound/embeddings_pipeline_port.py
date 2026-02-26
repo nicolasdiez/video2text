@@ -17,4 +17,4 @@ class EmbeddingsPipelinePort(ABC):
           4) persist embeddings in the vector database
           5) update Tweet.embedding_refs accordingly
         """
-        ...
+        raise NotImplementedError

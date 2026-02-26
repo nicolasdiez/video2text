@@ -21,4 +21,4 @@ class PublishingPipelinePort(ABC):
           3) publish tweets to Twitter (limit = max_tweets_to_publish)
           4) mark published tweets in the repository
         """
-        ...
+        raise NotImplementedError

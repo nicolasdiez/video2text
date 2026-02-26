@@ -16,4 +16,4 @@ class PromptLoaderPort(ABC):
         :param prompt_file_name: nombre del archivo en el directorio de prompts
         :return: texto plano del prompt
         """
-        pass
+        raise NotImplementedError

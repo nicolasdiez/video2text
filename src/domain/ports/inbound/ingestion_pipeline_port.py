@@ -17,4 +17,4 @@ class IngestionPipelinePort(ABC):
           3) generate tweets via OpenAI
           4) save generated tweets to the database
         """
-        ...
+        raise NotImplementedError

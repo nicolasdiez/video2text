@@ -27,4 +27,4 @@ class LLMPort(ABC):
         :param model: identifier of the LLM model to use
         :return: list of tweet sentences without numbering or bullet points
         """
-        pass
+        raise NotImplementedError

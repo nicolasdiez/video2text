@@ -30,7 +30,7 @@ class GrowthScoreCalculatorPort(ABC):
                 "overall": 0.82
             }
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def compute_subscores(self, tweet: Tweet) -> Dict[str, float]:
@@ -43,7 +43,7 @@ class GrowthScoreCalculatorPort(ABC):
           - any future metrics
         Returns a dictionary of sub-scores without the final 'overall' score.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def combine_subscores(self, subscores: Dict[str, float]) -> float:
@@ -51,7 +51,7 @@ class GrowthScoreCalculatorPort(ABC):
         Combine the sub-scores into a single final 'overall' score.
         Allows different weighting strategies or formula versions.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def scoring_version(self) -> str:
@@ -60,7 +60,7 @@ class GrowthScoreCalculatorPort(ABC):
         Useful for tracking changes in scoring logic over time.
         Example: 'v1', 'v2.1', etc.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def recompute_for_historical_tweets(self, user_id: str) -> None:
@@ -71,4 +71,4 @@ class GrowthScoreCalculatorPort(ABC):
           - new embeddings become available
           - new stats arrive
         """
-        ...
+        raise NotImplementedError

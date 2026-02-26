@@ -6,8 +6,8 @@ from domain.entities.app_config import AppConfig
 class AppConfigRepositoryPort(ABC):
     @abstractmethod
     async def get_config(self) -> AppConfig:
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def update_config(self, config: AppConfig) -> None:
-        ...
+        raise NotImplementedError
