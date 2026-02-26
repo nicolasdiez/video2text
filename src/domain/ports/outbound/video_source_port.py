@@ -11,4 +11,4 @@ class VideoMetadata(Protocol):
 class VideoSourcePort(ABC):
     @abstractmethod
     async def fetch_new_videos(self, channel_id: str, max_videos_to_fetch_per_channel: int) -> List[VideoMetadata]:
-        pass
+        raise NotImplementedError

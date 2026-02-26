@@ -75,7 +75,7 @@ from adapters.outbound.twitter_publication_client import TwitterPublicationClien
 # Stats pipeline
 from application.services.stats_pipeline_service import StatsPipelineService
 from adapters.outbound.twitter_stats.twitter_stats_client_apify_apidojo_tweet_scraper import TwitterStatsClientApifyApidojoTweetScraper
-from application.services.growth_score_calculator_service import GrowthScoreCalculatorService
+from domain.services.growth_score_calculator_service import GrowthScoreCalculatorService
 
 # Embeddings pipeline
 from application.services.embeddings_pipeline_service import EmbeddingsPipelineService

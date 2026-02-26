@@ -1,4 +1,19 @@
-# src/application/services/growth_score_calculator_service.py
+# src/domain/services/growth_score_calculator_service.py
+
+# === Application Service === 
+# Hace orquestación. 
+# Coordina repositorios, pipelines, consume servicios externos, actualiza estado, orquesta pasos.
+# Aplica reglas de aplicación (no de dominio).
+# Tiene efectos secundarios (persistencia, llamadas a APIs).
+
+# === Domain Service === 
+# NO es orquestación. Es lógica de dominio pura.
+# No toca repositorios.
+# No toca infraestructura.
+# No tiene efectos secundarios.
+# Solo contiene reglas del dominio que no pertenecen a una entidad concreta.
+# Ej: "si el canal es de finanzas, aplica este ajuste"
+
 
 from typing import Optional, Dict
 

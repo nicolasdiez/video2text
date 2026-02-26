@@ -7,50 +7,50 @@
 from typing import Optional, List
 from domain.entities.user_prompt import UserPrompt
 from domain.entities.channel import Channel
-from domain.ports.inbound.user_prompt_service_port import PromptServicePort
-from domain.ports.outbound.mongodb.user_prompt_repository_port import PromptRepositoryPort
+from domain.ports.inbound.user_prompt_service_port import UserPromptServicePort
+from domain.ports.outbound.mongodb.user_prompt_repository_port import UserPromptRepositoryPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
 
 
-class PromptService (PromptServicePort):
+class UserPromptService (UserPromptServicePort):
     """
-    Application-level service responsible for orchestrating prompt-related operations.
-    - Coordinates prompt and channel repositories.
-    - Ensures domain rules are enforced (e.g., clearing selected_prompt_id when deleting a prompt).
-    - Does NOT perform prompt composition (handled by PromptComposerService).
+    Application-level service responsible for orchestrating user prompt-related operations.
+    - Coordinates user prompt and channel repositories.
+    - Ensures domain rules are enforced (e.g., clearing selected_prompt_id when deleting a user prompt).
+    - Does NOT perform user prompt composition (handled by PromptComposerService).
     """
 
-    def __init__(self, prompt_repo: PromptRepositoryPort, channel_repo: ChannelRepositoryPort):
+    def __init__(self, prompt_repo: UserPromptRepositoryPort, channel_repo: ChannelRepositoryPort):
         self.prompt_repo = prompt_repo
         self.channel_repo = channel_repo
 
-    async def get_prompt(self, prompt_id: str) -> Optional[Prompt]:
+    async def get_prompt(self, prompt_id: str) -> Optional[UserPrompt]:
         """
-        Retrieve a prompt by ID.
+        Retrieve a user prompt by ID.
         """
         return await self.prompt_repo.find_by_id(prompt_id)
 
-    async def create_prompt(self, prompt: Prompt) -> str:
+    async def create_prompt(self, prompt: UserPrompt) -> str:
         """
-        Create a new prompt and return its ID.
+        Create a new user prompt and return its ID.
         """
         return await self.prompt_repo.save(prompt)
 
-    async def update_prompt(self, prompt: Prompt) -> None:
+    async def update_prompt(self, prompt: UserPrompt) -> None:
         """
-        Update an existing prompt.
+        Update an existing user prompt.
         """
         await self.prompt_repo.update(prompt)
 
     async def delete_prompt(self, prompt_id: str) -> None:
         """
-        Delete a prompt and clear selected_prompt_id in any channels referencing it.
+        Delete a user prompt and clear selected_prompt_id in any channels referencing it.
         This ensures referential integrity at the application level.
         """
-        # 1. Delete the prompt
+        # 1. Delete the user prompt
         await self.prompt_repo.delete(prompt_id)
 
-        # 2. Find channels that reference this prompt
+        # 2. Find channels that reference this user prompt
         channels: List[Channel] = await self.channel_repo.find_by_selected_prompt_id(prompt_id)
 
         # 3. Clear selected_prompt_id for each affected channel
@@ -60,10 +60,10 @@ class PromptService (PromptServicePort):
 
     async def delete_all_prompts(self) -> int:
         """
-        Delete all prompts and clear selected_prompt_id in all channels.
-        Returns the number of deleted prompts.
+        Delete all user prompts and clear selected_prompt_id in all channels.
+        Returns the number of deleted user prompts.
         """
-        # 1. Delete all prompts
+        # 1. Delete all user prompts
         deleted_count = await self.prompt_repo.delete_all()
 
         # 2. Clear selected_prompt_id in all channels
@@ -77,9 +77,9 @@ class PromptService (PromptServicePort):
 
     async def set_selected_prompt_for_channel(self, channel_id: str, prompt_id: Optional[str]) -> None:
         """
-        Assign or clear the selected prompt for a channel.
+        Assign or clear the selected user prompt for a channel.
         - If prompt_id is None → clears the selection.
-        - If prompt_id is provided → validates that the prompt exists and belongs to the same user.
+        - If prompt_id is provided → validates that the user prompt exists and belongs to the same user.
         """
         # Retrieve channel
         channel = await self.channel_repo.find_by_id(channel_id)
@@ -92,16 +92,16 @@ class PromptService (PromptServicePort):
             await self.channel_repo.update(channel)
             return
 
-        # Validate prompt exists
+        # Validate user prompt exists
         prompt = await self.prompt_repo.find_by_id(prompt_id)
         if not prompt:
-            raise ValueError(f"Prompt {prompt_id} not found")
+            raise ValueError(f"User prompt {prompt_id} not found")
 
         # Validate prompt belongs to same user
         if prompt.user_id != channel.user_id:
             raise ValueError(
-                f"Prompt {prompt_id} does not belong to user {channel.user_id} "
-                f"(prompt.user_id={prompt.user_id})"
+                f"User prompt {prompt_id} does not belong to user {channel.user_id} "
+                f"(user_prompt.user_id={prompt.user_id})"
             )
 
         # Assign selection

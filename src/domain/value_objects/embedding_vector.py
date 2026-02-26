@@ -1,5 +1,7 @@
 # src/domain/value_objects/embedding_vector.py
 
+# TODO: valorar convertir este VO en un Entity.
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
