@@ -5,6 +5,8 @@
 # Coordina repositorios, pipelines, consume servicios externos, actualiza estado, orquesta pasos.
 # Aplica reglas de aplicación (no de dominio).
 # Tiene efectos secundarios (persistencia, llamadas a APIs).
+# Ej: IngestionPipelineService (llama a repositorios, llama al LLM, guarda tweets...)
+# Regla rápida: si el código necesita un repo/client → application; si es cálculo/decisión puro sobre entidades → domain.
 
 # === Domain Service === 
 # NO es orquestación. Es lógica de dominio pura.
@@ -12,7 +14,14 @@
 # No toca infraestructura (APIs...).
 # No tiene efectos secundarios.
 # Solo contiene reglas del dominio que no pertenecen a una entidad concreta.
+# Los domain services no persisten ni llaman a externos. Su responsabilidad es calcular/decidir.
+# Ej: Fórmula que combina likes/retweets/engagement/decay para producir un score, 
+# esa fórmula no pertenece a Tweet (no es un método de entidad TODO:¿xq no?), y tampoco pertenece a un pipeline.
 # Ej: "si el canal es de finanzas, aplica este ajuste", "Combinación de objetos del dominio para producir un resultado del dominio"
+
+# Servicios sin constructor y solo métodos utilitarios (¿application o domain?)
+# Si no usan repos/clients y solo realizan validaciones o cálculos deterministas (por ejemplo is_length_valid()), son domain services o incluso módulos de funciones puras / value helpers dentro del dominio.
+# Si esos métodos se limitan a validaciones de reglas de negocio (p. ej. guardrails de salida del tweet), colócalos en src/domain/services/ o en src/domain/utils/ como funciones puras.
 
 
 from typing import Optional, Dict
