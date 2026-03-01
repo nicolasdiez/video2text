@@ -6,7 +6,7 @@
 
 import aiohttp
 from typing import List
-from src.domain.ports.outbound.embedding_vector_port import EmbeddingVectorPort
+from domain.ports.outbound.embedding_vector_port import EmbeddingVectorPort
 
 # logging
 import inspect

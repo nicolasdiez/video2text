@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
-from src.domain.value_objects.embedding_type import EmbeddingType
+from domain.value_objects.embedding_type import EmbeddingType
 
 @dataclass
 class EmbeddingVector:

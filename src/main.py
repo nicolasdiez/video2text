@@ -62,7 +62,8 @@ from adapters.outbound.transcription_client_captions_api import YouTubeTranscrip
 from adapters.outbound.transcription_client_data_api import YouTubeTranscriptionClientOfficialDataAPI
 from adapters.outbound.transcription_client_public_player_api_ASR import YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR
 from adapters.outbound.transcription_client_android_player_api_ASR import YouTubeTranscriptionClientAndroidPlayerAPI_ASR
-from adapters.outbound.mongodb.user_prompt_repository import MongoPromptRepository
+from adapters.outbound.mongodb.user_prompt_repository import MongoUserPromptRepository
+from domain.services.prompt_resolver_service import PromptResolverService
 from adapters.outbound.llm_openai_client import LLMOpenAIClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
@@ -116,14 +117,15 @@ transcription_client_captions_api           = YouTubeTranscriptionClientOfficial
 transcription_client_data_api               = YouTubeTranscriptionClientOfficialDataAPI(youtube_client=youtube_client) if youtube_client else None
 transcription_client_public_player_api_asr  = YouTubeTranscriptionClientOfficialPublicPlayerAPI_ASR(model_name="tiny", device="cpu")
 transcription_client_android_player_api_asr = YouTubeTranscriptionClientAndroidPlayerAPI_ASR(model_name="small", device="cpu")
-prompt_repo                                 = MongoPromptRepository(database=db)
+user_prompt_repo                            = MongoUserPromptRepository(database=db)
+prompt_resolver_service                     = PromptResolverService()
 openai_client                               = LLMOpenAIClient(api_key=config.OPENAI_API_KEY)
 tweet_output_guardrail_service              = TweetOutputGuardrailService()
 tweet_generation_repo                       = MongoTweetGenerationRepository(db=db)
 tweet_repo                                  = MongoTweetRepository(database=db)
 user_scheduler_runtime_repo                 = MongoUserSchedulerRuntimeStatusRepository(database=db)
 master_prompt_repo                          = MongoMasterPromptRepository(database=db) 
-channel_service                             = ChannelService(channel_repo, prompt_repo, master_prompt_repo)
+channel_service                             = ChannelService(channel_repo, user_prompt_repo, master_prompt_repo, prompt_resolver_service)
 prompt_composer_service                     = PromptComposerService()
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
@@ -186,7 +188,7 @@ embeddings_pipeline_servive = EmbeddingsPipelineService(
     user_repo                                   = user_repo,
     tweet_repo                                  = tweet_repo,
     video_repo                                  = video_repo,
-    embedding_repo                              = embeddings_repo,
+    embeddings_repo                             = embeddings_repo,
     embeddings_client                           = embeddings_client,
     user_scheduler_runtime_repo                 = user_scheduler_runtime_repo,
     embedding_model                             = "text-embedding-3-small",

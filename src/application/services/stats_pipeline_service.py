@@ -77,14 +77,14 @@ class StatsPipelineService(StatsPipelinePort):
             logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 2. Fetch published tweets of the user
-            max_days_back = 6000
+            max_days_back = 6
             tweets: List[Tweet] = await self.tweet_repo.find_published_by_user(user_id=user.id, order=user.tweet_fetch_sort_order or TweetFetchSortOrder.newest_first, max_days_back=max_days_back)
             logger.info("Fetched %s published tweets (max days back: %s)", len(tweets), max_days_back, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 3. Process each tweet
             for index, tweet in enumerate(tweets, start=1):
 
-                logger.info("Stats tweet %s/%s - Process starting... | tweet_id=%s", index, len(tweets), tweet.twitter_id)
+                logger.info("Stats tweet %s/%s - Processing... (tweet_id=%s)", index, len(tweets), tweet.twitter_id)
 
                 if not tweet.twitter_id:
                     logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets))

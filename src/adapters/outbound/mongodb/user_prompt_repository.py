@@ -14,14 +14,13 @@ from domain.entities.user_prompt import (
     TweetLengthUnit,
 )
 from domain.ports.outbound.mongodb.user_prompt_repository_port import UserPromptRepositoryPort
-from infrastructure.mongodb import db
 
 
-class MongoPromptRepository(UserPromptRepositoryPort):
+class MongoUserPromptRepository(UserPromptRepositoryPort):
     """
     MongoDB adapter for UserPromptRepositoryPort. Maps between UserPrompt entities and Mongo documents.
     """
-    def __init__(self, database: AsyncIOMotorDatabase = db):    # TODO: eliminar el db por defecto y el import, que solo sea por inyección al constructor
+    def __init__(self, database: AsyncIOMotorDatabase):    # TODO: eliminar el db por defecto y el import de db, y que solo sea por inyección al constructor
         self._collection = database.get_collection("user_prompts")
 
     async def save(self, user_prompt: UserPrompt) -> str:

@@ -1,9 +1,9 @@
 # src/api/routes/auth_routes.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from src.api.schemas.auth_schemas import LoginRequestDTO, LoginResponseDTO, UserResponseDTO, ChangePasswordRequestDTO
-from src.application.services.auth_service import AuthService, get_auth_service
-from src.application.services.dependencies import get_current_user
+from api.schemas.auth_schemas import LoginRequestDTO, LoginResponseDTO, UserResponseDTO, ChangePasswordRequestDTO
+from application.services.auth_service import AuthService, get_auth_service
+from application.services.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

@@ -4,9 +4,12 @@ from datetime import datetime
 from typing import Optional
 from bson import ObjectId
 
-from src.domain.value_objects.embedding_vector import EmbeddingVector
-from src.domain.value_objects.embedding_type import EmbeddingType
-from src.domain.ports.outbound.mongodb.embedding_vector_repository_port import EmbeddingVectorRepositoryPort
+from domain.value_objects.embedding_vector import EmbeddingVector
+from domain.value_objects.embedding_type import EmbeddingType
+from domain.ports.outbound.mongodb.embedding_vector_repository_port import EmbeddingVectorRepositoryPort
+
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
 
 class MongoEmbeddingVectorRepository(EmbeddingVectorRepositoryPort):
     """
@@ -14,8 +17,8 @@ class MongoEmbeddingVectorRepository(EmbeddingVectorRepositoryPort):
     Stores and retrieves embedding vectors in a single collection.
     """
 
-    def __init__(self, db):
-        self.collection = db["embeddings"]   # Single collection for all embeddings
+    def __init__(self, database: AsyncIOMotorDatabase):
+        self.collection = database["embeddings"]   # Single collection for all embeddings
 
     def _to_entity(self, doc) -> EmbeddingVector:
         return EmbeddingVector(

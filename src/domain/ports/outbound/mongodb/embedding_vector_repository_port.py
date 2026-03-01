@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional, List
-from src.domain.value_objects.embedding_vector import EmbeddingVector
-from src.domain.value_objects.embedding_type import EmbeddingType
+from domain.value_objects.embedding_vector import EmbeddingVector
+from domain.value_objects.embedding_type import EmbeddingType
 
 
 class EmbeddingVectorRepositoryPort(ABC):
