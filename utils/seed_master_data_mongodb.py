@@ -595,7 +595,7 @@ async def seed():
                     "isIngestionPipelineEnabled": scheduler_config.is_ingestion_pipeline_enabled,
                     "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
                     "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
-                    "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddigns_pipeline_enabled,
+                    "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddings_pipeline_enabled,
                 }
             },
             upsert=True

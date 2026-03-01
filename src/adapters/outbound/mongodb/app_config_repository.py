@@ -28,6 +28,10 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
                 stats_pipeline_frequency_minutes=int(
                     scheduler_config.get("statsPipelineFrequencyMinutes", 2)
                 ),
+                embeddings_pipeline_frequency_minutes=int(
+                    scheduler_config.get("embeddingsPipelineFrequencyMinutes", 2)
+                ),
+
                 is_ingestion_pipeline_enabled=bool(
                     scheduler_config.get("isIngestionPipelineEnabled", True)
                 ),
@@ -36,6 +40,9 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
                 ),
                 is_stats_pipeline_enabled=bool(
                     scheduler_config.get("isStatsPipelineEnabled", True)
+                ),
+                is_embeddings_pipeline_enabled=bool(
+                    scheduler_config.get("isEmbeddingsPipelineEnabled", True)
                 ),
             )
         )
@@ -53,9 +60,11 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
                         "ingestionPipelineFrequencyMinutes": sc.ingestion_pipeline_frequency_minutes,
                         "publishingPipelineFrequencyMinutes": sc.publishing_pipeline_frequency_minutes,
                         "statsPipelineFrequencyMinutes": sc.stats_pipeline_frequency_minutes,
+                        "embeddingsPipelineFrequencyMinutes": sc.embeddings_pipeline_frequency_minutes,
                         "isIngestionPipelineEnabled": sc.is_ingestion_pipeline_enabled,
                         "isPublishingPipelineEnabled": sc.is_publishing_pipeline_enabled,
                         "isStatsPipelineEnabled": sc.is_stats_pipeline_enabled,
+                        "isEmbeddingsPipelineEnabled": sc.is_embeddings_pipeline_enabled,
                     }
                 }
             },

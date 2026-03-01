@@ -10,7 +10,7 @@ from typing import Optional
 import inspect
 import logging
 
-from domain.ports.inbound.channel_service_port import ChannelServicePort
+from domain.ports.inbound.channel_port import ChannelPort
 from domain.ports.inbound.prompt_resolver_port import PromptResolverPort
 
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
@@ -23,7 +23,7 @@ from domain.value_objects.final_prompt import FinalPrompt
 logger = logging.getLogger(__name__)
 
 
-class ChannelService(ChannelServicePort):
+class ChannelService(ChannelPort):
     """
     Application-level service responsible for channel-related operations.
 
