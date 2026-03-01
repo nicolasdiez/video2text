@@ -7,7 +7,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.user_prompt import (
-    Prompt,
+    UserPrompt,
     PromptContent,
     TweetLengthPolicy,
     TweetLengthMode,
@@ -19,36 +19,36 @@ from infrastructure.mongodb import db
 
 class MongoPromptRepository(UserPromptRepositoryPort):
     """
-    MongoDB adapter for PromptRepositoryPort. Maps between Prompt entities and Mongo documents.
+    MongoDB adapter for UserPromptRepositoryPort. Maps between UserPrompt entities and Mongo documents.
     """
     def __init__(self, database: AsyncIOMotorDatabase = db):    # TODO: eliminar el db por defecto y el import, que solo sea por inyección al constructor
-        self._collection = database.get_collection("prompts")
+        self._collection = database.get_collection("user_prompts")
 
-    async def save(self, prompt: Prompt) -> str:
-        doc = self._to_document(prompt)
+    async def save(self, user_prompt: UserPrompt) -> str:
+        doc = self._to_document(user_prompt)
         result = await self._collection.insert_one(doc)
         return str(result.inserted_id)
 
-    async def find_by_id(self, prompt_id: str) -> Optional[Prompt]:
-        raw = await self._collection.find_one({"_id": ObjectId(prompt_id)})
+    async def find_by_id(self, user_prompt_id: str) -> Optional[UserPrompt]:
+        raw = await self._collection.find_one({"_id": ObjectId(user_prompt_id)})
         return self._to_entity(raw) if raw else None
 
-    async def find_by_user_id(self, user_id: str) -> List[Prompt]:
+    async def find_by_user_id(self, user_id: str) -> List[UserPrompt]:
         cursor = self._collection.find({"userId": ObjectId(user_id)})
         return [self._to_entity(doc) async for doc in cursor]
 
-    async def update(self, prompt: Prompt) -> None:
+    async def update(self, user_prompt: UserPrompt) -> None:
         """
-        Update an existing Prompt document by its id.
+        Update an existing UserPrompt document by its id.
         - Preserves createdAt.
         - Refreshes updatedAt to now.
         - Raises LookupError if the document does not exist.
         """
-        if not prompt.id:
-            raise ValueError("Prompt id is required for update")
+        if not user_prompt.id:
+            raise ValueError("UserPrompt id is required for update")
 
         # Build doc from entity
-        update_doc = self._to_document(prompt)
+        update_doc = self._to_document(user_prompt)
 
         # Never override createdAt when updating
         update_doc.pop("createdAt", None)
@@ -57,21 +57,21 @@ class MongoPromptRepository(UserPromptRepositoryPort):
         update_doc["updatedAt"] = datetime.utcnow()
 
         result = await self._collection.update_one(
-            {"_id": ObjectId(prompt.id)},
+            {"_id": ObjectId(user_prompt.id)},
             {"$set": update_doc}
         )
 
         if result.matched_count == 0:
-            raise LookupError(f"Prompt {prompt.id} not found for update")
+            raise LookupError(f"UserPrompt {user_prompt.id} not found for update")
 
-    async def delete(self, prompt_id: str) -> None:
-        await self._collection.delete_one({"_id": ObjectId(prompt_id)})
+    async def delete(self, user_prompt_id: str) -> None:
+        await self._collection.delete_one({"_id": ObjectId(user_prompt_id)})
 
     async def delete_all(self) -> int:
         res = await self._collection.delete_many({})
         return res.deleted_count
 
-    def _to_entity(self, doc: dict) -> Prompt:
+    def _to_entity(self, doc: dict) -> UserPrompt:
         # Parse tweetLengthPolicy if present
         tlp_doc = doc.get("tweetLengthPolicy")
         tweet_length_policy = None
@@ -98,7 +98,7 @@ class MongoPromptRepository(UserPromptRepositoryPort):
                 unit=unit,
             )
 
-        return Prompt(
+        return UserPrompt(
             id=str(doc["_id"]),
             user_id=str(doc["userId"]),
             master_prompt_id=str(doc["masterPromptId"]),
@@ -113,27 +113,27 @@ class MongoPromptRepository(UserPromptRepositoryPort):
             updated_at=doc.get("updatedAt", datetime.utcnow())
         )
 
-    def _to_document(self, prompt: Prompt) -> dict:
+    def _to_document(self, user_prompt: UserPrompt) -> dict:
         """
-        Map Prompt entity to MongoDB document (without _id).
+        Map UserPrompt entity to MongoDB document (without _id).
         Omite None para no pisar campos con valores nulos accidentalmente.
         """
         doc = {
-            "userId": ObjectId(prompt.user_id),
-            "masterPromptId": ObjectId(prompt.master_prompt_id),
+            "userId": ObjectId(user_prompt.user_id),
+            "masterPromptId": ObjectId(user_prompt.master_prompt_id),
             "promptContent": {
-                "systemMessage": prompt.prompt_content.system_message,
-                "userMessage": prompt.prompt_content.user_message,
+                "systemMessage": user_prompt.prompt_content.system_message,
+                "userMessage": user_prompt.prompt_content.user_message,
             },
-            "languageOfThePrompt": prompt.language_of_the_prompt,
-            "languageToGenerateTweets": prompt.language_to_generate_tweets,
-            "createdAt": prompt.created_at,
-            "updatedAt": prompt.updated_at,
+            "languageOfThePrompt": user_prompt.language_of_the_prompt,
+            "languageToGenerateTweets": user_prompt.language_to_generate_tweets,
+            "createdAt": user_prompt.created_at,
+            "updatedAt": user_prompt.updated_at,
         }
 
         # Include tweetLengthPolicy if present
-        if getattr(prompt, "tweet_length_policy", None):
-            tlp = prompt.tweet_length_policy
+        if getattr(user_prompt, "tweet_length_policy", None):
+            tlp = user_prompt.tweet_length_policy
             tlp_doc = {
                 "mode": tlp.mode.value if hasattr(tlp.mode, "value") else str(tlp.mode),
                 "minLength": tlp.min_length,

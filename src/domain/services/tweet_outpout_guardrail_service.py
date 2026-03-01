@@ -1,5 +1,7 @@
 # src/application/services/tweet_output_guardrail_service.py
 
+# valorar moverlo a domain/services
+
 import logging
 import inspect
 from typing import Dict

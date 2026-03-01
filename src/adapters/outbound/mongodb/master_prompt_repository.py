@@ -30,15 +30,6 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
                 user_message=doc["promptContent"]["userMessage"],
             ),
             language_of_the_prompt=doc["languageOfThePrompt"],
-            language_to_generate_tweets=doc["languageToGenerateTweets"],
-            tweet_length_policy=TweetLengthPolicy(
-                mode=doc["tweetLengthPolicy"]["mode"],
-                min_length=doc["tweetLengthPolicy"].get("minLength"),
-                max_length=doc["tweetLengthPolicy"].get("maxLength"),
-                target_length=doc["tweetLengthPolicy"].get("targetLength"),
-                tolerance_percent=doc["tweetLengthPolicy"].get("tolerancePercent", 10),
-                unit=doc["tweetLengthPolicy"].get("unit", "chars"),
-            ) if doc.get("tweetLengthPolicy") else None,
             created_at=doc["createdAt"],
             updated_at=doc["updatedAt"],
         )
@@ -55,19 +46,6 @@ class MongoMasterPromptRepository(MasterPromptRepositoryPort):
                 "userMessage": entity.prompt_content.user_message,
             },
             "languageOfThePrompt": entity.language_of_the_prompt,
-            "languageToGenerateTweets": entity.language_to_generate_tweets,
-            "tweetLengthPolicy": (
-                {
-                    "mode": entity.tweet_length_policy.mode,
-                    "minLength": entity.tweet_length_policy.min_length,
-                    "maxLength": entity.tweet_length_policy.max_length,
-                    "targetLength": entity.tweet_length_policy.target_length,
-                    "tolerancePercent": entity.tweet_length_policy.tolerance_percent,
-                    "unit": entity.tweet_length_policy.unit,
-                }
-                if entity.tweet_length_policy
-                else None
-            ),
             "createdAt": entity.created_at,
             "updatedAt": entity.updated_at,
         }

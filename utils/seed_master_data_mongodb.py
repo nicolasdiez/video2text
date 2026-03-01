@@ -2,7 +2,7 @@
 
 # ---- HOW TO USE THIS SCRIPT ----- 
 # cd /d/software_projects/video2text
-# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=false SEED_CLEAN_VIDEOS=false SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true python utils/seed_master_data_mongodb.py
+# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_USER_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=false SEED_CLEAN_VIDEOS=false SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true python utils/seed_master_data_mongodb.py
 # (WARNING!! ----> check deletion flags SEED_CLEAN_!! when true the entire collection will be erased before seeding the master data):
 
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # Flags to delete all documents (set CLEAN_XXX to "true" to enable deletion of the complete collection, all documents will be deleted !!!)
 CLEAN_USERS = os.getenv("SEED_CLEAN_USERS", "false").lower() in ("1", "true", "yes")
 CLEAN_CHANNELS = os.getenv("SEED_CLEAN_CHANNELS", "false").lower() in ("1", "true", "yes")
-CLEAN_PROMPTS = os.getenv("SEED_CLEAN_PROMPTS", "false").lower() in ("1", "true", "yes")
+CLEAN_USER_PROMPTS = os.getenv("SEED_CLEAN_USER_PROMPTS", "false").lower() in ("1", "true", "yes")
 CLEAN_MASTER_PROMPTS = os.getenv("SEED_CLEAN_MASTER_PROMPTS", "false").lower() in ("1", "true", "yes")
 CLEAN_APP_CONFIG = os.getenv("SEED_CLEAN_APP_CONFIG", "false").lower() in ("1", "true", "yes")
 CLEAN_TWEET_GENERATIONS = os.getenv("SEED_CLEAN_TWEET_GENERATIONS", "false").lower() in ("1", "true", "yes")
@@ -104,7 +104,7 @@ async def seed():
     _env_map = {
         "users": "SEED_CLEAN_USERS",
         "channels": "SEED_CLEAN_CHANNELS",
-        "prompts": "SEED_CLEAN_PROMPTS",
+        "user_prompts": "SEED_CLEAN_USER_PROMPTS",
         "master_prompts": "SEED_CLEAN_MASTER_PROMPTS",
         "app_config": "SEED_CLEAN_APP_CONFIG",
         "tweet_generations": "SEED_CLEAN_TWEET_GENERATIONS",
@@ -141,9 +141,9 @@ async def seed():
     if CLEAN_CHANNELS:
         await db.get_collection("channels").delete_many({})
         logger.info("[ok] erased channels", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-    if CLEAN_PROMPTS:
-        await db.get_collection("prompts").delete_many({})
-        logger.info("[ok] erased prompts", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    if CLEAN_USER_PROMPTS:
+        await db.get_collection("user_prompts").delete_many({})
+        logger.info("[ok] erased user_prompts", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
     if CLEAN_MASTER_PROMPTS:
         await db.get_collection("master_prompts").delete_many({})
         logger.info("[ok] erased master_prompts", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
@@ -168,7 +168,7 @@ async def seed():
     collections_to_ensure = [
         "users",
         "channels",
-        "prompts",
+        "user_prompts",
         "master_prompts",
         "app_config",
         "tweet_generations",
@@ -401,87 +401,50 @@ async def seed():
         saved_channel_ids.append(str(channel_obj_id))
         logger.debug("channel saved; appended id=%s", saved_channel_ids[-1])
 
-
     # ------------------------------
     # 3) MASTER PROMPT
     # ------------------------------
     # saved_channel_ids is expected to be a list of channel IDs (strings) produced by the CHANNEL step
 
-    # Load prompt messages from non-reposited file
+    # Load prompt messages from file
     path = Path("prompts/seed_master_data_mongodb_PROMPT.yaml")
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     SYSTEM_MESSAGE = data["system_message"]
     USER_MESSAGE = data["user_message"]
 
-    # Default tweet length policy for the seeded master prompt
-    tweet_length_policy_doc = {
-        "mode": "range",               # "fixed" | "range"
-        "minLength": 120,
-        "maxLength": 220,
-        "targetLength": 110,
-        "tolerancePercent": 10,
-        "unit": "chars"                # "chars" | "tokens"
-    }
-
-    # Try to import master prompt repo and domain entity once (optional adapter path)
+    # Try to import master prompt repo and domain entity
     try:
         from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository  # type: ignore
         from domain.entities.master_prompt import MasterPrompt  # type: ignore
-        from domain.entities.user_prompt import PromptContent, TweetLengthPolicy, TweetLengthMode, TweetLengthUnit  # type: ignore
+        from domain.entities.user_prompt import PromptContent  # type: ignore
+
         master_prompt_repo = MongoMasterPromptRepository(db)
         repo_master_prompt_available = True
     except Exception:
         master_prompt_repo = None
         MasterPrompt = None
         PromptContent = None
-        TweetLengthPolicy = None
-        TweetLengthMode = None
-        TweetLengthUnit = None
         repo_master_prompt_available = False
 
     # Build master_prompt document
     master_prompt_doc = {
         "_id": ObjectId(),
-        "category": "Finance",  # adjust category/subcategory as needed
+        "category": "Finance",
         "subcategory": "Investing",
         "promptContent": {
             "systemMessage": SYSTEM_MESSAGE,
             "userMessage": USER_MESSAGE,
         },
         "languageOfThePrompt": "English",
-        "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-        "tweetLengthPolicy": tweet_length_policy_doc,
         "createdAt": _dt.datetime.now(_dt.timezone.utc),
         "updatedAt": _dt.datetime.now(_dt.timezone.utc),
     }
 
     saved_master_prompt_id = None
 
-    # Persist master prompt via repository adapter first; fallback to direct DB upsert if adapter missing or fails
+    # Persist master prompt
     if repo_master_prompt_available:
         try:
-            # Build TweetLengthPolicy entity if available
-            tlp_entity = None
-            if TweetLengthPolicy is not None and isinstance(master_prompt_doc.get("tweetLengthPolicy"), dict):
-                tlp = master_prompt_doc["tweetLengthPolicy"]
-                try:
-                    mode_enum = TweetLengthMode(tlp.get("mode")) if tlp.get("mode") else TweetLengthMode.RANGE
-                except Exception:
-                    mode_enum = TweetLengthMode.RANGE
-                try:
-                    unit_enum = TweetLengthUnit(tlp.get("unit")) if tlp.get("unit") else TweetLengthUnit.CHARS
-                except Exception:
-                    unit_enum = TweetLengthUnit.CHARS
-
-                tlp_entity = TweetLengthPolicy(
-                    mode=mode_enum,
-                    min_length=tlp.get("minLength"),
-                    max_length=tlp.get("maxLength"),
-                    target_length=tlp.get("targetLength"),
-                    tolerance_percent=tlp.get("tolerancePercent", 10),
-                    unit=unit_enum,
-                )
-
             master_prompt_entity = MasterPrompt(
                 id=str(master_prompt_doc["_id"]),
                 category=master_prompt_doc["category"],
@@ -490,18 +453,20 @@ async def seed():
                     system_message=master_prompt_doc["promptContent"]["systemMessage"],
                     user_message=master_prompt_doc["promptContent"]["userMessage"],
                 ),
-                language_of_the_prompt=master_prompt_doc.get("languageOfThePrompt", ""),
-                language_to_generate_tweets=master_prompt_doc.get("languageToGenerateTweets", ""),
-                tweet_length_policy=tlp_entity,
-                created_at=master_prompt_doc.get("createdAt"),
-                updated_at=master_prompt_doc.get("updatedAt"),
+                language_of_the_prompt=master_prompt_doc["languageOfThePrompt"],
+                created_at=master_prompt_doc["createdAt"],
+                updated_at=master_prompt_doc["updatedAt"],
             )
 
             saved_master_prompt_id = await master_prompt_repo.insert_one(master_prompt_entity)  # type: ignore
-            # If repo returns entity or id, normalize to string id
+
             if isinstance(saved_master_prompt_id, MasterPrompt):
                 saved_master_prompt_id = saved_master_prompt_id.id
-            logger.info(f"[ok] master_prompt saved via repo, id={saved_master_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+
+            logger.info(
+                f"[ok] master_prompt saved via repo, id={saved_master_prompt_id}",
+                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+            )
         except Exception:
             await db.get_collection("master_prompts").replace_one(
                 {"category": master_prompt_doc["category"], "subcategory": master_prompt_doc["subcategory"]},
@@ -509,7 +474,10 @@ async def seed():
                 upsert=True
             )
             saved_master_prompt_id = str(master_prompt_doc["_id"])
-            logger.info(f"[ok] master_prompt upserted via direct DB fallback, id={saved_master_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            logger.info(
+                f"[ok] master_prompt upserted via direct DB fallback, id={saved_master_prompt_id}",
+                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+            )
     else:
         await db.get_collection("master_prompts").replace_one(
             {"category": master_prompt_doc["category"], "subcategory": master_prompt_doc["subcategory"]},
@@ -517,9 +485,62 @@ async def seed():
             upsert=True
         )
         saved_master_prompt_id = str(master_prompt_doc["_id"])
-        logger.info(f"[ok] master_prompt upserted via direct DB (adapter missing), id={saved_master_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        logger.info(
+            f"[ok] master_prompt upserted via direct DB (adapter missing), id={saved_master_prompt_id}",
+            extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+        )
 
-    # Now update all seeded channels to reference the same master prompt
+        # If still needed to keep an array of affected channel ids, saved_channel_ids can be reused.
+        # saved_master_prompt_id contains the master prompt id (string).
+
+
+    # ------------------------------
+    # 4) USER PROMPT
+    # ------------------------------
+
+    if not MASTER_USER_ID:
+        raise RuntimeError("MASTER_USER_ID must be defined for seeding user prompts.")
+
+    # Default tweet length policy for the seeded USER prompt
+    tweet_length_policy_doc = {
+        "mode": "range",
+        "minLength": 120,
+        "maxLength": 220,
+        "targetLength": 110,
+        "tolerancePercent": 10,
+        "unit": "chars",
+    }
+
+    # Build user_prompt document
+    user_prompt_doc = {
+        "_id": ObjectId(),
+        "userId": MASTER_USER_ID,
+        "masterPromptId": ObjectId(saved_master_prompt_id),
+        "promptContent": {
+            "systemMessage": SYSTEM_MESSAGE,
+            "userMessage": USER_MESSAGE,
+        },
+        "languageToGenerateTweets": "Spanish (ESPAÑOL)",
+        "tweetLengthPolicy": tweet_length_policy_doc,
+        "createdAt": _dt.datetime.now(_dt.timezone.utc),
+        "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+    }
+
+    # Insert into user_prompts
+    await db.get_collection("user_prompts").replace_one(
+        {"_id": user_prompt_doc["_id"]},
+        user_prompt_doc,
+        upsert=True
+    )
+
+    saved_user_prompt_id = str(user_prompt_doc["_id"])
+
+    logger.info(
+        f"[ok] user_prompt created and linked to master_prompt {saved_master_prompt_id}, id={saved_user_prompt_id}",
+        extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+    )
+
+    # Update all seeded channels to reference this USER prompt
     for channel_id_str in saved_channel_ids:
         try:
             channel_ref = ObjectId(channel_id_str)
@@ -528,144 +549,19 @@ async def seed():
 
         await db.get_collection("channels").update_one(
             {"_id": channel_ref},
-            {"$set": {"selectedMasterPromptId": ObjectId(saved_master_prompt_id), "updatedAt": _dt.datetime.now(_dt.timezone.utc)}}
+            {
+                "$set": {
+                    "selectedPromptId": ObjectId(saved_user_prompt_id),
+                    "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+                }
+            }
         )
-        logger.info(f"[ok] channel {channel_ref} updated with selectedMasterPromptId={saved_master_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
-    # If still needed to keep an array of affected channel ids, saved_channel_ids can be reused.
-    # saved_master_prompt_id contains the master prompt id (string).
+        logger.info(
+            f"[ok] channel {channel_ref} updated with selectedPromptId={saved_user_prompt_id}",
+            extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+        )
 
-
-    """
-    # ------------------------------
-    # 3) PROMPT
-    # ------------------------------
-    # saved_channel_ids is expected to be a list of channel IDs (strings) produced by the CHANNEL step
-    # Example: saved_channel_ids = ["645a1f2b...", "645a1f2c...", ...]
-
-    SYSTEM_MESSAGE = (
-    )
-
-    USER_MESSAGE = (
-    )
-
-    saved_prompt_ids = []
-
-    # Try to import prompt repo and domain entity once
-    try:
-        from adapters.outbound.mongodb.prompt_repository import MongoPromptRepository  # type: ignore
-        from domain.entities.prompt import Prompt, PromptContent, TweetLengthPolicy, TweetLengthMode, TweetLengthUnit  # type: ignore
-        prompt_repo = MongoPromptRepository(db)
-        repo_prompt_available = True
-    except Exception:
-        prompt_repo = None
-        Prompt = None
-        PromptContent = None
-        TweetLengthPolicy = None
-        TweetLengthMode = None
-        TweetLengthUnit = None
-        repo_prompt_available = False
-
-    for channel_id_str in saved_channel_ids:
-        # Try to convert channel id string to ObjectId for storing in the document; if fails, keep string
-        try:
-            channel_ref = ObjectId(channel_id_str)
-        except Exception:
-            channel_ref = channel_id_str
-
-        # Default tweet length policy for seeded prompts (adjust as you prefer)
-        tweet_length_policy_doc = {
-            "mode": "range",               # "fixed" | "range"
-            "minLength": 120,
-            "maxLength": 220,
-            "targetLength": 110,           # optional preference
-            "tolerancePercent": 10,
-            "unit": "chars"                # "chars" | "tokens"
-        }
-
-        prompt_doc = {
-            "_id": ObjectId(),
-            "userId": MASTER_USER_ID,
-            "channelId": channel_ref,
-            "promptContent": {
-                "systemMessage": SYSTEM_MESSAGE,
-                "userMessage": USER_MESSAGE
-            },
-            "languageOfThePrompt": "English",
-            "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-            "tweetLengthPolicy": tweet_length_policy_doc,
-            "createdAt": _dt.datetime.now(_dt.timezone.utc),
-            "updatedAt": _dt.datetime.now(_dt.timezone.utc)
-        }
-
-        saved_prompt_id = None
-
-        # Persist prompt via repository adapter first; fallback to direct DB upsert if adapter missing or fails
-        if repo_prompt_available:
-            try:
-                # Build TweetLengthPolicy entity if available
-                tlp_entity = None
-                if TweetLengthPolicy is not None and isinstance(prompt_doc.get("tweetLengthPolicy"), dict):
-                    tlp = prompt_doc["tweetLengthPolicy"]
-                    # Safe enum conversion with fallbacks
-                    try:
-                        mode_enum = TweetLengthMode(tlp.get("mode")) if tlp.get("mode") else TweetLengthMode.RANGE
-                    except Exception:
-                        mode_enum = TweetLengthMode.RANGE
-                    try:
-                        unit_enum = TweetLengthUnit(tlp.get("unit")) if tlp.get("unit") else TweetLengthUnit.CHARS
-                    except Exception:
-                        unit_enum = TweetLengthUnit.CHARS
-
-                    tlp_entity = TweetLengthPolicy(
-                        mode=mode_enum,
-                        min_length=tlp.get("minLength"),
-                        max_length=tlp.get("maxLength"),
-                        target_length=tlp.get("targetLength"),
-                        tolerance_percent=tlp.get("tolerancePercent", 10),
-                        unit=unit_enum,
-                    )
-
-                prompt_entity = Prompt(
-                    id=str(prompt_doc["_id"]),
-                    user_id=str(prompt_doc["userId"]),
-                    channel_id=str(prompt_doc["channelId"]) if not isinstance(prompt_doc["channelId"], ObjectId) else str(prompt_doc["channelId"]),
-                    prompt_content=PromptContent(
-                        system_message=prompt_doc["promptContent"]["systemMessage"],
-                        user_message=prompt_doc["promptContent"]["userMessage"]
-                    ),
-                    language_of_the_prompt=prompt_doc.get("languageOfThePrompt", ""),
-                    language_to_generate_tweets=prompt_doc.get("languageToGenerateTweets", ""),
-                    tweet_length_policy=tlp_entity,
-                    created_at=prompt_doc.get("createdAt"),
-                    updated_at=prompt_doc.get("updatedAt")
-                )
-                saved_prompt_id = await prompt_repo.save(prompt_entity)  # type: ignore
-                logger.info(f"[ok] prompt saved via repo, id={saved_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-            except Exception:
-                await db.get_collection("prompts").replace_one(
-                    {"userId": prompt_doc["userId"], "channelId": prompt_doc["channelId"]},
-                    prompt_doc,
-                    upsert=True
-                )
-                saved_prompt_id = str(prompt_doc["_id"])
-                logger.info(f"[ok] prompt upserted referencing userId={str(MASTER_USER_ID)} and channelId={prompt_doc['channelId']} via direct DB fallback", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-        else:
-            await db.get_collection("prompts").replace_one(
-                {"userId": prompt_doc["userId"], "channelId": prompt_doc["channelId"]},
-                prompt_doc,
-                upsert=True
-            )
-            saved_prompt_id = str(prompt_doc["_id"])
-            logger.info(f"[ok] prompt upserted referencing userId={str(MASTER_USER_ID)} and channelId={prompt_doc['channelId']} via direct DB (adapter missing)", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-
-        # Update the channel to set this prompt as the selected one
-        await db.get_collection("channels").update_one( {"_id": channel_ref}, {"$set": {"selectedPromptId": ObjectId(saved_prompt_id)}} )
-        logger.info( f"[ok] channel {channel_ref} updated with selectedPromptId={saved_prompt_id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name} )
-
-        # array with all the saved prompt IDs (strings) created for each channel
-        saved_prompt_ids.append(saved_prompt_id)
-    """
 
     # -----------------------
     # 4) APP CONFIG

@@ -1,5 +1,7 @@
 # src/application/services/prompt_composer_service.py
 
+# valorar moverlo a domain/services
+
 # Reminder:
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
 

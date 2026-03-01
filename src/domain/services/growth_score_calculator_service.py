@@ -13,6 +13,7 @@
 # No toca repositorios.
 # No toca infraestructura (APIs...).
 # No tiene efectos secundarios.
+# No pertenece a ninguna entidad concreta (UserPromp, MasterPrompt...), sino sería un método de entidad.
 # Solo contiene reglas del dominio que no pertenecen a una entidad concreta.
 # Los domain services no persisten ni llaman a externos. Su responsabilidad es calcular/decidir.
 # Ej: Fórmula que combina likes/retweets/engagement/decay para producir un score, 

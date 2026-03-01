@@ -66,7 +66,10 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256") 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
-
+# --- Stats Pipeline ---
+STATS_MIN_TWEET_AGE_MINUTES = int(os.getenv("STATS_MIN_TWEET_AGE_MINUTES", "30"))
+STATS_MIN_STATS_FRESHNESS_MINUTES = int(os.getenv("STATS_MIN_STATS_FRESHNESS_MINUTES", "60"))
+ 
 # --- Validations  ---
 required_vars = {
 
@@ -98,7 +101,7 @@ required_vars = {
 
 missing = [k for k, v in required_vars.items() if not v]
 if missing:
-    raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
+    raise RuntimeError(f"Missing required environment secrets: {', '.join(missing)}")
 
 
 # ===== LOGGING =====

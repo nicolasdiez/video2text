@@ -1,10 +1,10 @@
-# src/domain/ports/inbound/channel_service_port.py
+# src/domain/ports/inbound/channel_port.py
 
 from abc import ABC, abstractmethod
 from typing import Optional
 
 
-class ChannelServicePort(ABC):
+class ChannelPort(ABC):
     """
     Inbound port for channel-related operations.
     Defines the application-level actions that ChannelService must implement.

@@ -88,8 +88,8 @@ from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPrompt
 
 # Application Services ()
 from application.services.channel_service import ChannelService
-from application.services.prompt_composer_service import PromptComposerService
-from application.services.tweet_outpout_guardrail_service import TweetOutputGuardrailService
+from domain.services.prompt_composer_service import PromptComposerService
+from domain.services.tweet_outpout_guardrail_service import TweetOutputGuardrailService
 
 # factory to get a youtube_client resource for consuming Youtube Data API (to retrieve video transcriptions) 
 from infrastructure.auth.youtube_credentials import get_youtube_client
@@ -225,7 +225,7 @@ async def lifespan(app: FastAPI):
     # ===== END TEMPORARY BLOCK =====
 
 
-    # ===== Inline async function for INGESTION PIPELINE =====
+    # ===== INGESTION PIPELINE job =====
     async def ingestion_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -316,7 +316,7 @@ async def lifespan(app: FastAPI):
 
 
 
-    # ===== Inline async function for PUBLISHING PIPELINE =====
+    # ===== PUBLISHING PIPELINE job =====
     async def publishing_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -407,7 +407,7 @@ async def lifespan(app: FastAPI):
 
 
 
-    # ===== Inline async function for STATS PIPELINE =====
+    # ===== STATS PIPELINE job =====
     async def stats_job():
         # 1. Get app-level config
         app_config = await app_config_repo.get_config()
@@ -492,11 +492,17 @@ async def lifespan(app: FastAPI):
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
     
     
-    # ===== Inline async function for EMBEDDINGS PIPELINE =====
-    async def embeddings_job():
-        # 1. Get app-level config
-        app_config = await app_config_repo.get_config()
-        default_user_frequency_minutes = 1440
+    # ===== EMBEDDINGS PIPELINE job =====
+    # async def embeddings_job():
+    #    # 1. Get app-level config
+    #    app_config = await app_config_repo.get_config()
+    #    default_user_frequency_minutes = 1440
+
+
+
+
+
+
 
 
     # load appConfig from repo

@@ -14,6 +14,8 @@ from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port
 from domain.entities.tweet import Tweet, TwitterStats, MetricValue
 from domain.entities.user import TweetFetchSortOrder
 
+from config import STATS_MIN_TWEET_AGE_MINUTES, STATS_MIN_STATS_FRESHNESS_MINUTES
+
 logger = logging.getLogger(__name__)
 
 class StatsPipelineService(StatsPipelinePort):
@@ -81,32 +83,41 @@ class StatsPipelineService(StatsPipelinePort):
 
             # 3. Process each tweet
             for index, tweet in enumerate(tweets, start=1):
-                
-                logger.info("Stats tweet %s/%s - Process starting...", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                logger.info("Tweet _id: %s (twiteer id: %s)", tweet.id, tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                logger.info("Stats tweet %s/%s - Process starting... | tweet_id=%s", index, len(tweets), tweet.twitter_id)
 
                 if not tweet.twitter_id:
-                    logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets))
                     continue
 
-                # Skip if stats are fresh (within FRESHNESS_MINUTES mins)
-                # TODO: Add also a min number of days after tweet published to go and scrape the data (let the tweet perform for some days before get its stats)
-                FRESHNESS_MINUTES = 60
+                # Skip if tweet is too young (minimum tweet age)
+                tweet_age_minutes = (datetime.utcnow() - tweet.created_at).total_seconds() / 60
+                if tweet_age_minutes < STATS_MIN_TWEET_AGE_MINUTES:
+                    logger.info(
+                        "Skipping tweet %s/%s (tweet age %.1f < %s mins)",
+                        index, len(tweets), tweet_age_minutes, STATS_MIN_TWEET_AGE_MINUTES
+                    )
+                    continue
+
+                # Skip if stats are too fresh (minimum stats freshness)
                 if tweet.twitter_stats:
                     latest_ts = self._get_latest_fetched_at(tweet.twitter_stats)
                     if latest_ts:
                         age_minutes = (datetime.utcnow() - latest_ts).total_seconds() / 60
-                        if age_minutes < FRESHNESS_MINUTES:
-                            logger.info("Skipping tweet %s/%s (stats freshness: %.1f mins old < %s mins)", index, len(tweets), age_minutes, FRESHNESS_MINUTES)
+                        if age_minutes < STATS_MIN_STATS_FRESHNESS_MINUTES:
+                            logger.info(
+                                "Skipping tweet %s/%s (stats freshness %.1f < %s mins)",
+                                index, len(tweets), age_minutes, STATS_MIN_STATS_FRESHNESS_MINUTES
+                            )
                             continue
 
-                # Fetch stats from twitter stats provider
+                # Fetch stats from provider
                 try:
-                    tweet.twitter_id = "2023075568980488581"    # debug twitter id (real)
+                    tweet.twitter_id = "2023075568980488581"  # debug twitter id (real)
                     stats = await self.stats_provider.fetch_tweet_stats(tweet.twitter_id)
-                    logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id)
                 except Exception:
-                    logger.exception("Failed to fetch stats for tweet_id %s", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    logger.exception("Failed to fetch stats for tweet_id %s", tweet.twitter_id)
                     continue
 
                 # Skip if stats is None

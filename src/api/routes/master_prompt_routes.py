@@ -12,16 +12,16 @@ from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from api.dtos.master_prompt_dtos import (
+from api.schemas.master_prompt_dtos import (
     MasterPromptCreateDTO,
     MasterPromptUpdateDTO,
     MasterPromptResponseDTO,
     PromptContentDTO,
-    TweetLengthPolicyDTO,
 )
+
 from application.services.master_prompt_service import MasterPromptService
 from domain.entities.master_prompt import MasterPrompt
-from domain.entities.user_prompt import PromptContent, TweetLengthPolicy
+from domain.entities.user_prompt import PromptContent
 
 from main import master_prompt_service
 
@@ -41,19 +41,6 @@ def dto_to_entity_create(dto: MasterPromptCreateDTO) -> MasterPrompt:
             user_message=dto.prompt_content.user_message,
         ),
         language_of_the_prompt=dto.language_of_the_prompt,
-        language_to_generate_tweets=dto.language_to_generate_tweets,
-        tweet_length_policy=(
-            TweetLengthPolicy(
-                mode=dto.tweet_length_policy.mode,
-                min_length=dto.tweet_length_policy.min_length,
-                max_length=dto.tweet_length_policy.max_length,
-                target_length=dto.tweet_length_policy.target_length,
-                tolerance_percent=dto.tweet_length_policy.tolerance_percent,
-                unit=dto.tweet_length_policy.unit,
-            )
-            if dto.tweet_length_policy
-            else None
-        ),
     )
 
 
@@ -67,19 +54,6 @@ def entity_to_response_dto(entity: MasterPrompt) -> MasterPromptResponseDTO:
             user_message=entity.prompt_content.user_message,
         ),
         language_of_the_prompt=entity.language_of_the_prompt,
-        language_to_generate_tweets=entity.language_to_generate_tweets,
-        tweet_length_policy=(
-            TweetLengthPolicyDTO(
-                mode=entity.tweet_length_policy.mode,
-                min_length=entity.tweet_length_policy.min_length,
-                max_length=entity.tweet_length_policy.max_length,
-                target_length=entity.tweet_length_policy.target_length,
-                tolerance_percent=entity.tweet_length_policy.tolerance_percent,
-                unit=entity.tweet_length_policy.unit,
-            )
-            if entity.tweet_length_policy
-            else None
-        ),
         created_at=entity.created_at,
         updated_at=entity.updated_at,
     )
@@ -89,8 +63,6 @@ def entity_to_response_dto(entity: MasterPrompt) -> MasterPromptResponseDTO:
 # Dependency wiring
 # -------------------------
 def get_master_prompt_service() -> MasterPromptService:
-    # This function wires the service with its MongoDB repository.
-    # This dependency shall be injected from main.py.
     return master_prompt_service
 
 
@@ -98,9 +70,6 @@ def get_master_prompt_service() -> MasterPromptService:
 # Routes
 # -------------------------
 
-# Create a new master prompt
-# This endpoint allows clients to create a global prompt template
-# that can be used by any user/channel in the system.
 @router.post(
     "/",
     response_model=MasterPromptResponseDTO,
@@ -115,9 +84,6 @@ async def create_master_prompt(
     return entity_to_response_dto(created)
 
 
-# List all master prompts
-# Returns every master prompt stored in the system.
-# Useful for UI dropdowns, admin panels, or browsing available templates.
 @router.get(
     "/",
     response_model=List[MasterPromptResponseDTO],
@@ -129,8 +95,6 @@ async def list_master_prompts(
     return [entity_to_response_dto(mp) for mp in items]
 
 
-# Get a single master prompt by ID
-# Used when editing, previewing, or selecting a specific master prompt.
 @router.get(
     "/{master_prompt_id}",
     response_model=MasterPromptResponseDTO,
@@ -151,8 +115,6 @@ async def get_master_prompt(
     return entity_to_response_dto(entity)
 
 
-# List master prompts filtered by category
-# Useful for grouping prompts (e.g., Finance, Sports, Food).
 @router.get(
     "/by-category/{category}",
     response_model=List[MasterPromptResponseDTO],
@@ -165,8 +127,6 @@ async def list_master_prompts_by_category(
     return [entity_to_response_dto(mp) for mp in items]
 
 
-# Update an existing master prompt
-# Allows partial updates (PATCH) to modify only the fields provided.
 @router.patch(
     "/{master_prompt_id}",
     response_model=MasterPromptResponseDTO,
@@ -191,10 +151,6 @@ async def update_master_prompt(
             "userMessage": pc["user_message"],
         }
 
-    if "tweet_length_policy" in update_data:
-        tlp = update_data.pop("tweet_length_policy")
-        update_data["tweetLengthPolicy"] = tlp
-
     updated = await service.update_master_prompt(oid, update_data)
     if not updated:
         raise HTTPException(status_code=404, detail="Master prompt not found")
@@ -202,9 +158,6 @@ async def update_master_prompt(
     return entity_to_response_dto(updated)
 
 
-# Delete a master prompt
-# Removes a master prompt permanently from the system.
-# Typically used by admins or during cleanup.
 @router.delete(
     "/{master_prompt_id}",
     status_code=status.HTTP_204_NO_CONTENT,
