@@ -74,12 +74,68 @@ class TwitterPublicationClient(TwitterPublicationPort):
             "TwitterPublicationClient initialized with app credentials",
             extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
         )
+
+        # VALIDACIÓN AUTOMÁTICA DE CREDENCIALES DE APP 
+        self.validate_app_credentials()
+        
         logger.info(
             "Finished OK",
             extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name}
         )
 
+    
+    # ---------------------------------------------------------
+    # 1) VALIDACIÓN DE CREDENCIALES DE LA APP
+    # ---------------------------------------------------------
+    def validate_app_credentials(self) -> None:
+        try:
+            # Intentamos construir un cliente OAuth1 válido
+            tweepy.OAuth1UserHandler(
+                consumer_key=self.oauth1_api_key,
+                consumer_secret=self.oauth1_api_secret,
+                access_token="dummy",
+                access_token_secret="dummy"
+            )
+        except Exception as e:
+            logger.error("Invalid Twitter APP credentials: %s", str(e))
+            raise RuntimeError("Invalid Twitter APP credentials") from e
 
+        logger.info("Twitter APP credentials validated OK")
+
+    # ---------------------------------------------------------
+    # 2) VALIDACIÓN DE CREDENCIALES DEL USUARIO
+    # ---------------------------------------------------------
+    def validate_user_credentials(self, oauth1_access_token: str, oauth1_access_token_secret: str) -> bool:
+        """
+        Valida las credenciales OAuth1 del usuario llamando a verify_credentials.
+        Devuelve True si son válidas, False si no.
+        """
+        try:
+            client = tweepy.Client(
+                consumer_key=self.oauth1_api_key,
+                consumer_secret=self.oauth1_api_secret,
+                access_token=oauth1_access_token,
+                access_token_secret=oauth1_access_token_secret,
+            )
+
+            # verify_credentials es la forma estándar de validar tokens de usuario
+            resp = client.get_me()
+
+            if resp and resp.data:
+                logger.info("User OAuth1 credentials validated OK (user_id=%s)", resp.data.id)
+                return True
+
+            logger.warning("User OAuth1 credentials invalid (empty response)")
+            return False
+
+        except Exception as e:
+            logger.error("User OAuth1 credentials invalid: %s", str(e))
+            return False
+
+
+    # ---------------------------------------------------------
+    # 3) PUBLICACIÓN DE TWEETS
+    # ---------------------------------------------------------
     @skip_if_debug
     async def publish(self, text: str, oauth1_access_token: str, oauth1_access_token_secret: str) -> str:
         """

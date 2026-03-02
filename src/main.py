@@ -4,6 +4,7 @@
 # - implementar “Context‑Aware Tweet Generation” con RAG (ANTES de generar tweets, lanzar semantic query a vectorDB y pasar los 10 tweets similares como contexto en el prompt. DESPUES de generar tweets --> embedding_model(tweet) --> persist vector in vectorDB)
 # - implementar "RAG para “Tweet Style Optimization” basado en rendimiento real"
 # - change naming of entidad "Prompt" por "UserPrompt" (channel.selected_prompt_id)
+# - crear un nuevo campo en "user" para indicar que las credenciales OAuth1 están mal y hay que reconectar cuenta (x_oauth1_credentials_valid)
 
 # - en main, separar la condicion is_running de enough_time_passed
 # - en los routers para que el usuario asigne prompts a sus channels --> usar los metodos del prompt_service.py (ej. borrar prompt, update...)

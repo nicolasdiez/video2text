@@ -77,6 +77,8 @@ class PublishingPipelineService(PublishingPipelinePort):
                 if not creds or not creds.oauth1_access_token or not creds.oauth1_access_token_secret:
                     logger.error("User %s has no valid OAuth1 credentials, skipping tweet publication", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
                     continue
+
+                self.twitter_publication_client.validate_user_credentials(oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret)
                 
                 # Publish tweet with user credentials
                 tweet_id = await self.twitter_publication_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
