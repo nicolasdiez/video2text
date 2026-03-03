@@ -495,15 +495,87 @@ async def lifespan(app: FastAPI):
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
     
     
+
     # ===== EMBEDDINGS PIPELINE job =====
-    # async def embeddings_job():
-    #    # 1. Get app-level config
-    #    app_config = await app_config_repo.get_config()
-    #    default_user_frequency_minutes = 1440
+    async def embeddings_job():
+        # 1. Get app-level config
+        app_config = await app_config_repo.get_config()
+        default_user_frequency_minutes = 1440
 
+        users = await user_repo.find_all()
+        now = datetime.utcnow()
 
+        for user in users:
+            try:
+                set_user_id(str(user.id))
 
+                # 2. Check if pipeline is enabled
+                user_scheduler_config = getattr(user, "scheduler_config", None)
+                if user_scheduler_config and hasattr(user_scheduler_config, "is_embeddings_pipeline_enabled") and user_scheduler_config.is_embeddings_pipeline_enabled is False:
+                    logger.info("Skipping Embeddings pipeline (disabled by user config)", extra={"job": "embeddings"})
+                    continue
 
+                app_scheduler_config = app_config.scheduler_config
+                if not app_scheduler_config or not hasattr(app_scheduler_config, "is_embeddings_pipeline_enabled") or app_scheduler_config.is_embeddings_pipeline_enabled is False:
+                    logger.info("Skipping Embeddings pipeline (disabled by app_config or app_config missing)", extra={"job": "embeddings"})
+                    continue
+
+                # 3. Determine effective frequency
+                user_frequency_minutes = getattr(user.scheduler_config, "embeddings_pipeline_frequency_minutes", None)
+                effective_frequency_minutes = float(user_frequency_minutes) if user_frequency_minutes is not None else default_user_frequency_minutes
+
+                # 4. Retrieve runtime status
+                user_runtime_status = await user_scheduler_runtime_repo.get_by_user_id(user.id)
+                embeddings_last_started_at = getattr(user_runtime_status, "last_embeddings_pipeline_started_at", None) if user_runtime_status else None
+                is_running = getattr(user_runtime_status, "is_embeddings_pipeline_running", False) if user_runtime_status else False
+
+                # 5. Determine if pipeline should run
+                elapsed_minutes = (now - embeddings_last_started_at).total_seconds() / 60.0 if embeddings_last_started_at else None
+                enough_time_passed = elapsed_minutes is not None and elapsed_minutes > effective_frequency_minutes and not is_running
+                stuck_protection = elapsed_minutes is not None and elapsed_minutes > (effective_frequency_minutes * 1)
+                first_run = elapsed_minutes is None
+
+                should_run = first_run or enough_time_passed or stuck_protection
+
+                elapsed_minutes_str = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
+                decision = "Yes" if should_run else "No"
+
+                logger.info("Embeddings pipeline: Configured freq %s mins, Last start %s mins ago", effective_frequency_minutes, elapsed_minutes_str, extra={"job": "embeddings"})
+                logger.info("Embeddings pipeline should run now? %s", decision, extra={"job": "embeddings"})
+
+                if not should_run:
+                    logger.info("Skipping Embeddings pipeline (already running or within freq)", extra={"job": "embeddings"})
+                    continue
+
+                # 6. Run pipeline
+                logger.info("Embeddings pipeline starting", extra={"job": "embeddings"})
+                set_user_id(user.id)
+                await embeddings_pipeline_service.run_for_user(user_id=user.id)
+                logger.info("Embeddings pipeline finished", extra={"job": "embeddings"})
+
+                # 7. Update next scheduled run
+                finish_time = datetime.utcnow()
+                next_start = finish_time + timedelta(minutes=effective_frequency_minutes)
+                await user_scheduler_runtime_repo.update_by_user_id(user.id, {"nextScheduledEmbeddingsPipelineStartingAt": next_start})
+                logger.info("Next user's scheduled Embeddings pipeline starting at: %s", next_start.isoformat(), extra={"job": "embeddings"})
+
+            except Exception as e:
+                logger.error("Embeddings pipeline failed: %s", str(e), extra={"job": "embeddings"})
+
+        # 8. Refresh app config and reschedule job if needed
+        job = scheduler.get_job("embeddings_job")
+        current_embeddings_frequency_minutes = job.trigger.interval.total_seconds() / 60
+        logger.debug("Checking if Embeddings pipeline app config frequency has changed (current freq: %s mins)", current_embeddings_frequency_minutes, extra={"job": "embeddings"})
+        new_app_config = await app_config_repo.get_config()
+        new_embeddings_frequency_minutes = new_app_config.scheduler_config.embeddings_pipeline_frequency_minutes
+        if float(new_embeddings_frequency_minutes) != float(current_embeddings_frequency_minutes):
+            try:
+                scheduler.reschedule_job("embeddings_job", trigger="interval", minutes=new_embeddings_frequency_minutes)
+                logger.info("Rescheduled Embeddings pipeline app config frequency to %s minutes", new_embeddings_frequency_minutes, extra={"job": "embeddings"})
+            except Exception as ex:
+                logger.warning("Failed to reschedule Embeddings pipeline app config frequency: %s", str(ex), extra={"job": "embeddings"})
+        else:
+            logger.debug("Embeddings pipeline app config frequency has not changed (current freq: %s mins)", current_embeddings_frequency_minutes, extra={"job": "embeddings"})
 
 
 
@@ -513,12 +585,14 @@ async def lifespan(app: FastAPI):
     ingestion_pipeline_frequency_minutes = app_config.scheduler_config.ingestion_pipeline_frequency_minutes
     publishing_pipeline_frequency_minutes = app_config.scheduler_config.publishing_pipeline_frequency_minutes
     stats_pipeline_frequency_minutes = app_config.scheduler_config.stats_pipeline_frequency_minutes
-    logger.info("Loaded DB app config: ingestion_freq=%s min, publishing_freq=%s min, stats_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes, stats_pipeline_frequency_minutes)
+    embeddings_pipeline_frequency_minutes = app_config.scheduler_config.embeddings_pipeline_frequency_minutes
+    logger.info("Loaded DB app config: ingestion_freq=%s min, publishing_freq=%s min, stats_freq=%s min, embeddings_freq=%s min", ingestion_pipeline_frequency_minutes, publishing_pipeline_frequency_minutes, stats_pipeline_frequency_minutes, embeddings_pipeline_frequency_minutes)
     
     # setup job execution frequency
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes, id="ingestion_job")
     scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
     scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
+    scheduler.add_job(stats_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
 
     # start scheduler.
     scheduler.start()

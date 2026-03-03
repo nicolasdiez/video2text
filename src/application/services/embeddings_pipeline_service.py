@@ -92,11 +92,10 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                             tweet_id=tweet.id,
                             type=EmbeddingType.TWEET_TEXT,
                             vector=vector,
-                            created_at=datetime.utcnow(),
-                        )
+                            created_at=datetime.utcnow())
+                        
                         embedding_id = await self.embeddings_repo.save(embedding)
                         tweet.embedding_refs.tweet_text_id = embedding_id
-
                     except Exception:
                         logger.exception("Failed generating embedding for tweet text (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
@@ -113,13 +112,12 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                                 tweet_id=tweet.id,
                                 type=EmbeddingType.VIDEO_TRANSCRIPT,
                                 vector=vector,
-                                created_at=datetime.utcnow(),
-                            )
+                                created_at=datetime.utcnow())
+                            
                             embedding_id = await self.embeddings_repo.save(embedding)
                             tweet.embedding_refs.video_transcript_id = embedding_id
                         else:
                             logger.info("No transcript found for video_id %s, skipping transcript embedding", tweet.video_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-
                     except Exception:
                         logger.exception("Failed generating embedding for video transcript (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 

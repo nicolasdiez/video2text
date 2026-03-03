@@ -116,7 +116,6 @@ class StatsPipelineService(StatsPipelinePort):
                 # Fetch stats
                 try:
                     stats = await self.stats_provider.fetch_tweet_stats(tweet.twitter_id)
-                    logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id)
                     logger.info(
                         "Stats values → likes=%s, retweets=%s, replies=%s, quotes=%s, impressions=%s, bookmarks=%s, author_followers=%s",
                         stats.likes.value if stats.likes else None,
@@ -126,6 +125,7 @@ class StatsPipelineService(StatsPipelinePort):
                         stats.impressions.value if stats.impressions else None,
                         stats.bookmarks.value if stats.bookmarks else None,
                         stats.author_followers.value if stats.author_followers else None)
+                    logger.info("Fetched stats for tweet %s/%s (twitter_id: %s)", index, len(tweets), tweet.twitter_id)
                 except Exception:
                     logger.exception("Failed to fetch stats for tweet_id %s", tweet.twitter_id)
                     continue

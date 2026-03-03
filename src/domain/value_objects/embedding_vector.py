@@ -14,6 +14,8 @@ class EmbeddingVector:
     """
     id: Optional[str]           # MongoDB document ID
     tweet_id: str               # Tweet this embedding belongs to (is the mongo/entity _id, NOT the ID of the tweet in X)
+    
     type: EmbeddingType         # "tweet_text" | "video_transcript"
     vector: List[float]         # The embedding vector itself
+    
     created_at: datetime        # Timestamp of creation

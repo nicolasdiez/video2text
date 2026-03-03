@@ -37,8 +37,6 @@ class TwitterStatsClientApifyApidojoTweetScraper(TwitterStatsPort):
         # Correct input for twitter-scraper-lite → startUrls must be array of strings
         run_input = {
             "startUrls": [tweet_url],
-            # "startUrls": ["https://x.com/elonmusk/status/1728108619189874825"],
-            # "startUrls": ["https://x.com/i/web/status/2023075568980488581"],
             "maxItems": 1,
         }
 
@@ -62,6 +60,7 @@ class TwitterStatsClientApifyApidojoTweetScraper(TwitterStatsPort):
         if not items:
             logger.warning("Unexpected Apify response format (empty dataset)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             return None
+        
         raw = items[0]
 
         # 4. Map Apify fields to TwitterStats domain entity

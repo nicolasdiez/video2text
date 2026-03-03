@@ -68,7 +68,7 @@ class PublishingPipelineService(PublishingPipelinePort):
             max_tweets_to_publish = user.max_tweets_to_publish
             tweets_to_publish = tweets[:max_tweets_to_publish]
 
-            # 4. Publish and update only those tweets
+            # 4. Publish and update only selected tweets
             logger.info("Starting to publish %s tweets (out of max %s)", len(tweets_to_publish), max_tweets_to_publish, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             for index, tweet in enumerate(tweets_to_publish, start=1):
 
@@ -77,21 +77,26 @@ class PublishingPipelineService(PublishingPipelinePort):
                 if not creds or not creds.oauth1_access_token or not creds.oauth1_access_token_secret:
                     logger.error("User %s has no valid OAuth1 credentials, skipping tweet publication", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
                     continue
-
-                self.twitter_publication_client.validate_user_credentials(oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret)
                 
-                # Publish tweet with user credentials
-                tweet_id = await self.twitter_publication_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
-                logger.info("Tweet %s/%s published successfully with tweet_id %s", index, len(tweets_to_publish), tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
+                # Validate user's oauth1 twitter credentials
+                is_creds_valid = self.twitter_publication_client.validate_user_credentials(oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret)
+                                
+                if is_creds_valid:
+                    # Publish tweet with user credentials
+                    tweet_id = await self.twitter_publication_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
+                    logger.info("Tweet %s/%s published successfully with tweet_id %s", index, len(tweets_to_publish), tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
 
-                now = datetime.utcnow()
-                tweet.published = True
-                tweet.published_at = now
-                tweet.twitter_id = tweet_id
-                tweet.updated_at = now
+                    now = datetime.utcnow()
+                    tweet.published = True
+                    tweet.published_at = now
+                    tweet.twitter_id = tweet_id
+                    tweet.updated_at = now
 
-                await self.tweet_repo.update(tweet)
-                logger.info("Tweet_id %s updated in collection 'tweets' (_id: %s)", tweet_id, tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    await self.tweet_repo.update(tweet)
+                    logger.info("Tweet_id %s updated in collection 'tweets' (_id: %s)", tweet_id, tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                else:
+                    logger.info("Skipped publication - twitter oauth1 user creds not valid", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    continue
 
             # 5-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_publishing_finished(user_id, datetime.utcnow(), success=True)

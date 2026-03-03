@@ -2,9 +2,8 @@
 
 # ---- HOW TO USE THIS SCRIPT ----- 
 # cd /d/software_projects/video2text
-# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_USER_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=false SEED_CLEAN_VIDEOS=false SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true python utils/seed_master_data_mongodb.py
+# PYTHONPATH="$PWD/src" SEED_CLEAN_USERS=true SEED_CLEAN_CHANNELS=true SEED_CLEAN_USER_PROMPTS=true SEED_CLEAN_MASTER_PROMPTS=true SEED_CLEAN_APP_CONFIG=true SEED_CLEAN_TWEET_GENERATIONS=true SEED_CLEAN_TWEETS=false SEED_CLEAN_VIDEOS=false SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME=true SEED_CLEAN_EMBEDDINGS=true python utils/seed_master_data_mongodb.py
 # (WARNING!! ----> check deletion flags SEED_CLEAN_!! when true the entire collection will be erased before seeding the master data):
-
 
 import asyncio
 import os
@@ -40,6 +39,7 @@ CLEAN_TWEET_GENERATIONS = os.getenv("SEED_CLEAN_TWEET_GENERATIONS", "false").low
 CLEAN_TWEETS = os.getenv("SEED_CLEAN_TWEETS", "false").lower() in ("1", "true", "yes")
 CLEAN_VIDEOS = os.getenv("SEED_CLEAN_VIDEOS", "false").lower() in ("1", "true", "yes")
 CLEAN_USER_SCHEDULER_STATUS_RUNTIME = os.getenv("SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME", "false").lower() in ("1", "true", "yes")
+CLEAN_EMBEDDINGS = os.getenv("SEED_CLEAN_EMBEDDINGS", "false").lower() in ("1", "true", "yes")
 
 # Import domain entities for AppConfig usage
 from domain.entities.app_config import AppConfig, SchedulerConfig
@@ -77,17 +77,15 @@ def prompt_confirm(message: str, timeout: int = 60, default: bool = True) -> boo
     t.join(timeout)
 
     if not result:
-        # timeout: continuar como si se hubiera pulsado Enter/Y
-        print()  # newline after prompt
+        print()
         return default
 
     user_input = result[0].strip().lower()
-    print()  # newline after prompt
+    print()
     if user_input == "" or user_input == "y":
         return True
     if user_input == "n":
         return False
-    # cualquier otra entrada: tratar como default (proceed)
     return default
 
 # -----------------------
@@ -111,6 +109,7 @@ async def seed():
         "tweets": "SEED_CLEAN_TWEETS",
         "videos": "SEED_CLEAN_VIDEOS",
         "user_scheduler_runtime_status": "SEED_CLEAN_USER_SCHEDULER_STATUS_RUNTIME",
+        "embeddings": "SEED_CLEAN_EMBEDDINGS",
     }
 
     _collections_to_erase = [
@@ -119,8 +118,8 @@ async def seed():
     ]
 
     if _collections_to_erase:
-        # Obtain DB name for the confirmation message (Motor AsyncIOMotorDatabase exposes .name)
         try:
+            # Obtain DB name for the confirmation message (Motor AsyncIOMotorDatabase exposes .name)
             db_name = getattr(db, "name", None) or getattr(db, "database_name", None) or "unknown"
         except Exception:
             db_name = "unknown"
@@ -134,7 +133,6 @@ async def seed():
         # Si no hay collections marcadas, no preguntar y continuar
         pass
 
-    # Optional cleaning using direct collection clears (we operate directly here, not using application repo adapters)
     if CLEAN_USERS:
         await db.get_collection("users").delete_many({})
         logger.info("[ok] erased users", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
@@ -162,6 +160,9 @@ async def seed():
     if CLEAN_USER_SCHEDULER_STATUS_RUNTIME:
         await db.get_collection("user_scheduler_runtime_status").delete_many({})
         logger.info("[ok] erased user_scheduler_runtime_status", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    if CLEAN_EMBEDDINGS:
+        await db.get_collection("embeddings").delete_many({})
+        logger.info("[ok] erased embeddings", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
     # Ensure collections exist (create empty collections if missing)
     existing_collections = await db.list_collection_names()
@@ -175,6 +176,7 @@ async def seed():
         "tweets",
         "videos",
         "user_scheduler_runtime_status",
+        "embeddings",
     ]
     for coll_name in collections_to_ensure:
         if coll_name not in existing_collections:
@@ -184,14 +186,10 @@ async def seed():
             except Exception:
                 logger.warning(f"[warn] could not create collection {coll_name} (it may already exist)", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
-    # ---------------------------
-    # REQUEST USER PERMISSION PRIOR TO WRITE SEEED DATA
-    # ---------------------------
     _msg2 = "\nMongoDB collections have been erased, and seed data will be written now, Do you want to proceed?"
     if not prompt_confirm(_msg2, timeout=60, default=True):
         print("Aborted by user after cleaning collections (seed writing cancelled).")
         sys.exit(0)
-
 
     # Si el PC llega aquí, continuar con la escritura de seed data:
 
