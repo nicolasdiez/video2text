@@ -126,7 +126,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterPublicationClient" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6GBo-MGXtRTwtD-Rmwj8-21" value="TwitterPublicationClientOAuth1" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="661" y="1148" width="130" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6GBo-MGXtRTwtD-Rmwj8-26" value="YouTube&lt;div&gt;Data API&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">

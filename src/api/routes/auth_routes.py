@@ -1,7 +1,7 @@
 # src/api/routes/auth_routes.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from api.schemas.auth_schemas import LoginRequestDTO, LoginResponseDTO, UserResponseDTO, ChangePasswordRequestDTO
+from api.schemas.auth_dtos import LoginRequestDTO, LoginResponseDTO, UserResponseDTO, ChangePasswordRequestDTO
 from application.services.auth_service import AuthService, get_auth_service
 from application.services.dependencies import get_current_user
 
@@ -17,13 +17,13 @@ async def login(
     Handle user login with email and password.
     Returns an access token and basic user info.
     """
-    result = await auth_service.login(email=payload.email, password=payload.password)
-    if result is None:
+    token = await auth_service.login(email=payload.email, password=payload.password)
+    if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         )
-    return result
+    return token
 
 
 @router.get("/me", response_model=UserResponseDTO, summary="Get current authenticated user")

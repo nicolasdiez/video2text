@@ -72,7 +72,7 @@ from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import M
 
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
-from adapters.outbound.twitter_publication_client import TwitterPublicationClient
+from adapters.outbound.twitter_publication_client_oauth1 import TwitterPublicationClientOAuth1
 
 # Stats pipeline
 from application.services.stats_pipeline_service import StatsPipelineService
@@ -153,7 +153,7 @@ pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_inst
 
 
 # --- Publishing adapters & service instantiation ---
-twitter_publication_client  = TwitterPublicationClient(
+twitter_publication_client  = TwitterPublicationClientOAuth1(
     oauth1_api_key          = config.X_OAUTH1_API_KEY,
     oauth1_api_secret       = config.X_OAUTH1_API_SECRET
 )
@@ -550,7 +550,7 @@ async def lifespan(app: FastAPI):
                 # 6. Run pipeline
                 logger.info("Embeddings pipeline starting", extra={"job": "embeddings"})
                 set_user_id(user.id)
-                await embeddings_pipeline_service.run_for_user(user_id=user.id)
+                await embeddings_pipeline_servive.run_for_user(user_id=user.id)
                 logger.info("Embeddings pipeline finished", extra={"job": "embeddings"})
 
                 # 7. Update next scheduled run

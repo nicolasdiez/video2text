@@ -25,6 +25,7 @@ class UserTwitterCredentials:
     oauth2_access_token_expires_at: Optional[datetime] = None
     oauth2_refresh_token: Optional[str] = None
     oauth2_refresh_token_expires_at: Optional[datetime] = None
+    oauth2_state: Optional[str] = None      # used to validate OAuth2 state
     screen_name: Optional[str] = None
 
 

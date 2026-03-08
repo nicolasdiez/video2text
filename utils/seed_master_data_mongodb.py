@@ -213,6 +213,7 @@ async def seed():
             "oauth2AccessTokenExpiresAt": "",
             "oauth2RefreshToken": "",
             "oauth2RefreshTokenExpiresAt": "",
+            "oauth2State": "",
             "screenName": "nicolai"
         },
         "schedulerConfig": {
@@ -247,6 +248,7 @@ async def seed():
                 oauth2_access_token_expires_at=None,
                 oauth2_refresh_token=None,
                 oauth2_refresh_token_expires_at=None,
+                oauth2_state=None,
                 screen_name=None
             )
 

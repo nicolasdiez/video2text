@@ -1,12 +1,16 @@
 # src/application/services/dependencies.py
 
-# Este module agrupa dependencias de FastAPI que no pertenecen al dominio ni a infraestructura pura, sino al “application layer”.
+# This module groups FastAPI dependencies that belong to the application layer.
+# They are not domain logic nor pure infrastructure, but glue components.
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from adapters.outbound.mongodb.user_repository import MongoUserRepository
 from infrastructure.security.jwt_service import JWTService
+
+from infrastructure.auth.twitter_oauth2_service import TwitterOAuth2Service
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -19,7 +23,7 @@ async def get_current_user(
     """
     Extract and validate the current authenticated user from the JWT token.
     """
-    # 1. Decode token
+    # Decode token
     user_id = jwt_service.verify_access_token(token)
     if user_id is None:
         raise HTTPException(
@@ -27,7 +31,7 @@ async def get_current_user(
             detail="Invalid or expired token",
         )
 
-    # 2. Load user from DB
+    # Load user from DB
     user = await user_repo.find_by_id(user_id)
     if not user or not user.is_active:
         raise HTTPException(
@@ -36,3 +40,12 @@ async def get_current_user(
         )
 
     return user
+
+
+def get_twitter_oauth2_service(
+    user_repo: MongoUserRepository = Depends(MongoUserRepository),
+) -> TwitterOAuth2Service:
+    """
+    Provides an instance of TwitterOAuth2Service with injected UserRepository.
+    """
+    return TwitterOAuth2Service(user_repo=user_repo)

@@ -37,6 +37,7 @@ X_OAUTH1_API_SECRET         = os.getenv("X_OAUTH1_API_SECRET")          # OAuth 
 X_OAUTH2_API_BEARER_TOKEN   = os.getenv("X_OAUTH2_API_BEARER_TOKEN")    # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X - se usa en OAuth 2.0 App-only (sin usuario, solo tu app). Sirve para llamadas que no requieren contexto de usuario (ej. buscar tweets públicos).
 X_OAUTH2_CLIENT_ID          = os.getenv("X_OAUTH2_CLIENT_ID")           # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X
 X_OAUTH2_CLIENT_SECRET      = os.getenv("X_OAUTH2_CLIENT_SECRET")       # OAuth 2.0 - Identifica mi aplicación frente a Twitter/X --> se usa junto con el CLIENT_ID para intercambiar un authorization code por un access token
+X_OAUTH2_REDIRECT_URI       = os.getenv("X_OAUTH2_REDIRECT_URI")
 
 # credentials related to THE USER of the application:
 X_OAUTH1_ACCESS_TOKEN               = os.getenv("X_OAUTH1_ACCESS_TOKEN")                # OAuth 1.0 - Permite actuar en nombre de un usuario frente a Twitter/X
@@ -84,6 +85,7 @@ required_vars = {
     "X_OAUTH2_API_BEARER_TOKEN": X_OAUTH2_API_BEARER_TOKEN,
     "X_OAUTH2_CLIENT_ID": X_OAUTH2_CLIENT_ID,
     "X_OAUTH2_CLIENT_SECRET": X_OAUTH2_CLIENT_SECRET,
+    "X_OAUTH2_REDIRECT_URI": X_OAUTH2_REDIRECT_URI,
     "YOUTUBE_OAUTH_CLIENT_ID": YOUTUBE_OAUTH_CLIENT_ID,
     "YOUTUBE_OAUTH_CLIENT_SECRET": YOUTUBE_OAUTH_CLIENT_SECRET,
     "YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN": YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN,

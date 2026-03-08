@@ -6,12 +6,15 @@ python -m venv video2text-venv
 # activate virtual environment
 source video2text-venv/Scripts/activate
 
+# deactivate virtual environment
+deactivate
+
 # freeze project dependencies into file
 python -m pip freeze > requirements.txt
 
 # install project dependencies from file
 source video2text-venv/Scripts/activate
-pip install -r requirements.txt
+pip install -r requirements-lightweight.txt
 
 # generate a requirements based on imports
 pipreqs --force --ignore tests --savepath requirements_from_src.txt ./src
