@@ -80,7 +80,7 @@ class TwitterOAuth2Service:
 
         logger.info(
             f"Generated Twitter OAuth2 authorization URL for user {user_id}",
-            extra={"user_id": user_id, "module": __name__, "method": "get_authorization_url"},
+            extra={"user_id": user_id, "module_name": __name__, "method": "get_authorization_url"},
         )
 
         return url
@@ -106,7 +106,7 @@ class TwitterOAuth2Service:
         if state != stored_state:
             logger.error(
                 f"Invalid OAuth2 state for user {user_id}: expected={stored_state}, received={state}",
-                extra={"user_id": user_id, "module": __name__, "method": "exchange_code_for_tokens"},
+                extra={"user_id": user_id, "module_name": __name__, "method": "exchange_code_for_tokens"},
             )
             raise RuntimeError("Invalid OAuth2 state received.")
 
@@ -134,7 +134,7 @@ class TwitterOAuth2Service:
                     body = await resp.text()
                     logger.error(
                         f"Failed to exchange code for tokens: {resp.status} - {body}",
-                        extra={"user_id": user_id, "module": __name__, "method": "exchange_code_for_tokens"},
+                        extra={"user_id": user_id, "module_name": __name__, "method": "exchange_code_for_tokens"},
                     )
                     raise RuntimeError(f"Twitter OAuth2 token exchange failed: {resp.status}")
 
@@ -157,7 +157,7 @@ class TwitterOAuth2Service:
 
         logger.info(
             f"Successfully exchanged code for tokens for user {user_id}",
-            extra={"user_id": user_id, "module": __name__, "method": "exchange_code_for_tokens"},
+            extra={"user_id": user_id, "module_name": __name__, "method": "exchange_code_for_tokens"},
         )
 
 
@@ -194,7 +194,7 @@ class TwitterOAuth2Service:
                     body = await resp.text()
                     logger.error(
                         f"Failed to refresh tokens: {resp.status} - {body}",
-                        extra={"user_id": user_id, "module": __name__, "method": "refresh_tokens"},
+                        extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
                     )
                     raise RuntimeError(f"Twitter OAuth2 refresh failed: {resp.status}")
 
@@ -215,7 +215,7 @@ class TwitterOAuth2Service:
 
         logger.info(
             f"Successfully refreshed tokens for user {user_id}",
-            extra={"user_id": user_id, "module": __name__, "method": "refresh_tokens"},
+            extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
         )
 
         return new_access_token

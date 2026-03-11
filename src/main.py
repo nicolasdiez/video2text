@@ -620,6 +620,7 @@ app = FastAPI(
 # Register routes
 app.include_router(pipeline_controller.router)
 app.include_router(auth_router)
+app.include_router(twitter_oauth2_router)
 
 
 if __name__ == "__main__":
