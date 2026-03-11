@@ -1,7 +1,9 @@
-# utils/test_twitter_oauth2_flow.py
+# utils/generate_twitter_oauth2_user_tokens.py
 
-# ---- HOW TO USE THIS SCRIPT ----- 
+# ---- HOW TO USE THIS SCRIPT -----
+# Script used to generate the X_OAUTH2_ACCESS_TOKEN, X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT, X_OAUTH2_REFRESH_TOKEN and X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT from the email and pass of the user
 # Just run the script, input the required data, and the Twitter OAuth2 tokens will end up written in DB for that user. 
+# how to run the script: python -m utils.generate_twitter_oauth2_user_tokens
 
 
 import requests

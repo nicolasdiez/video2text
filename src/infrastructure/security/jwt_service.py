@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from jose import jwt, JWTError
-import src.config as config
+import config as config
 
 
 class JWTService:

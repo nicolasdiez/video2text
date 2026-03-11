@@ -10,7 +10,7 @@ source video2text-venv/Scripts/activate
 deactivate
 
 # freeze project dependencies into file
-python -m pip freeze > requirements.txt
+python -m pip freeze > requirements-lightweight.txt
 
 # install project dependencies from file
 source video2text-venv/Scripts/activate

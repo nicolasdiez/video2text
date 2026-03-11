@@ -94,7 +94,7 @@ class TwitterOAuth2Service:
         Validates the OAuth2 state and persists tokens in the user's credentials.
         """
 
-        # Validate stored state
+        # Validate stored 'state' (to make sure the callback belongs to the same user who initiated the flow)
         user = await self.user_repo.find_by_id(user_id)
         if not user or not user.twitter_credentials:
             raise RuntimeError("User has no Twitter credentials to validate state.")

@@ -40,6 +40,10 @@ import uvicorn      # ASGI ligero y de alto rendimiento (Asynchronous Server Gat
 # Fast API framework
 from fastapi import FastAPI
 
+# Routes
+from api.routes.auth_routes import router as auth_router
+from api.routes.twitter_oauth2_routes import router as twitter_oauth2_router
+
 # Mongo DB
 from infrastructure.mongodb import db
 
@@ -615,6 +619,7 @@ app = FastAPI(
 
 # Register routes
 app.include_router(pipeline_controller.router)
+app.include_router(auth_router)
 
 
 if __name__ == "__main__":
