@@ -596,7 +596,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(ingestion_job, "interval", minutes=ingestion_pipeline_frequency_minutes, id="ingestion_job")
     scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
     scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
-    scheduler.add_job(stats_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
+    scheduler.add_job(embeddings_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
 
     # start scheduler.
     scheduler.start()
@@ -611,7 +611,7 @@ async def lifespan(app: FastAPI):
 
 # Start FastAPI application
 app = FastAPI(
-    title       = "Ingestion and Publishing Pipelines",
+    title       = "Pipelines: | Ingestion | Publishing | Stats | Embeddings |",
     version     = "1.0.0",
     description = "",
     lifespan    = lifespan   # start the scheduler
