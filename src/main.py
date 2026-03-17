@@ -77,6 +77,8 @@ from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import M
 # Publishing pipeline
 from application.services.publishing_pipeline_service import PublishingPipelineService
 from adapters.outbound.twitter_publication_client_oauth1 import TwitterPublicationClientOAuth1
+from adapters.outbound.twitter_publication_client_oauth2 import TwitterPublicationClientOAuth2
+from infrastructure.auth.twitter_oauth2_service import TwitterOAuth2Service
 
 # Stats pipeline
 from application.services.stats_pipeline_service import StatsPipelineService
@@ -132,6 +134,9 @@ user_scheduler_runtime_repo                 = MongoUserSchedulerRuntimeStatusRep
 master_prompt_repo                          = MongoMasterPromptRepository(database=db) 
 channel_service                             = ChannelService(channel_repo, user_prompt_repo, master_prompt_repo, prompt_resolver_service)
 prompt_composer_service                     = PromptComposerService()
+twitter_publication_client_oauth1           = TwitterPublicationClientOAuth1(oauth1_api_key=config.X_OAUTH1_API_KEY, oauth1_api_secret=config.X_OAUTH1_API_SECRET)
+oauth2_service                              = TwitterOAuth2Service(user_repo=user_repo)
+twitter_publication_client_oauth2           = TwitterPublicationClientOAuth2(user_repo=user_repo, oauth2_service=oauth2_service)
 
 # Create an instance of IngestionPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of IngestionPipelineService)
 ingestion_pipeline_service_instance = IngestionPipelineService(
@@ -155,18 +160,11 @@ ingestion_pipeline_service_instance = IngestionPipelineService(
 # Inject the instance of IngestionPipelineService (with all the Adapters) into the pipeline controller 
 pipeline_controller.ingestion_pipeline_service = ingestion_pipeline_service_instance
 
-
-# --- Publishing adapters & service instantiation ---
-twitter_publication_client  = TwitterPublicationClientOAuth1(
-    oauth1_api_key          = config.X_OAUTH1_API_KEY,
-    oauth1_api_secret       = config.X_OAUTH1_API_SECRET
-)
-
 # Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
 publishing_pipeline_service_instance = PublishingPipelineService(
     user_repo                       = user_repo,
     tweet_repo                      = tweet_repo,
-    twitter_publication_client      = twitter_publication_client,
+    twitter_publication_client      = twitter_publication_client_oauth2,
     user_scheduler_runtime_repo     = user_scheduler_runtime_repo,
 )
 
@@ -227,8 +225,8 @@ async def lifespan(app: FastAPI):
         oauth2_refresh_token_expires_at=config.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT,
         screen_name=config.X_SCREEN_NAME
     )
-    await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
-    logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
+    # await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
+    # logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
     # ===== END TEMPORARY BLOCK =====
 
 
@@ -540,7 +538,7 @@ async def lifespan(app: FastAPI):
                 first_run = elapsed_minutes is None
 
                 should_run = first_run or enough_time_passed or stuck_protection
-
+    
                 elapsed_minutes_str = f"{elapsed_minutes:.2f}" if elapsed_minutes is not None else "N/A"
                 decision = "Yes" if should_run else "No"
 

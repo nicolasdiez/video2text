@@ -1,5 +1,7 @@
 {
     "python.analysis.extraPaths": [
         "./src"
-    ]
+    ],
+    "python.debugger.justMyCode": false,
+    "python.debugger.useExperimentalDebugger": false
 }

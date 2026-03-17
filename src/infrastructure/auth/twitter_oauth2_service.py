@@ -1,4 +1,4 @@
-# src/infra/auth/twitter_oauth2_service.py
+# src/infrastructure/auth/twitter_oauth2_service.py
 
 import aiohttp
 import uuid
@@ -35,7 +35,7 @@ class TwitterOAuth2Service:
         "users.read",
         "offline.access",
     ]
-
+ 
     def __init__(self, user_repo: UserRepositoryPort):
         self.user_repo = user_repo
 

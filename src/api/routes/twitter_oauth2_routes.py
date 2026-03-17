@@ -46,4 +46,4 @@ async def callback(
             detail=f"OAuth2 callback failed: {str(e)}",
         )
 
-    return {"detail": "Twitter account successfully connected"}
+    return {"detail": "Twitter account (OAuth2) successfully connected"}

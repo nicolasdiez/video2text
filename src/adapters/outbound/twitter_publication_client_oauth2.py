@@ -14,63 +14,67 @@ logger = logging.getLogger(__name__)
 
 class TwitterPublicationClientOAuth2(TwitterPublicationPort):
     """
-    Implementación moderna del puerto TwitterPublicationPort usando OAuth2 User Context.
-    Publica tweets en nombre de un usuario usando su access_token almacenado en DB.
+    OAuth2 User Context implementation of TwitterPublicationPort.
+    Publishes tweets using the user's OAuth2 access token.
+    
+    OAuth2 →    The User authorizes the App, and the App interacts with Twitter using the User's access token.
+                The App still performs the publish operation, but only with user-level credentials.    
     """
 
     TWEET_URL = "https://api.twitter.com/2/tweets"
 
-    def __init__(
-        self,
-        user_repo: UserRepositoryPort,
-        oauth2_service: TwitterOAuth2Service,
-    ):
+    def __init__(self, user_repo: UserRepositoryPort, oauth2_service: TwitterOAuth2Service):
         self.user_repo = user_repo
         self.oauth2_service = oauth2_service
 
         logger.info(
-            "TwitterPublicationClient initialized (OAuth2 User Context)",
+            "TwitterPublicationClientOAuth2 initialized (User Context)",
             extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
         )
 
     # ---------------------------------------------------------
-    # PUBLICACIÓN DE TWEETS (OAuth2)
+    # OPTIONAL: App credentials validation (not required)
     # ---------------------------------------------------------
-    async def publish(self, user_id: str, text: str) -> str:
+    async def validate_app_credentials(self) -> None:
         """
-        Publica un tweet en nombre de un usuario usando OAuth2 User Context.
-        - Recupera tokens del usuario
-        - Refresca tokens si han expirado
-        - Publica el tweet con Bearer Token
+        Optional method. OAuth2 User Context does not require app-level
+        credentials to publish tweets, so this method is only provided for symmetry with OAuth1.
         """
+        logger.info(
+            "validate_app_credentials() called, but OAuth2 User Context does not require app validation.",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
+        )
 
-        user = await self.user_repo.find_by_id(user_id)
-        if not user or not user.twitter_credentials:
-            raise RuntimeError("User has no Twitter credentials configured.")
+    # ---------------------------------------------------------
+    # PUBLISH
+    # ---------------------------------------------------------
+    async def publish(self, user, text: str) -> str:
+        """
+        Publishes a tweet using the user's OAuth2 access token.
+        Automatically refreshes tokens if expired.
+        """
 
         creds = user.twitter_credentials
+        if not creds or not creds.oauth2_access_token:
+            raise RuntimeError("User has no OAuth2 credentials configured.")
 
-        # 1) Refrescar tokens si han expirado
-        if not creds.oauth2_access_token or not creds.oauth2_access_token_expires_at:
-            raise RuntimeError("User has no OAuth2 access token stored.")
-
+        # Refresh user access token if expired
         if creds.oauth2_access_token_expires_at <= datetime.utcnow():
             logger.info(
-                f"Access token expired for user {user_id}, refreshing...",
-                extra={"user_id": user_id, "module": __name__, "method": "publish"},
+                f"Access token expired for user {user.id}, refreshing...",
+                extra={"user_id": user.id, "module_name": __name__, "method": "publish"},
             )
-            access_token = await self.oauth2_service.refresh_tokens(user_id)
+            access_token = await self.oauth2_service.refresh_tokens(user.id)
         else:
             access_token = creds.oauth2_access_token
 
-        # 2) Publicar el tweet
         payload = {"text": text}
-
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
 
+        # there is no need to wrap with asyncio.to_thread() because aiohttp is natively async
         async with aiohttp.ClientSession() as session:
             async with session.post(self.TWEET_URL, json=payload, headers=headers) as resp:
                 body = await resp.text()
@@ -78,7 +82,7 @@ class TwitterPublicationClientOAuth2(TwitterPublicationPort):
                 if resp.status != 201:
                     logger.error(
                         f"Failed to publish tweet: {resp.status} - {body}",
-                        extra={"user_id": user_id, "module": __name__, "method": "publish"},
+                        extra={"user_id": user.id, "module_name": __name__, "method": "publish"},
                     )
                     raise RuntimeError(f"Twitter publish failed: {resp.status}")
 
@@ -87,8 +91,7 @@ class TwitterPublicationClientOAuth2(TwitterPublicationPort):
         tweet_id = data["data"]["id"]
 
         logger.info(
-            f"Tweet published OK (tweet_id={tweet_id})",
-            extra={"user_id": user_id, "class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
-        )
+            f"Tweet published OK (tweet_id={tweet_id}) (text: {text})",
+            extra={"user_id": user.id, "class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         return tweet_id
