@@ -128,6 +128,7 @@ class MongoUserRepository(UserRepositoryPort):
                     "oauth2RefreshToken": encrypt_value(creds.oauth2_refresh_token) if creds.oauth2_refresh_token else None,
                     "oauth2RefreshTokenExpiresAt": creds.oauth2_refresh_token_expires_at,
                     "oauth2State": creds.oauth2_state,
+                    "oauth2CodeVerifier": creds.oauth2_code_verifier,
                     "screenName": creds.screen_name,
                 },
                 "updatedAt": datetime.utcnow()
@@ -155,6 +156,7 @@ class MongoUserRepository(UserRepositoryPort):
                 oauth2_refresh_token=decrypt_value(creds.get("oauth2RefreshToken")) if creds.get("oauth2RefreshToken") else None,
                 oauth2_refresh_token_expires_at=creds.get("oauth2RefreshTokenExpiresAt"),
                 oauth2_state=creds.get("oauth2State"),
+                oauth2_code_verifier=creds.get("oauth2CodeVerifier"),
                 screen_name=creds.get("screenName"),
             )
 
@@ -205,6 +207,7 @@ class MongoUserRepository(UserRepositoryPort):
                 "oauth2RefreshToken": encrypt_value(user.twitter_credentials.oauth2_refresh_token) if user.twitter_credentials and user.twitter_credentials.oauth2_refresh_token else None,
                 "oauth2RefreshTokenExpiresAt": user.twitter_credentials.oauth2_refresh_token_expires_at if user.twitter_credentials else None,
                 "oauth2State": user.twitter_credentials.oauth2_state if user.twitter_credentials else None,
+                "oauth2CodeVerifier": user.twitter_credentials.oauth2_code_verifier if user.twitter_credentials else None,
                 "screenName": user.twitter_credentials.screen_name if user.twitter_credentials else None,
             } if user.twitter_credentials else None,
             "schedulerConfig": {
