@@ -39,7 +39,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
         embeddings_client: EmbeddingVectorPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
         embedding_model: str,
-        tweet_max_days_back_calculate_embeddings: Optional[int] = None,
+        tweet_max_days_back_calculate_embeddings: Optional[int] = 60,
     ):
         self.user_repo = user_repo
         self.tweet_repo = tweet_repo

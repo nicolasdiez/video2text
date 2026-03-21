@@ -13,7 +13,7 @@ class EmbeddingVector:
     Value object representing a stored embedding vector in the vector database.
     """
     id: Optional[str]           # MongoDB document ID
-    tweet_id: str               # Tweet this embedding belongs to (is the mongo/entity _id, NOT the ID of the tweet in X)
+    tweet_id: str               # The tweet this embedding belongs to (is the mongo/entity _id, NOT the ID of the tweet in X)
     
     type: EmbeddingType         # "tweet_text" | "video_transcript"
     vector: List[float]         # The embedding vector itself

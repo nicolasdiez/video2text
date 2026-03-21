@@ -29,6 +29,7 @@ class TwitterStatsClientApifyApidojoTweetScraper(TwitterStatsPort):
 
         logger.info("Initialized", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
+
     async def fetch_tweet_stats(self, tweet_id: str) -> Optional[TwitterStats]:
         logger.info("Fetching tweet stats...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
