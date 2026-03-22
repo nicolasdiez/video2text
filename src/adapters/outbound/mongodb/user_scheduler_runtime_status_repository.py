@@ -45,12 +45,12 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
             id=doc.get("_id"),
             user_id=doc.get("userId"),
 
-            # INGESTION
-            is_ingestion_pipeline_running=bool(doc.get("isIngestionPipelineRunning", False)),
-            last_ingestion_pipeline_started_at=doc.get("lastIngestionPipelineStartedAt"),
-            last_ingestion_pipeline_finished_at=doc.get("lastIngestionPipelineFinishedAt"),
-            next_scheduled_ingestion_pipeline_starting_at=doc.get("nextScheduledIngestionPipelineStartingAt"),
-            consecutive_failures_ingestion_pipeline=int(doc.get("consecutiveFailuresIngestionPipeline", 0)),
+            # GENERATION
+            is_generation_pipeline_running=bool(doc.get("isGenerationPipelineRunning", False)),
+            last_generation_pipeline_started_at=doc.get("lastGenerationPipelineStartedAt"),
+            last_generation_pipeline_finished_at=doc.get("lastGenerationPipelineFinishedAt"),
+            next_scheduled_generation_pipeline_starting_at=doc.get("nextScheduledGenerationPipelineStartingAt"),
+            consecutive_failures_generation_pipeline=int(doc.get("consecutiveFailuresGenerationPipeline", 0)),
 
             # PUBLISHING
             is_publishing_pipeline_running=bool(doc.get("isPublishingPipelineRunning", False)),
@@ -74,12 +74,12 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
         doc: Dict[str, Any] = {
             "userId": ent.user_id,
 
-            # INGESTION
-            "isIngestionPipelineRunning": ent.is_ingestion_pipeline_running,
-            "lastIngestionPipelineStartedAt": ent.last_ingestion_pipeline_started_at,
-            "lastIngestionPipelineFinishedAt": ent.last_ingestion_pipeline_finished_at,
-            "nextScheduledIngestionPipelineStartingAt": ent.next_scheduled_ingestion_pipeline_starting_at,
-            "consecutiveFailuresIngestionPipeline": ent.consecutive_failures_ingestion_pipeline,
+            # GENERATION
+            "isGenerationPipelineRunning": ent.is_generation_pipeline_running,
+            "lastGenerationPipelineStartedAt": ent.last_generation_pipeline_started_at,
+            "lastGenerationPipelineFinishedAt": ent.last_generation_pipeline_finished_at,
+            "nextScheduledGenerationPipelineStartingAt": ent.next_scheduled_generation_pipeline_starting_at,
+            "consecutiveFailuresGenerationPipeline": ent.consecutive_failures_generation_pipeline,
 
             # PUBLISHING
             "isPublishingPipelineRunning": ent.is_publishing_pipeline_running,
@@ -169,57 +169,57 @@ class MongoUserSchedulerRuntimeStatusRepository(UserSchedulerRuntimeStatusReposi
         return [self._doc_to_entity(d) for d in docs]
 
     # -----------------------
-    # Convenience atomic operations — INGESTION
+    # Convenience atomic operations — GENERATION
     # -----------------------
-    async def mark_ingestion_started(self, user_id: UserId, started_at: Any) -> None:
+    async def mark_generation_started(self, user_id: UserId, started_at: Any) -> None:
         oid = _to_object_id(user_id)
         await self._coll.update_one(
             {"userId": oid},
             {
                 "$set": {
-                    "isIngestionPipelineRunning": True,
-                    "lastIngestionPipelineStartedAt": started_at,
+                    "isGenerationPipelineRunning": True,
+                    "lastGenerationPipelineStartedAt": started_at,
                     "updatedAt": datetime.utcnow()
                 }
             },
             upsert=True
         )
 
-    async def mark_ingestion_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
+    async def mark_generation_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
         oid = _to_object_id(user_id)
         if success:
             update = {
                 "$set": {
-                    "isIngestionPipelineRunning": False,
-                    "lastIngestionPipelineFinishedAt": finished_at,
-                    "consecutiveFailuresIngestionPipeline": 0,
+                    "isGenerationPipelineRunning": False,
+                    "lastGenerationPipelineFinishedAt": finished_at,
+                    "consecutiveFailuresGenerationPipeline": 0,
                     "updatedAt": datetime.utcnow()
                 }
             }
         else:
             update = {
                 "$set": {
-                    "isIngestionPipelineRunning": False,
-                    "lastIngestionPipelineFinishedAt": finished_at,
+                    "isGenerationPipelineRunning": False,
+                    "lastGenerationPipelineFinishedAt": finished_at,
                     "updatedAt": datetime.utcnow()
                 },
-                "$inc": {"consecutiveFailuresIngestionPipeline": 1}
+                "$inc": {"consecutiveFailuresGenerationPipeline": 1}
             }
         await self._coll.update_one({"userId": oid}, update, upsert=True)
 
-    async def increment_ingestion_failures(self, user_id: UserId, by: int = 1) -> None:
+    async def increment_generation_failures(self, user_id: UserId, by: int = 1) -> None:
         oid = _to_object_id(user_id)
         await self._coll.update_one(
             {"userId": oid},
-            {"$inc": {"consecutiveFailuresIngestionPipeline": int(by)}, "$set": {"updatedAt": datetime.utcnow()}},
+            {"$inc": {"consecutiveFailuresGenerationPipeline": int(by)}, "$set": {"updatedAt": datetime.utcnow()}},
             upsert=True
         )
 
-    async def reset_ingestion_failures(self, user_id: UserId) -> None:
+    async def reset_generation_failures(self, user_id: UserId) -> None:
         oid = _to_object_id(user_id)
         await self._coll.update_one(
             {"userId": oid},
-            {"$set": {"consecutiveFailuresIngestionPipeline": 0, "updatedAt": datetime.utcnow()}},
+            {"$set": {"consecutiveFailuresGenerationPipeline": 0, "updatedAt": datetime.utcnow()}},
             upsert=False
         )
 

@@ -78,35 +78,35 @@ class UserSchedulerRuntimeStatusRepositoryPort(ABC):
         raise NotImplementedError
 
     # ---------------------------------------------------------
-    # INGESTION PIPELINE
+    # GENERATION PIPELINE
     # ---------------------------------------------------------
 
     @abstractmethod
-    async def mark_ingestion_started(self, user_id: UserId, started_at: Any) -> None:
+    async def mark_generation_started(self, user_id: UserId, started_at: Any) -> None:
         """
-        Atomically mark ingestion pipeline as running and set last started timestamp.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def mark_ingestion_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
-        """
-        Atomically mark ingestion pipeline as finished.
-        Reset or increment consecutiveFailuresIngestionPipeline accordingly.
+        Atomically mark generation pipeline as running and set last started timestamp.
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def increment_ingestion_failures(self, user_id: UserId, by: int = 1) -> None:
+    async def mark_generation_finished(self, user_id: UserId, finished_at: Any, success: bool) -> None:
         """
-        Atomically increment the consecutiveFailuresIngestionPipeline counter.
+        Atomically mark generation pipeline as finished.
+        Reset or increment consecutiveFailuresGenerationPipeline accordingly.
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def reset_ingestion_failures(self, user_id: UserId) -> None:
+    async def increment_generation_failures(self, user_id: UserId, by: int = 1) -> None:
         """
-        Reset consecutiveFailuresIngestionPipeline to 0.
+        Atomically increment the consecutiveFailuresGenerationPipeline counter.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def reset_generation_failures(self, user_id: UserId) -> None:
+        """
+        Reset consecutiveFailuresGenerationPipeline to 0.
         """
         raise NotImplementedError
 

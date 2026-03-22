@@ -5,7 +5,7 @@
 # Coordina repositorios, pipelines, consume servicios externos, actualiza estado, orquesta pasos.
 # Aplica reglas de aplicación (no de dominio).
 # Tiene efectos secundarios (persistencia, llamadas a APIs).
-# Ej: IngestionPipelineService (llama a repositorios, llama al LLM, guarda tweets...)
+# Ej: GenerationPipelineService (llama a repositorios, llama al LLM, guarda tweets...)
 # Regla rápida: si el código necesita un repo/client → application; si es cálculo/decisión puro sobre entidades → domain.
 
 # === Domain Service === 

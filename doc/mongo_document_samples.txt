@@ -48,7 +48,7 @@
 	"oauth2_refresh_token_expires_at": "",
     "screenName": "nicolai"
   },
-  "ingestionPollingInterval": 1,
+  "generationPollingInterval": 1,
   "publishingPollingInterval": 2,
   "maxTweetsToFetchFromDB": 3,
   "maxTweetsToPublish": 2,
@@ -74,7 +74,7 @@
 {
 	"_id": "global",
 	"schedulerConfig": {
-		"ingestionPipelineFrequencyMinutes": 1,
+		"generationPipelineFrequencyMinutes": 1,
 		"publishingPipelineFrequencyMinutes": 2
 	}
 }

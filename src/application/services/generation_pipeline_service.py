@@ -1,4 +1,4 @@
-# src/application/services/ingestion_pipeline_service.py
+# src/application/services/generation_pipeline_service.py
 
 import asyncio
 from datetime import datetime
@@ -8,7 +8,7 @@ from typing import List, Optional
 import inspect
 import logging
 
-from domain.ports.inbound.ingestion_pipeline_port import IngestionPipelinePort
+from domain.ports.inbound.generation_pipeline_port import GenerationPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.prompt_loader_port import PromptLoaderPort
 from domain.ports.outbound.mongodb.channel_repository_port import ChannelRepositoryPort
@@ -34,9 +34,9 @@ from application.services.channel_service import ChannelService
 # Specific logger for this module
 logger = logging.getLogger(__name__)
 
-class IngestionPipelineService(IngestionPipelinePort):
+class GenerationPipelineService(GenerationPipelinePort):
     """
-    Orchestrates the ingestion pipeline:
+    Orchestrates the generation pipeline:
       - Retrieve channels for a user
       - For each channel:
          a) Find new videos
@@ -83,10 +83,10 @@ class IngestionPipelineService(IngestionPipelinePort):
         try:
             # 0. Starting pipeline
             try:
-                await self.user_scheduler_runtime_repo.mark_ingestion_started(user_id, datetime.utcnow())
+                await self.user_scheduler_runtime_repo.mark_generation_started(user_id, datetime.utcnow())
                 logger.info("Starting...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             except Exception:
-                logger.exception("Failed to mark ingestion pipeline started", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.exception("Failed to mark generation pipeline started", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 raise
 
             # 1. Validate that user actually exists on the repo
@@ -297,18 +297,18 @@ class IngestionPipelineService(IngestionPipelinePort):
                 logger.info("Channel %s/%s - Process finished", index, len(channels), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 18-a. Finishing pipeline OK
-            await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=True)
-            await self.user_scheduler_runtime_repo.reset_ingestion_failures(user_id)
+            await self.user_scheduler_runtime_repo.mark_generation_finished(user_id, datetime.utcnow(), success=True)
+            await self.user_scheduler_runtime_repo.reset_generation_failures(user_id)
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
         # 18-b. Finishing pipeline KO
         except Exception:
             # increment failure counter and mark as finished with failure
             try:
-                await self.user_scheduler_runtime_repo.increment_ingestion_failures(user_id, by=1)
-                await self.user_scheduler_runtime_repo.mark_ingestion_finished(user_id, datetime.utcnow(), success=False)
+                await self.user_scheduler_runtime_repo.increment_generation_failures(user_id, by=1)
+                await self.user_scheduler_runtime_repo.mark_generation_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
-                logger.exception("Failed updating user runtime status after ingestion pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-            logger.exception("Ingestion pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                logger.exception("Failed updating user runtime status after generation pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.exception("Generation pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise
 

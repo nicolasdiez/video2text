@@ -217,11 +217,11 @@ async def seed():
             "screenName": "nicolai"
         },
         "schedulerConfig": {
-            "ingestionPipelineFrequencyMinutes": 1440,
+            "generationPipelineFrequencyMinutes": 1440,
             "publishingPipelineFrequencyMinutes": 1440,
             "statsPipelineFrequencyMinutes": 1440,
             "embeddingsPipelineFrequencyMinutes": 1440,
-            "isIngestionPipelineEnabled": True,
+            "isGenerationPipelineEnabled": True,
             "isPublishingPipelineEnabled": True,
             "isStatsPipelineEnabled": True,
             "isEmbeddingsPipelineEnabled": True
@@ -256,11 +256,11 @@ async def seed():
             # build SchedulerConfig from the user_doc (use defaults if keys missing)
             sc_doc = user_doc.get("schedulerConfig", {})
             scheduler_config = SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1240)),
+                generation_pipeline_frequency_minutes=int(sc_doc.get("generationPipelineFrequencyMinutes", 1240)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
                 stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 1140)),
                 embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 1000)),
-                is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
+                is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
                 is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
                 is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
@@ -568,11 +568,11 @@ async def seed():
     # 4) APP CONFIG
     # -----------------------
     scheduler_config = SchedulerConfig(
-        ingestion_pipeline_frequency_minutes=20,
+        generation_pipeline_frequency_minutes=20,
         publishing_pipeline_frequency_minutes=20,
         stats_pipeline_frequency_minutes=20,
         embeddings_pipeline_frequency_minutes=20,
-        is_ingestion_pipeline_enabled=True,
+        is_generation_pipeline_enabled=True,
         is_publishing_pipeline_enabled=True,
         is_stats_pipeline_enabled=True,
         is_embeddings_pipeline_enabled=True,
@@ -589,11 +589,11 @@ async def seed():
             {
                 "_id": "global",
                 "schedulerConfig": {
-                    "ingestionPipelineFrequencyMinutes": scheduler_config.ingestion_pipeline_frequency_minutes,
+                    "generationPipelineFrequencyMinutes": scheduler_config.generation_pipeline_frequency_minutes,
                     "publishingPipelineFrequencyMinutes": scheduler_config.publishing_pipeline_frequency_minutes,
                     "statsPipelineFrequencyMinutes": scheduler_config.stats_pipeline_frequency_minutes,
                     "embeddingsPipelineFrequencyMinutes": scheduler_config.embeddings_pipeline_frequency_minutes,
-                    "isIngestionPipelineEnabled": scheduler_config.is_ingestion_pipeline_enabled,
+                    "isGenerationPipelineEnabled": scheduler_config.is_generation_pipeline_enabled,
                     "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
                     "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
                     "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddings_pipeline_enabled,
@@ -623,13 +623,13 @@ async def seed():
         status_doc = {
             "userId": MASTER_USER_ID,
 
-            "isIngestionPipelineRunning": False,
+            "isGenerationPipelineRunning": False,
             "isPublishingPipelineRunning": False,
             "isStatsPipelineRunning": False,
             "isEmbeddingsPipelineRunning": False,
 
-            "lastIngestionPipelineStartedAt": None,
-            "lastIngestionPipelineFinishedAt": None,
+            "lastGenerationPipelineStartedAt": None,
+            "lastGenerationPipelineFinishedAt": None,
 
             "lastPublishingPipelineStartedAt": None,
             "lastPublishingPipelineFinishedAt": None,
@@ -640,12 +640,12 @@ async def seed():
             "lastEmbeddingsPipelineStartedAt": None,
             "lastEmbeddingsPipelineFinishedAt": None,
 
-            "nextScheduledIngestionPipelineStartingAt": None,
+            "nextScheduledGenerationPipelineStartingAt": None,
             "nextScheduledPublishingPipelineStartingAt": None,
             "nextScheduledStatsPipelineStartingAt": None,
             "nextScheduledEmbeddingsPipelineStartingAt": None,
 
-            "consecutiveFailuresIngestionPipeline": 0,
+            "consecutiveFailuresGenerationPipeline": 0,
             "consecutiveFailuresPublishingPipeline": 0,
             "consecutiveFailuresStatsPipeline": 0,
             "consecutiveFailuresEmbeddingsPipeline": 0,

@@ -1,6 +1,6 @@
 # src/application/services/channel_service.py
 
-# TODO: llamar desde aqui a PromptResolverService para q devuelva el FinalPrompt a usar en el ingestion pipeline
+# TODO: llamar desde aqui a PromptResolverService para q devuelva el FinalPrompt a usar en el generation pipeline
 
 # Dependency Injection Reminder:
 # - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitar que A importe y construya B por su cuenta (previene acoplamiento y ciclos).

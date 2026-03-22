@@ -164,12 +164,14 @@ class MongoUserRepository(UserRepositoryPort):
         scheduler_config = None
         if sc_doc:
             scheduler_config = SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1)),
+                generation_pipeline_frequency_minutes=int(sc_doc.get("generationPipelineFrequencyMinutes", 1)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 10)),
                 stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 10)),
-                is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
+                embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 10)),
+                is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
                 is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
+                is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
             )
 
         return User(
@@ -211,12 +213,14 @@ class MongoUserRepository(UserRepositoryPort):
                 "screenName": user.twitter_credentials.screen_name if user.twitter_credentials else None,
             } if user.twitter_credentials else None,
             "schedulerConfig": {
-                "ingestionPipelineFrequencyMinutes": user.scheduler_config.ingestion_pipeline_frequency_minutes,
+                "generationPipelineFrequencyMinutes": user.scheduler_config.generation_pipeline_frequency_minutes,
                 "publishingPipelineFrequencyMinutes": user.scheduler_config.publishing_pipeline_frequency_minutes,
                 "statsPipelineFrequencyMinutes": user.scheduler_config.stats_pipeline_frequency_minutes,
-                "isIngestionPipelineEnabled": user.scheduler_config.is_ingestion_pipeline_enabled,
+                "embeddingsPipelineFrequencyMinutes": user.scheduler_config.embeddings_pipeline_frequency_minutes,
+                "isGenerationPipelineEnabled": user.scheduler_config.is_generation_pipeline_enabled,
                 "isPublishingPipelineEnabled": user.scheduler_config.is_publishing_pipeline_enabled,
                 "isStatsPipelineEnabled": user.scheduler_config.is_stats_pipeline_enabled,
+                "isEmbeddingsPipelineEnabled": user.scheduler_config.is_embeddings_pipeline_enabled,
             } if user.scheduler_config else None,
             "maxTweetsToFetchFromDB": user.max_tweets_to_fetch_from_db,
             "maxTweetsToPublish": user.max_tweets_to_publish,

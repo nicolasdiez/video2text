@@ -48,13 +48,13 @@ class YouTubeTranscriptionClientOfficialCaptionsAPI(TranscriptionPort):
             return None
 
         if not transcript_list:
-            # VERY IMPORTANT: return None so fallbacks trigger in the consumer (i.e. ingestion pipeline)
+            # VERY IMPORTANT: return None so fallbacks trigger in the consumer (i.e. generation pipeline)
             return None
 
         full_text = " ".join(segment["text"] for segment in transcript_list).strip()
 
         if not full_text:
-            # Also important: empty string should not block fallbacks in the consumer (i.e. ingestion pipeline)
+            # Also important: empty string should not block fallbacks in the consumer (i.e. generation pipeline)
             return None
 
         logger.info("Video transcription created successfully (youtube_video_id: %s)", video_id,
