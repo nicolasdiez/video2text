@@ -70,6 +70,7 @@ from adapters.outbound.transcription_client_android_player_api_ASR import YouTub
 from adapters.outbound.mongodb.user_prompt_repository import MongoUserPromptRepository
 from domain.services.prompt_resolver_service import PromptResolverService
 from adapters.outbound.llm_openai_client import LLMOpenAIClient
+from adapters.outbound.llm_gemini_client import LLMGeminiClient
 from adapters.outbound.mongodb.tweet_generation_repository import MongoTweetGenerationRepository
 from adapters.outbound.mongodb.tweet_repository import MongoTweetRepository
 from adapters.outbound.mongodb.user_scheduler_runtime_status_repository import MongoUserSchedulerRuntimeStatusRepository
@@ -126,7 +127,8 @@ transcription_client_public_player_api_asr  = YouTubeTranscriptionClientOfficial
 transcription_client_android_player_api_asr = YouTubeTranscriptionClientAndroidPlayerAPI_ASR(model_name="small", device="cpu")
 user_prompt_repo                            = MongoUserPromptRepository(database=db)
 prompt_resolver_service                     = PromptResolverService()
-openai_client                               = LLMOpenAIClient(api_key=config.OPENAI_API_KEY)
+llm_openai_client                           = LLMOpenAIClient(api_key=config.OPENAI_API_KEY)
+llm_gemini_client                           = LLMGeminiClient(api_key=config.GEMINI_API_KEY)
 tweet_output_guardrail_service              = TweetOutputGuardrailService()
 tweet_generation_repo                       = MongoTweetGenerationRepository(db=db)
 tweet_repo                                  = MongoTweetRepository(database=db)
@@ -148,7 +150,7 @@ generation_pipeline_service_instance = GenerationPipelineService(
     transcription_client            = transcription_client_captions_api,
     transcription_client_fallback   = transcription_client_public_player_api_asr,
     transcription_client_fallback_2 = transcription_client_data_api,
-    openai_client                   = openai_client,
+    tweet_generation_client         = llm_gemini_client,
     tweet_output_guardrail_service  = tweet_output_guardrail_service,
     tweet_generation_repo           = tweet_generation_repo,
     tweet_repo                      = tweet_repo,
