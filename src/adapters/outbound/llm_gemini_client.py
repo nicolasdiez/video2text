@@ -19,23 +19,20 @@
 # - "Thinking" mode (gemini-2.0-flash-thinking-exp) is experimental but excellent for creativity, nuance, and engagement.
 
 
-import os
-import re
 import json
 import asyncio
 import inspect
 import logging
 
+import google.genai as genai
 from domain.ports.outbound.llm_port import LLMPort
-
-import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
 
 class LLMGeminiClient(LLMPort):
     """
-    Implementation of LLMPort using Google Gemini API.
+    Implementation of LLMPort using the new Google Gemini API (google.genai).
     """
 
     def __init__(self, api_key: str | None = None):
@@ -43,17 +40,18 @@ class LLMGeminiClient(LLMPort):
             raise RuntimeError("API key (Gemini) is required")
 
         self.api_key = api_key
-        genai.configure(api_key=api_key)
+        self.client = genai.Client(api_key=api_key)
 
-        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+        logger.info(
+            "Finished OK",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
+        )
 
     async def generate_tweets(
         self,
         prompt_user_message: str,
         prompt_system_message: str,
-        max_tweets: int,
-        output_language: str,
-        model: str,
+        model: str
     ) -> list[str]:
 
         # Validate inputs
@@ -65,65 +63,58 @@ class LLMGeminiClient(LLMPort):
             logger.error("Empty prompt_user_message provided; aborting Gemini call")
             raise ValueError("prompt_user_message must not be empty")
 
-        # Run Gemini call in a separate thread (Gemini SDK is sync)
-        json_response = await asyncio.to_thread(
+        # Run Gemini call in a separate thread (SDK is sync)
+        tweets = await asyncio.to_thread(
             self._call_and_process,
             prompt_user_message,
             prompt_system_message,
-            max_tweets,
-            output_language,
             model,
         )
 
-        logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},)
+        logger.info(
+            "Finished OK",
+            extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name},
+        )
 
-        return json_response
+        return tweets
 
 
     def _call_and_process(
         self,
         prompt_user_message: str,
         prompt_system_message: str,
-        max_tweets: int,
-        output_language: str,
-        model: str,
+        model: str
     ) -> list[str]:
 
-        # Build final prompt (Gemini does not use chat roles like OpenAI)
-        full_prompt = f"""
-SYSTEM INSTRUCTIONS:
-{prompt_system_message}
-
-USER REQUEST:
-{prompt_user_message}
-
-REQUIREMENTS:
-- Generate up to {max_tweets} tweets.
-- Output language: {output_language}.
-- Return ONLY a JSON object with a field "tweets": list of strings.
-"""
+        # Combine system + user into one structured prompt
+        full_prompt = (
+            f"SYSTEM INSTRUCTIONS:\n{prompt_system_message}\n\n"
+            f"USER REQUEST:\n{prompt_user_message}"
+        )
 
         try:
-            gemini_model = genai.GenerativeModel(model)
-            response = gemini_model.generate_content(
-                full_prompt,
-                generation_config={
+            response = self.client.models.generate_content(
+                model=model,
+                contents=full_prompt,
+                config={
                     "temperature": 1.3,
                     "top_p": 0.9,
                     "top_k": 40,
                 },
             )
         except Exception as e:
-            logger.exception("Gemini API call failed", extra={"method": inspect.currentframe().f_code.co_name, "error": str(e)},)
+            logger.exception(
+                "Gemini API call failed",
+                extra={"method": inspect.currentframe().f_code.co_name, "error": str(e)},
+            )
             raise RuntimeError(f"Gemini API call failed: {e}") from e
 
-        # Extract text output
         raw_output = response.text.strip()
 
         # Try direct JSON parsing
         try:
             parsed = json.loads(raw_output)
-            return parsed
+            return parsed.get("tweets", [])
         except Exception:
             pass
 
@@ -134,7 +125,7 @@ REQUIREMENTS:
             candidate = raw_output[start : end + 1]
             try:
                 parsed = json.loads(candidate)
-                return parsed
+                return parsed.get("tweets", [])
             except Exception:
                 logger.error(
                     "JSON parsing failed after extraction attempt. Raw output: %s",

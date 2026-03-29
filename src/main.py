@@ -23,7 +23,6 @@ import os
 import asyncio
 import sys
 
-# import config
 import config
 
 # set twitter credentials for user Nico (TEMPORATY: UNTIL API AND FRONTEND READY) 

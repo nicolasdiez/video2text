@@ -1,4 +1,4 @@
-# src/adapters/outbound/openai_client.py
+# src/adapters/outbound/llm_openai_client.py
 
 # Models available (code name) | Strength / Best for                 | Cost tier (qualitative) | Notes
 # -----------------------------------------------------------------------------------------------

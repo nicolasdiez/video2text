@@ -29,6 +29,7 @@ for candidate in (Path(".env.dev"), Path(".env")):
 # --- API Keys ---
 YOUTUBE_API_KEY             = os.getenv("YOUTUBE_API_KEY")
 OPENAI_API_KEY              = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY              = os.getenv("GEMINI_API_KEY")
 APIFY_API_TOKEN_PERSONAL    = os.getenv("APIFY_API_TOKEN_PERSONAL")
 
 # credentials related to THE APPLICATION itself:
@@ -79,6 +80,7 @@ required_vars = {
     # APIs
     "YOUTUBE_API_KEY": YOUTUBE_API_KEY,
     "OPENAI_API_KEY": OPENAI_API_KEY,
+    "GEMINI_API_KEY": GEMINI_API_KEY,
     "APIFY_API_TOKEN_PERSONAL": APIFY_API_TOKEN_PERSONAL,
     "X_OAUTH1_API_KEY": X_OAUTH1_API_KEY,
     "X_OAUTH1_API_SECRET": X_OAUTH1_API_SECRET,

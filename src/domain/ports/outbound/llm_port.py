@@ -13,8 +13,6 @@ class LLMPort(ABC):
         self,
         prompt_user_message: str,
         prompt_system_message: str,
-        max_tweets: int,
-        output_language: str,
         model: str
     ) -> list[str]:
         """
@@ -22,8 +20,6 @@ class LLMPort(ABC):
 
         :param prompt_user_message: the actual user request or content to process
         :param prompt_system_message: instructions defining behavior, tone, or rules for the model
-        :param max_tweets: maximum number of tweet sentences to generate
-        :param output_language: language in which the tweets should be generated
         :param model: identifier of the LLM model to use
         :return: list of tweet sentences without numbering or bullet points
         """
