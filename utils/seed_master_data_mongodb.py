@@ -42,7 +42,10 @@ CLEAN_USER_SCHEDULER_STATUS_RUNTIME = os.getenv("SEED_CLEAN_USER_SCHEDULER_STATU
 CLEAN_EMBEDDINGS = os.getenv("SEED_CLEAN_EMBEDDINGS", "false").lower() in ("1", "true", "yes")
 
 # Import domain entities for AppConfig usage
-from domain.entities.app_config import AppConfig, SchedulerConfig
+from domain.entities.app_config import AppConfig
+from adapters.outbound.mongodb.user_repository import MongoUserRepository  # type: ignore
+from domain.entities.user import User, UserTwitterCredentials  # type: ignore
+from domain.value_objects.scheduler_config import SchedulerConfig  # type: ignore
 
 # -----------------------
 # HELPER METHODS 
@@ -192,283 +195,306 @@ async def seed():
         sys.exit(0)
 
     # Si el PC llega aquí, continuar con la escritura de seed data:
+    
+    MASTER_USER_ID = ObjectId("000000000000000000000001")  # 24-hex constant
 
     # -----------------------
     # 1) USER
     # -----------------------
-    MASTER_USER_ID = ObjectId("000000000000000000000001")  # 24-hex constant
+    if CLEAN_USERS:
 
-    # --- user_doc uses ObjectId type for _id ---
-    user_doc = {
-        "_id": MASTER_USER_ID,
-        "username": "nico",
-        "email": "nico_seed@me.com",
-        "hashedPassword": "12345",
-        "isActive": True, 
-        # "openaiApiKey": "",
-        "userTwitterCredentials": {
-            "oauth1AccessToken": "",
-            "oauth1AccessTokenSecret": "",
-            "oauth2AccessToken": "",
-            "oauth2AccessTokenExpiresAt": "",
-            "oauth2RefreshToken": "",
-            "oauth2RefreshTokenExpiresAt": "",
-            "oauth2State": "",
-            "screenName": "nicolai"
-        },
-        "schedulerConfig": {
-            "generationPipelineFrequencyMinutes": 1440,
-            "publishingPipelineFrequencyMinutes": 1440,
-            "statsPipelineFrequencyMinutes": 1440,
-            "embeddingsPipelineFrequencyMinutes": 1440,
-            "isGenerationPipelineEnabled": True,
-            "isPublishingPipelineEnabled": True,
-            "isStatsPipelineEnabled": True,
-            "isEmbeddingsPipelineEnabled": True
-        },
-        "maxTweetsToFetchFromDB": 4,
-        "maxTweetsToPublish": 1,
-        "tweetFetchSortOrder": "random",
-        "createdAt": ms_to_dt(1756412100000),
-        "updatedAt": ms_to_dt(1763205251652)
-    }
+        # --- user_doc uses ObjectId type for _id ---
+        user_doc = {
+            "_id": MASTER_USER_ID,
+            "username": "nico",
+            "email": "nico@nico.com",
+            "hashedPassword": "12345",
+            "isActive": True, 
+            # "openaiApiKey": "",
+            "userTwitterCredentials": {
+                "oauth1AccessToken": "",
+                "oauth1AccessTokenSecret": "",
+                "oauth2AccessToken": "",
+                "oauth2AccessTokenExpiresAt": "",
+                "oauth2RefreshToken": "",
+                "oauth2RefreshTokenExpiresAt": "",
+                "oauth2State": "",
+                "oauth2CodeVerifier": "",
+                "screenName": "nicolai"
+            },
+            "schedulerConfig": {
+                "generationPipelineFrequencyMinutes": 1440,
+                "publishingPipelineFrequencyMinutes": 1440,
+                "statsPipelineFrequencyMinutes": 1440,
+                "embeddingsPipelineFrequencyMinutes": 1440,
+                "isGenerationPipelineEnabled": True,
+                "isPublishingPipelineEnabled": True,
+                "isStatsPipelineEnabled": True,
+                "isEmbeddingsPipelineEnabled": True
+            },
+            "maxTweetsToFetchFromDB": 4,
+            "maxTweetsToPublish": 1,
+            "tweetFetchSortOrder": "random",
+            "createdAt": ms_to_dt(1756412100000),
+            "updatedAt": ms_to_dt(1763205251652)
+        }
 
-    # --- Persist user: prefer repo.update (exposed) then verify and enforce via replace_one if missing
-    try:
-        from adapters.outbound.mongodb.user_repository import MongoUserRepository  # type: ignore
-        from domain.entities.user import User, UserTwitterCredentials  # type: ignore
-        from domain.value_objects.scheduler_config import SchedulerConfig  # type: ignore
-
-        user_repo = MongoUserRepository(db)
+        # --- Persist user: prefer repo.update (exposed) then verify and enforce via replace_one if missing
         try:
-            creds = UserTwitterCredentials(
-                oauth1_access_token="",
-                oauth1_access_token_secret="",
-                oauth2_access_token="",
-                oauth2_access_token_expires_at=None,
-                oauth2_refresh_token=None,
-                oauth2_refresh_token_expires_at=None,
-                oauth2_state=None,
-                oauth2_code_verifier=None,
-                screen_name=None
-            )
+            user_repo = MongoUserRepository(db)
+            try:
+                creds = UserTwitterCredentials(
+                    oauth1_access_token="",
+                    oauth1_access_token_secret="",
+                    oauth2_access_token="",
+                    oauth2_access_token_expires_at=None,
+                    oauth2_refresh_token=None,
+                    oauth2_refresh_token_expires_at=None,
+                    oauth2_state=None,
+                    oauth2_code_verifier=None,
+                    screen_name=None
+                )
 
-            # build SchedulerConfig from the user_doc (use defaults if keys missing)
-            sc_doc = user_doc.get("schedulerConfig", {})
-            scheduler_config = SchedulerConfig(
-                generation_pipeline_frequency_minutes=int(sc_doc.get("generationPipelineFrequencyMinutes", 1240)),
-                publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
-                stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 1140)),
-                embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 1000)),
-                is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
-                is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
-                is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
-                is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
-            )
+                # build SchedulerConfig from the user_doc (use defaults if keys missing)
+                sc_doc = user_doc.get("schedulerConfig", {})
+                scheduler_config = SchedulerConfig(
+                    generation_pipeline_frequency_minutes=int(sc_doc.get("generationPipelineFrequencyMinutes", 1240)),
+                    publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 1440)),
+                    stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 1140)),
+                    embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 1000)),
+                    is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
+                    is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
+                    is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
+                    is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
+                )
 
-            user_entity = User(
-                id=str(MASTER_USER_ID),
-                username=user_doc.get("username", ""),
-                email=user_doc.get("email", ""),
-                hashed_password=user_doc.get("hashedPassword", ""),
-                is_active=user_doc.get("isActive", ""),
-                # openai_api_key=user_doc.get("openaiApiKey", None),
-                twitter_credentials=creds,
-                scheduler_config=scheduler_config,
-                max_tweets_to_fetch_from_db=user_doc.get("maxTweetsToFetchFromDB", 10),
-                max_tweets_to_publish=user_doc.get("maxTweetsToPublish", 5),
-                tweet_fetch_sort_order=None,
-                created_at=user_doc.get("createdAt"),
-                updated_at=user_doc.get("updatedAt")
-            )
+                user_entity = User(
+                    id=str(MASTER_USER_ID),
+                    username=user_doc.get("username", ""),
+                    email=user_doc.get("email", ""),
+                    hashed_password=user_doc.get("hashedPassword", ""),
+                    is_active=user_doc.get("isActive", ""),
+                    # openai_api_key=user_doc.get("openaiApiKey", None),
+                    twitter_credentials=creds,
+                    scheduler_config=scheduler_config,
+                    max_tweets_to_fetch_from_db=user_doc.get("maxTweetsToFetchFromDB", 10),
+                    max_tweets_to_publish=user_doc.get("maxTweetsToPublish", 5),
+                    tweet_fetch_sort_order=None,
+                    created_at=user_doc.get("createdAt"),
+                    updated_at=user_doc.get("updatedAt")
+                )
 
-            # Use update (repo exposes it) to respect provided id
-            await user_repo.update(user_entity)  # type: ignore
+                # Use update (repo exposes it) to respect provided id
+                await user_repo.update(user_entity)  # type: ignore
 
-            # Verify document exists; if not, enforce with replace_one(upsert=True)
-            found = await db.get_collection("users").find_one({"_id": MASTER_USER_ID})
-            if not found:
+                # Verify document exists; if not, enforce with replace_one(upsert=True)
+                found = await db.get_collection("users").find_one({"_id": MASTER_USER_ID})
+                if not found:
+                    await db.get_collection("users").replace_one({"_id": MASTER_USER_ID}, user_doc, upsert=True)
+                    logger.info(f"[ok] user not found after update; enforced stable _id via direct DB replace = {MASTER_USER_ID}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+                else:
+                    logger.info(f"[ok] user updated via repo, id={user_entity.id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            except Exception:
+                # If something fails in the repo, force the _id with replace_one
                 await db.get_collection("users").replace_one({"_id": MASTER_USER_ID}, user_doc, upsert=True)
-                logger.info(f"[ok] user not found after update; enforced stable _id via direct DB replace = {MASTER_USER_ID}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-            else:
-                logger.info(f"[ok] user updated via repo, id={user_entity.id}", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+                logger.info("[ok] user upserted with stable _id via direct DB fallback = %s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
         except Exception:
-            # If something fails in the repo, force the _id with replace_one
+            # If adapter import fails, fallback direct (ensures stable _id)
             await db.get_collection("users").replace_one({"_id": MASTER_USER_ID}, user_doc, upsert=True)
-            logger.info("[ok] user upserted with stable _id via direct DB fallback = %s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-    except Exception:
-        # If adapter import fails, fallback direct (ensures stable _id)
-        await db.get_collection("users").replace_one({"_id": MASTER_USER_ID}, user_doc, upsert=True)
-        logger.info("[ok] user upserted with stable _id via direct DB (adapter missing) = %s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            logger.info("[ok] user upserted with stable _id via direct DB (adapter missing) = %s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            
+        logger.info("[ok] created USER seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped USER seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
     # -----------------------
     # 2) CHANNEL
     # -----------------------
-    # channels_input: list of dicts with keys 'youtubeChannelId' and 'title'
     
-    channels_input = [
-            {"youtubeChannelId": "UCvSXMi2LebwJEM1s4bz5IBA", "title": "@NewMoneyYouTube"}, 
-            {"youtubeChannelId": "UC9vUu4vlIlMC0dHQCTvQPbg", "title": "@MoneyGuyShow"},
-            {"youtubeChannelId": "UCAeAB8ABXGoGMbXuYPmiu2A", "title": "@TheSwedishInvestor"},
-            #{"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
-            {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
-            {"youtubeChannelId": "UCFBpVaKCC0ajGps1vf0AgBg", "title": "@humphrey"},
-        ]
+    if CLEAN_CHANNELS:
 
-    saved_channel_ids = []   # list[str] -> will contain the string IDs returned/created in Mongo
+        # channels_input: list of dicts with keys 'youtubeChannelId' and 'title'
+        
+        channels_input = [
+                {"youtubeChannelId": "UCvSXMi2LebwJEM1s4bz5IBA", "title": "@NewMoneyYouTube"}, 
+                {"youtubeChannelId": "UC9vUu4vlIlMC0dHQCTvQPbg", "title": "@MoneyGuyShow"},
+                {"youtubeChannelId": "UCAeAB8ABXGoGMbXuYPmiu2A", "title": "@TheSwedishInvestor"},
+                #{"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
+                {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
+                {"youtubeChannelId": "UCFBpVaKCC0ajGps1vf0AgBg", "title": "@humphrey"},
+            ]
 
-    # Try to import channel repo and entity once
-    try:
-        from adapters.outbound.mongodb.channel_repository import MongoChannelRepository  # type: ignore
-        from domain.entities.channel import Channel  # type: ignore
-        channel_repo = MongoChannelRepository(db)
-        repo_available = True
-    except Exception:
-        channel_repo = None
-        Channel = None
-        repo_available = False
+        saved_channel_ids = []   # list[str] -> will contain the string IDs returned/created in Mongo
 
-    for ch in channels_input:
-        # Build channel document using only input fields + fixed defaults
-        channel_doc = {
-            # _id will be set from repo result or direct upsert fallback
-            "userId": MASTER_USER_ID,  # reference to master user as ObjectId
-            "youtubeChannelId": ch["youtubeChannelId"],
-            "selectedPromptId": None,
-            "title": ch["title"],
-            #"pollingInterval": 18,
-            "maxVideosToFetchFromChannel": 2,
-            "tweetsToGeneratePerVideo": 2,
-            "lastPolledAt": None,
-            "createdAt": _dt.datetime.now(_dt.timezone.utc),
-            "updatedAt": _dt.datetime.now(_dt.timezone.utc),
-        }
+        # Try to import channel repo and entity once
+        try:
+            from adapters.outbound.mongodb.channel_repository import MongoChannelRepository  # type: ignore
+            from domain.entities.channel import Channel  # type: ignore
+            channel_repo = MongoChannelRepository(db)
+            repo_available = True
+        except Exception:
+            channel_repo = None
+            Channel = None
+            repo_available = False
 
-        saved_channel_id = None
-        channel_obj_id = None
+        for ch in channels_input:
+            # Build channel document using only input fields + fixed defaults
+            channel_doc = {
+                # _id will be set from repo result or direct upsert fallback
+                "userId": MASTER_USER_ID,  # reference to master user as ObjectId
+                "youtubeChannelId": ch["youtubeChannelId"],
+                "selectedPromptId": None,
+                "title": ch["title"],
+                #"pollingInterval": 18,
+                "maxVideosToFetchFromChannel": 2,
+                "tweetsToGeneratePerVideo": 2,
+                "lastPolledAt": None,
+                "createdAt": _dt.datetime.now(_dt.timezone.utc),
+                "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+            }
 
-        if repo_available:
-            try:
-                # Build channel entity without forcing id (repo.save will insert and return id)
-                temp_channel_entity = Channel(
-                    id=None,
-                    user_id=str(channel_doc["userId"]),
-                    youtube_channel_id=channel_doc.get("youtubeChannelId", ""),
-                    selected_prompt_id=None,
-                    title=channel_doc.get("title", ""),
-                    # polling_interval=channel_doc.get("pollingInterval"),
-                    max_videos_to_fetch_from_channel=channel_doc.get("maxVideosToFetchFromChannel"),
-                    tweets_to_generate_per_video=channel_doc.get("tweetsToGeneratePerVideo"),
-                    last_polled_at=channel_doc.get("lastPolledAt"),
-                    created_at=channel_doc.get("createdAt"),
-                    updated_at=channel_doc.get("updatedAt")
-                )
-                saved_channel_id = await channel_repo.save(temp_channel_entity)  # type: ignore
-                logger.info(f"[ok] channel saved via repo, id={saved_channel_id}",
+            saved_channel_id = None
+            channel_obj_id = None
+
+            if repo_available:
+                try:
+                    # Build channel entity without forcing id (repo.save will insert and return id)
+                    temp_channel_entity = Channel(
+                        id=None,
+                        user_id=str(channel_doc["userId"]),
+                        youtube_channel_id=channel_doc.get("youtubeChannelId", ""),
+                        selected_prompt_id=None,
+                        title=channel_doc.get("title", ""),
+                        # polling_interval=channel_doc.get("pollingInterval"),
+                        max_videos_to_fetch_from_channel=channel_doc.get("maxVideosToFetchFromChannel"),
+                        tweets_to_generate_per_video=channel_doc.get("tweetsToGeneratePerVideo"),
+                        last_polled_at=channel_doc.get("lastPolledAt"),
+                        created_at=channel_doc.get("createdAt"),
+                        updated_at=channel_doc.get("updatedAt")
+                    )
+                    saved_channel_id = await channel_repo.save(temp_channel_entity)  # type: ignore
+                    logger.info(f"[ok] channel saved via repo, id={saved_channel_id}",
+                                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+
+                    # Try to convert repo id to ObjectId for DB references; if not valid, keep string
+                    try:
+                        channel_obj_id = ObjectId(saved_channel_id)
+                    except Exception:
+                        channel_obj_id = saved_channel_id
+
+                except Exception:
+                    # fallback: create a new ObjectId and upsert directly
+                    channel_obj_id = ObjectId()
+                    channel_doc["_id"] = channel_obj_id
+                    await db.get_collection("channels").replace_one({"_id": channel_obj_id}, channel_doc, upsert=True)
+                    saved_channel_id = str(channel_obj_id)
+                    logger.info(f"[ok] channel upserted with _id={channel_obj_id} via direct DB fallback",
+                                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            else:
+                # adapter import failed -> direct DB upsert with a generated ObjectId
+                channel_obj_id = ObjectId()
+                channel_doc["_id"] = channel_obj_id
+                await db.get_collection("channels").replace_one({"_id": channel_obj_id}, channel_doc, upsert=True)
+                saved_channel_id = str(channel_obj_id)
+                logger.info(f"[ok] channel upserted with _id={channel_obj_id} via direct DB (adapter missing)",
                             extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
-                # Try to convert repo id to ObjectId for DB references; if not valid, keep string
+            # Ensure we have a canonical channel_obj_id (prefer ObjectId form)
+            if channel_obj_id is None and saved_channel_id is not None:
                 try:
                     channel_obj_id = ObjectId(saved_channel_id)
                 except Exception:
                     channel_obj_id = saved_channel_id
 
-            except Exception:
-                # fallback: create a new ObjectId and upsert directly
-                channel_obj_id = ObjectId()
-                channel_doc["_id"] = channel_obj_id
-                await db.get_collection("channels").replace_one({"_id": channel_obj_id}, channel_doc, upsert=True)
-                saved_channel_id = str(channel_obj_id)
-                logger.info(f"[ok] channel upserted with _id={channel_obj_id} via direct DB fallback",
-                            extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-        else:
-            # adapter import failed -> direct DB upsert with a generated ObjectId
-            channel_obj_id = ObjectId()
-            channel_doc["_id"] = channel_obj_id
-            await db.get_collection("channels").replace_one({"_id": channel_obj_id}, channel_doc, upsert=True)
-            saved_channel_id = str(channel_obj_id)
-            logger.info(f"[ok] channel upserted with _id={channel_obj_id} via direct DB (adapter missing)",
-                        extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-
-        # Ensure we have a canonical channel_obj_id (prefer ObjectId form)
-        if channel_obj_id is None and saved_channel_id is not None:
-            try:
-                channel_obj_id = ObjectId(saved_channel_id)
-            except Exception:
-                channel_obj_id = saved_channel_id
-
-        # Append the canonical string id (prefer hex of ObjectId when available)
-        saved_channel_ids.append(str(channel_obj_id))
-        logger.debug("channel saved; appended id=%s", saved_channel_ids[-1])
+            # Append the canonical string id (prefer hex of ObjectId when available)
+            saved_channel_ids.append(str(channel_obj_id))
+            logger.debug("channel saved; appended id=%s", saved_channel_ids[-1])
+        
+        logger.info("[ok] created CHANNEL seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped CHANNEL seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
     # ------------------------------
     # 3) MASTER PROMPT
     # ------------------------------
     # saved_channel_ids is expected to be a list of channel IDs (strings) produced by the CHANNEL step
 
-    # Load prompt messages from file
-    path = Path("prompts/seed_master_data_mongodb_PROMPT.yaml")
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    SYSTEM_MESSAGE = data["system_message"]
-    USER_MESSAGE = data["user_message"]
+    if CLEAN_MASTER_PROMPTS:
 
-    # Try to import master prompt repo and domain entity
-    try:
-        from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository  # type: ignore
-        from domain.entities.master_prompt import MasterPrompt  # type: ignore
-        from domain.entities.user_prompt import PromptContent  # type: ignore
+        # Load prompt messages from file
+        path = Path("prompts/seed_master_data_mongodb_PROMPT.yaml")
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        SYSTEM_MESSAGE = data["system_message"]
+        USER_MESSAGE = data["user_message"]
 
-        master_prompt_repo = MongoMasterPromptRepository(db)
-        repo_master_prompt_available = True
-    except Exception:
-        master_prompt_repo = None
-        MasterPrompt = None
-        PromptContent = None
-        repo_master_prompt_available = False
-
-    # Build master_prompt document
-    master_prompt_doc = {
-        "_id": ObjectId(),
-        "category": "Finance",
-        "subcategory": "Investing",
-        "promptContent": {
-            "systemMessage": SYSTEM_MESSAGE,
-            "userMessage": USER_MESSAGE,
-        },
-        "languageOfThePrompt": "English",
-        "createdAt": _dt.datetime.now(_dt.timezone.utc),
-        "updatedAt": _dt.datetime.now(_dt.timezone.utc),
-    }
-
-    saved_master_prompt_id = None
-
-    # Persist master prompt
-    if repo_master_prompt_available:
+        # Try to import master prompt repo and domain entity
         try:
-            master_prompt_entity = MasterPrompt(
-                id=str(master_prompt_doc["_id"]),
-                category=master_prompt_doc["category"],
-                subcategory=master_prompt_doc["subcategory"],
-                prompt_content=PromptContent(
-                    system_message=master_prompt_doc["promptContent"]["systemMessage"],
-                    user_message=master_prompt_doc["promptContent"]["userMessage"],
-                ),
-                language_of_the_prompt=master_prompt_doc["languageOfThePrompt"],
-                created_at=master_prompt_doc["createdAt"],
-                updated_at=master_prompt_doc["updatedAt"],
-            )
+            from adapters.outbound.mongodb.master_prompt_repository import MongoMasterPromptRepository  # type: ignore
+            from domain.entities.master_prompt import MasterPrompt  # type: ignore
+            from domain.entities.user_prompt import PromptContent  # type: ignore
 
-            saved_master_prompt_id = await master_prompt_repo.insert_one(master_prompt_entity)  # type: ignore
-
-            if isinstance(saved_master_prompt_id, MasterPrompt):
-                saved_master_prompt_id = saved_master_prompt_id.id
-
-            logger.info(
-                f"[ok] master_prompt saved via repo, id={saved_master_prompt_id}",
-                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
-            )
+            master_prompt_repo = MongoMasterPromptRepository(db)
+            repo_master_prompt_available = True
         except Exception:
+            master_prompt_repo = None
+            MasterPrompt = None
+            PromptContent = None
+            repo_master_prompt_available = False
+
+        # Build master_prompt document
+        master_prompt_doc = {
+            "_id": ObjectId(),
+            "category": "Finance",
+            "subcategory": "Investing",
+            "promptContent": {
+                "systemMessage": SYSTEM_MESSAGE,
+                "userMessage": USER_MESSAGE,
+            },
+            "languageOfThePrompt": "English",
+            "createdAt": _dt.datetime.now(_dt.timezone.utc),
+            "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+        }
+
+        saved_master_prompt_id = None
+
+        # Persist master prompt
+        if repo_master_prompt_available:
+            try:
+                master_prompt_entity = MasterPrompt(
+                    id=str(master_prompt_doc["_id"]),
+                    category=master_prompt_doc["category"],
+                    subcategory=master_prompt_doc["subcategory"],
+                    prompt_content=PromptContent(
+                        system_message=master_prompt_doc["promptContent"]["systemMessage"],
+                        user_message=master_prompt_doc["promptContent"]["userMessage"],
+                    ),
+                    language_of_the_prompt=master_prompt_doc["languageOfThePrompt"],
+                    created_at=master_prompt_doc["createdAt"],
+                    updated_at=master_prompt_doc["updatedAt"],
+                )
+
+                saved_master_prompt_id = await master_prompt_repo.insert_one(master_prompt_entity)  # type: ignore
+
+                if isinstance(saved_master_prompt_id, MasterPrompt):
+                    saved_master_prompt_id = saved_master_prompt_id.id
+
+                logger.info(
+                    f"[ok] master_prompt saved via repo, id={saved_master_prompt_id}",
+                    extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+                )
+            except Exception:
+                await db.get_collection("master_prompts").replace_one(
+                    {"category": master_prompt_doc["category"], "subcategory": master_prompt_doc["subcategory"]},
+                    master_prompt_doc,
+                    upsert=True
+                )
+                saved_master_prompt_id = str(master_prompt_doc["_id"])
+                logger.info(
+                    f"[ok] master_prompt upserted via direct DB fallback, id={saved_master_prompt_id}",
+                    extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+                )
+        else:
             await db.get_collection("master_prompts").replace_one(
                 {"category": master_prompt_doc["category"], "subcategory": master_prompt_doc["subcategory"]},
                 master_prompt_doc,
@@ -476,198 +502,211 @@ async def seed():
             )
             saved_master_prompt_id = str(master_prompt_doc["_id"])
             logger.info(
-                f"[ok] master_prompt upserted via direct DB fallback, id={saved_master_prompt_id}",
+                f"[ok] master_prompt upserted via direct DB (adapter missing), id={saved_master_prompt_id}",
                 extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
             )
-    else:
-        await db.get_collection("master_prompts").replace_one(
-            {"category": master_prompt_doc["category"], "subcategory": master_prompt_doc["subcategory"]},
-            master_prompt_doc,
-            upsert=True
-        )
-        saved_master_prompt_id = str(master_prompt_doc["_id"])
-        logger.info(
-            f"[ok] master_prompt upserted via direct DB (adapter missing), id={saved_master_prompt_id}",
-            extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
-        )
 
-        # If still needed to keep an array of affected channel ids, saved_channel_ids can be reused.
-        # saved_master_prompt_id contains the master prompt id (string).
+            # If still needed to keep an array of affected channel ids, saved_channel_ids can be reused.
+            # saved_master_prompt_id contains the master prompt id (string).
+        
+        logger.info("[ok] created MASTER_PROMPT seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped MASTER_PROMPT seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
     # ------------------------------
     # 4) USER PROMPT
     # ------------------------------
 
-    if not MASTER_USER_ID:
-        raise RuntimeError("MASTER_USER_ID must be defined for seeding user prompts.")
+    if CLEAN_USER_PROMPTS:
 
-    # Default tweet length policy for the seeded USER prompt
-    tweet_length_policy_doc = {
-        "mode": "range",
-        "minLength": 120,
-        "maxLength": 220,
-        "targetLength": 110,
-        "tolerancePercent": 10,
-        "unit": "chars",
-    }
+        if not MASTER_USER_ID:
+            raise RuntimeError("MASTER_USER_ID must be defined for seeding user prompts.")
 
-    # Build user_prompt document
-    user_prompt_doc = {
-        "_id": ObjectId(),
-        "userId": MASTER_USER_ID,
-        "masterPromptId": ObjectId(saved_master_prompt_id),
-        "promptContent": {
-            "systemMessage": SYSTEM_MESSAGE,
-            "userMessage": USER_MESSAGE,
-        },
-        "languageToGenerateTweets": "Spanish (ESPAÑOL)",
-        "tweetLengthPolicy": tweet_length_policy_doc,
-        "createdAt": _dt.datetime.now(_dt.timezone.utc),
-        "updatedAt": _dt.datetime.now(_dt.timezone.utc),
-    }
+        # Default tweet length policy for the seeded USER prompt
+        tweet_length_policy_doc = {
+            "mode": "range",
+            "minLength": 120,
+            "maxLength": 300,
+            "targetLength": 110,
+            "tolerancePercent": 10,
+            "unit": "chars",
+        }
 
-    # Insert into user_prompts
-    await db.get_collection("user_prompts").replace_one(
-        {"_id": user_prompt_doc["_id"]},
-        user_prompt_doc,
-        upsert=True
-    )
+        # Build user_prompt document
+        user_prompt_doc = {
+            "_id": ObjectId(),
+            "userId": MASTER_USER_ID,
+            "masterPromptId": ObjectId(saved_master_prompt_id),
+            "promptContent": {
+                "systemMessage": SYSTEM_MESSAGE,
+                "userMessage": USER_MESSAGE,
+            },
+            "languageToGenerateTweets": "Spanish (ESPAÑOL)",
+            "tweetLengthPolicy": tweet_length_policy_doc,
+            "createdAt": _dt.datetime.now(_dt.timezone.utc),
+            "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+        }
 
-    saved_user_prompt_id = str(user_prompt_doc["_id"])
-
-    logger.info(
-        f"[ok] user_prompt created and linked to master_prompt {saved_master_prompt_id}, id={saved_user_prompt_id}",
-        extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
-    )
-
-    # Update all seeded channels to reference this USER prompt
-    for channel_id_str in saved_channel_ids:
-        try:
-            channel_ref = ObjectId(channel_id_str)
-        except Exception:
-            channel_ref = channel_id_str
-
-        await db.get_collection("channels").update_one(
-            {"_id": channel_ref},
-            {
-                "$set": {
-                    "selectedPromptId": ObjectId(saved_user_prompt_id),
-                    "updatedAt": _dt.datetime.now(_dt.timezone.utc),
-                }
-            }
+        # Insert into user_prompts
+        await db.get_collection("user_prompts").replace_one(
+            {"_id": user_prompt_doc["_id"]},
+            user_prompt_doc,
+            upsert=True
         )
+
+        saved_user_prompt_id = str(user_prompt_doc["_id"])
 
         logger.info(
-            f"[ok] channel {channel_ref} updated with selectedPromptId={saved_user_prompt_id}",
+            f"[ok] user_prompt created and linked to master_prompt {saved_master_prompt_id}, id={saved_user_prompt_id}",
             extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
         )
+
+        # Update all seeded channels to reference this USER prompt
+        for channel_id_str in saved_channel_ids:
+            try:
+                channel_ref = ObjectId(channel_id_str)
+            except Exception:
+                channel_ref = channel_id_str
+
+            await db.get_collection("channels").update_one(
+                {"_id": channel_ref},
+                {
+                    "$set": {
+                        "selectedPromptId": ObjectId(saved_user_prompt_id),
+                        "updatedAt": _dt.datetime.now(_dt.timezone.utc),
+                    }
+                }
+            )
+
+            logger.info(
+                f"[ok] channel {channel_ref} updated with selectedPromptId={saved_user_prompt_id}",
+                extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name},
+            )
+        
+        logger.info("[ok] created USER_PROMPT seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped USER_PROMPT seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
     # -----------------------
     # 4) APP CONFIG
     # -----------------------
-    scheduler_config = SchedulerConfig(
-        generation_pipeline_frequency_minutes=20,
-        publishing_pipeline_frequency_minutes=20,
-        stats_pipeline_frequency_minutes=20,
-        embeddings_pipeline_frequency_minutes=20,
-        is_generation_pipeline_enabled=True,
-        is_publishing_pipeline_enabled=True,
-        is_stats_pipeline_enabled=True,
-        is_embeddings_pipeline_enabled=True,
-    )
-    app_config = AppConfig(scheduler_config=scheduler_config)
-    app_config_repo = MongoAppConfigRepository(db)
-    try:
-        await app_config_repo.update_config(app_config)
-        logger.info("[ok] app config updated via repo", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-    except AttributeError:
-        # fallback direct write to the app_config collection (collection name is app_config)
-        await db.get_collection("app_config").replace_one(
-            {"_id": "global"},
-            {
-                "_id": "global",
-                "schedulerConfig": {
-                    "generationPipelineFrequencyMinutes": scheduler_config.generation_pipeline_frequency_minutes,
-                    "publishingPipelineFrequencyMinutes": scheduler_config.publishing_pipeline_frequency_minutes,
-                    "statsPipelineFrequencyMinutes": scheduler_config.stats_pipeline_frequency_minutes,
-                    "embeddingsPipelineFrequencyMinutes": scheduler_config.embeddings_pipeline_frequency_minutes,
-                    "isGenerationPipelineEnabled": scheduler_config.is_generation_pipeline_enabled,
-                    "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
-                    "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
-                    "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddings_pipeline_enabled,
-                }
-            },
-            upsert=True
+    
+    if CLEAN_APP_CONFIG:
+
+        scheduler_config = SchedulerConfig(
+            generation_pipeline_frequency_minutes=20,
+            publishing_pipeline_frequency_minutes=20,
+            stats_pipeline_frequency_minutes=20,
+            embeddings_pipeline_frequency_minutes=20,
+            is_generation_pipeline_enabled=True,
+            is_publishing_pipeline_enabled=True,
+            is_stats_pipeline_enabled=True,
+            is_embeddings_pipeline_enabled=True,
         )
-        logger.info("[ok] app config upserted directly", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        app_config = AppConfig(scheduler_config=scheduler_config)
+        app_config_repo = MongoAppConfigRepository(db)
+        try:
+            await app_config_repo.update_config(app_config)
+            logger.info("[ok] app config updated via repo", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        except AttributeError:
+            # fallback direct write to the app_config collection (collection name is app_config)
+            await db.get_collection("app_config").replace_one(
+                {"_id": "global"},
+                {
+                    "_id": "global",
+                    "schedulerConfig": {
+                        "generationPipelineFrequencyMinutes": scheduler_config.generation_pipeline_frequency_minutes,
+                        "publishingPipelineFrequencyMinutes": scheduler_config.publishing_pipeline_frequency_minutes,
+                        "statsPipelineFrequencyMinutes": scheduler_config.stats_pipeline_frequency_minutes,
+                        "embeddingsPipelineFrequencyMinutes": scheduler_config.embeddings_pipeline_frequency_minutes,
+                        "isGenerationPipelineEnabled": scheduler_config.is_generation_pipeline_enabled,
+                        "isPublishingPipelineEnabled": scheduler_config.is_publishing_pipeline_enabled,
+                        "isStatsPipelineEnabled": scheduler_config.is_stats_pipeline_enabled,
+                        "isEmbeddingsPipelineEnabled": scheduler_config.is_embeddings_pipeline_enabled,
+                    }
+                },
+                upsert=True
+            )
+            logger.info("[ok] app config upserted directly", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        
+        logger.info("[ok] created APP_CONFIG seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped APP_CONFIG seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
     # -----------------------
     # 5) USER SCHEDULER RUNTIME STATUS
     # -----------------------
-    # Minimal, idempotent seeding for the runtime status entity.
-    try:
-        now = _dt.datetime.now(timezone.utc)
-        usr_status_coll = db.get_collection("user_scheduler_runtime_status")
+    
+    if CLEAN_USER_SCHEDULER_STATUS_RUNTIME:
 
-        # Ensure unique index on userId to guarantee one status doc per user (safe to call repeatedly)
+        # Minimal, idempotent seeding for the runtime status entity.
         try:
-            await usr_status_coll.create_index("userId", unique=True)
-        except Exception:
-            # index creation non-fatal if it already exists or if permissions differ
-            logger.debug("Could not create index userId on user_scheduler_runtime_status (may already exist)", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            now = _dt.datetime.now(timezone.utc)
+            usr_status_coll = db.get_collection("user_scheduler_runtime_status")
 
-        # Document shape aligned with the design
-        status_doc = {
-            "userId": MASTER_USER_ID,
+            # Ensure unique index on userId to guarantee one status doc per user (safe to call repeatedly)
+            try:
+                await usr_status_coll.create_index("userId", unique=True)
+            except Exception:
+                # index creation non-fatal if it already exists or if permissions differ
+                logger.debug("Could not create index userId on user_scheduler_runtime_status (may already exist)", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
-            "isGenerationPipelineRunning": False,
-            "isPublishingPipelineRunning": False,
-            "isStatsPipelineRunning": False,
-            "isEmbeddingsPipelineRunning": False,
+            # Document shape aligned with the design
+            status_doc = {
+                "userId": MASTER_USER_ID,
 
-            "lastGenerationPipelineStartedAt": None,
-            "lastGenerationPipelineFinishedAt": None,
+                "isGenerationPipelineRunning": False,
+                "isPublishingPipelineRunning": False,
+                "isStatsPipelineRunning": False,
+                "isEmbeddingsPipelineRunning": False,
 
-            "lastPublishingPipelineStartedAt": None,
-            "lastPublishingPipelineFinishedAt": None,
+                "lastGenerationPipelineStartedAt": None,
+                "lastGenerationPipelineFinishedAt": None,
 
-            "lastStatsPipelineStartedAt": None,
-            "lastStatsPipelineFinishedAt": None,
+                "lastPublishingPipelineStartedAt": None,
+                "lastPublishingPipelineFinishedAt": None,
 
-            "lastEmbeddingsPipelineStartedAt": None,
-            "lastEmbeddingsPipelineFinishedAt": None,
+                "lastStatsPipelineStartedAt": None,
+                "lastStatsPipelineFinishedAt": None,
 
-            "nextScheduledGenerationPipelineStartingAt": None,
-            "nextScheduledPublishingPipelineStartingAt": None,
-            "nextScheduledStatsPipelineStartingAt": None,
-            "nextScheduledEmbeddingsPipelineStartingAt": None,
+                "lastEmbeddingsPipelineStartedAt": None,
+                "lastEmbeddingsPipelineFinishedAt": None,
 
-            "consecutiveFailuresGenerationPipeline": 0,
-            "consecutiveFailuresPublishingPipeline": 0,
-            "consecutiveFailuresStatsPipeline": 0,
-            "consecutiveFailuresEmbeddingsPipeline": 0,
+                "nextScheduledGenerationPipelineStartingAt": None,
+                "nextScheduledPublishingPipelineStartingAt": None,
+                "nextScheduledStatsPipelineStartingAt": None,
+                "nextScheduledEmbeddingsPipelineStartingAt": None,
 
-            "createdAt": datetime.now(_dt.timezone.utc),
-        }
+                "consecutiveFailuresGenerationPipeline": 0,
+                "consecutiveFailuresPublishingPipeline": 0,
+                "consecutiveFailuresStatsPipeline": 0,
+                "consecutiveFailuresEmbeddingsPipeline": 0,
 
-        # Upsert: create if missing, otherwise leave existing runtime values intact but ensure updatedAt exists
-        res = await usr_status_coll.update_one(
-            {"userId": MASTER_USER_ID},
-            {
-                "$setOnInsert": status_doc,
-                "$set": {"updatedAt": now}
-            },
-            upsert=True
-        )
-        if res.upserted_id:
-            logger.info("[ok] user_scheduler_runtime_status created for user=%s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-        else:
-            logger.info("[ok] user_scheduler_runtime_status ensured for user=%s (already existed)", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
-    except Exception as exc:
-        logger.exception("Failed to seed user_scheduler_runtime_status: %s", exc, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+                "createdAt": datetime.now(_dt.timezone.utc),
+            }
+
+            # Upsert: create if missing, otherwise leave existing runtime values intact but ensure updatedAt exists
+            res = await usr_status_coll.update_one(
+                {"userId": MASTER_USER_ID},
+                {
+                    "$setOnInsert": status_doc,
+                    "$set": {"updatedAt": now}
+                },
+                upsert=True
+            )
+            if res.upserted_id:
+                logger.info("[ok] user_scheduler_runtime_status created for user=%s", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+            else:
+                logger.info("[ok] user_scheduler_runtime_status ensured for user=%s (already existed)", str(MASTER_USER_ID), extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        except Exception as exc:
+            logger.exception("Failed to seed user_scheduler_runtime_status: %s", exc, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+        
+        logger.info("[ok] created USER_SCHEDULER_STATUS_RUNTIME seed data", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    else: 
+        logger.info("[ok] skipped USER_SCHEDULER_STATUS_RUNTIME seed data creation", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
     logger.info("Script - Seeding data to MongoDB finished.", extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})

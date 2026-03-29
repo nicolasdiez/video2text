@@ -213,19 +213,19 @@ async def lifespan(app: FastAPI):
     # ===== START TEMPORARY BLOCK =====
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
     # TODO: remove this block when frontend/endpoints for user credential management is ready
-    USER_ID = "000000000000000000000001" # Nico
-    bootstrap_user_id = USER_ID
+    # USER_ID = "000000000000000000000001" # Nico
+    # bootstrap_user_id = USER_ID
     # Retrieve USER's X credentials from env (either .env file or Github Environment secrets) and save them encrypted to mongoDB user collection
-    creds = UserTwitterCredentials(
+    # creds = UserTwitterCredentials(
         # credentials related to THE USER of the application:
-        oauth1_access_token=config.X_OAUTH1_ACCESS_TOKEN,
-        oauth1_access_token_secret=config.X_OAUTH1_ACCESS_TOKEN_SECRET,
-        oauth2_access_token=config.X_OAUTH2_ACCESS_TOKEN,
-        oauth2_access_token_expires_at=config.X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT,
-        oauth2_refresh_token=config.X_OAUTH2_REFRESH_TOKEN,
-        oauth2_refresh_token_expires_at=config.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT,
-        screen_name=config.X_SCREEN_NAME
-    )
+    #   oauth1_access_token=config.X_OAUTH1_ACCESS_TOKEN,
+    #   oauth1_access_token_secret=config.X_OAUTH1_ACCESS_TOKEN_SECRET,
+    #   oauth2_access_token=config.X_OAUTH2_ACCESS_TOKEN,
+    #   oauth2_access_token_expires_at=config.X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT,
+    #   oauth2_refresh_token=config.X_OAUTH2_REFRESH_TOKEN,
+    #   oauth2_refresh_token_expires_at=config.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT,
+    #   screen_name=config.X_SCREEN_NAME
+    # )
     # await user_repo.update_twitter_credentials(bootstrap_user_id, creds)
     # logger.info("TEMPORARY --> Twitter user credentials written in MongoDB for bootstrap user: %s", bootstrap_user_id)
     # ===== END TEMPORARY BLOCK =====

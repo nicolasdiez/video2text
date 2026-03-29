@@ -1,6 +1,7 @@
 # src/application/services/generation_pipeline_service.py
 
 import asyncio
+import random
 from datetime import datetime
 from typing import List, Optional
 
@@ -189,12 +190,12 @@ class GenerationPipelineService(GenerationPipelinePort):
                         try:
                             final_prompt = await self.channel_service.get_channel_prompt(channel=channel, user_id=user_id)
                         except Exception as exc:
-                            logger.exception("Error resolving final_prompt for channel %s and user %s: %s", channel.id, user_id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            logger.exception("Error resolving final prompt for channel %s and user %s: %s", channel.id, user_id, exc, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
                         if not final_prompt:
-                            logger.info("No suitable final_prompt resolved for channel %s and user %s, skipping video %s", channel.id, user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            logger.info("No suitable final prompt resolved for channel %s and user %s, skipping video %s", channel.id, user_id, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             continue
-                        logger.info("Final_prompt successfully retrieved", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        logger.info("Final prompt successfully retrieved", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
@@ -207,18 +208,33 @@ class GenerationPipelineService(GenerationPipelinePort):
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=final_prompt.system_message, tweet_length_policy=final_prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
                         prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=final_prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-
+                        
                         # 11. Generate raw texts (tweets) for the video
                         # model = "gpt-4o"
-                        model = 'gemini-2.0-flash-thinking-exp'
-                        try:
-                            json_response = await self.tweet_generation_client.generate_tweets(
-                                prompt_user_message=prompt_user_message,
-                                prompt_system_message=prompt_system_message,
-                                model=model)
-                        except Exception as e:
-                            logger.error("OpenAI tweet generation failed for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue  # skip this video and move to the next one
+                        models = ["gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"]
+                        model = random.choice(models)
+                        max_retries = 3
+                        backoff = 2  # seconds
+
+                        for attempt in range(1, max_retries + 1):
+                            try:
+                                json_response = await self.tweet_generation_client.generate_tweets(
+                                    prompt_user_message=prompt_user_message,
+                                    prompt_system_message=prompt_system_message,
+                                    model=model)
+                                logger.error("Tweet AI generation successful", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                break  # success → exit retry loop
+                            except Exception as e:
+                                error_text = str(e).lower()
+                                # Only retry on transient errors (503 or similar)
+                                is_transient = ("503" in error_text or "temporarily unavailable" in error_text or "high demand" in error_text)
+                                if attempt < max_retries and is_transient:
+                                    logger.warning("Gemini transient error on attempt %s/%s for video %s. Retrying in %ss...", attempt, max_retries, video.id, backoff, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                    await asyncio.sleep(backoff)
+                                    backoff *= 2
+                                    continue
+                                logger.error("Tweet AI generation failed for video %s after %s attempts: %s", video.id, attempt, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                continue  # skip this video and move to the next one
 
                         # 12. Validate tweet output using guardrails
                         try:

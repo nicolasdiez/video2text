@@ -46,11 +46,16 @@ class LLMOpenAIClient(LLMPort):
         self.api_key = api_key
         logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, model: str = "gpt-3.5-turbo") -> dict:
+    async def generate_tweets(self, prompt_user_message: str, prompt_system_message: str, model: str) -> dict:
         # Validate API key
         if not self.api_key:
             logger.error("Missing API key", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise RuntimeError("Please set the OPENAI_API_KEY environment variable.")
+        
+        # Ensure model is not null
+        if not model:
+            logger.error("Missing LLM model", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            raise RuntimeError("Please set the LLM model.")
 
         # Validate inputs
         if not prompt_system_message or not str(prompt_system_message).strip():
