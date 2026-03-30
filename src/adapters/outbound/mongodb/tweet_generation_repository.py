@@ -1,4 +1,4 @@
-# adapters/outbound/mongodb/tweet_generation_repository.py
+# src/adapters/outbound/mongodb/tweet_generation_repository.py
 
 from datetime import datetime
 from typing import List, Optional
@@ -7,7 +7,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from domain.entities.tweet_generation import TweetGeneration, OpenAIRequest
-from domain.entities.prompt import PromptContent
+from domain.entities.user_prompt import PromptContent
 from domain.ports.outbound.mongodb.tweet_generation_repository_port import TweetGenerationRepositoryPort
 
 # Importa sólo la instancia de DB, no la configuración

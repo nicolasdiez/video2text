@@ -10,18 +10,18 @@ class TweetGenerationRepositoryPort(ABC):
         """
         Persiste un registro de generación de tweet y devuelve el nuevo _id como cadena.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_id(self, tg_id: str) -> Optional[TweetGeneration]:
         """
         Recupera una generación de tweet por su _id.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def find_by_video_id(self, video_id: str) -> List[TweetGeneration]:
         """
         Lista todas las generaciones de tweet asociadas a un mismo video.
         """
-        ...
+        raise NotImplementedError

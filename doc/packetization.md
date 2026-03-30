@@ -33,11 +33,11 @@ video2text
     │       │   └── video_repository.py
     │       ├── openai_client.py
     │       ├── transcription_client.py
-    │       ├── twitter_client.py
+    │       ├── twitter_publication_client.py
     │       └── youtube_video_client.py
     ├── application
     │   └── services
-    │       ├── ingestion_pipeline_service.py
+    │       ├── generation_pipeline_service.py
     │       ├── POC_pipeline_service.py
     │       ├── prompt_composer_service.py
     │       └── publishing_pipeline_service.py
@@ -53,7 +53,7 @@ video2text
     │   │   └── video.py
     │   ├── ports
     │   │   ├── inbound
-    │   │   │   ├── ingestion_pipeline_port.py
+    │   │   │   ├── generation_pipeline_port.py
     │   │   │   └── publishing_pipeline_port.py
     │   │   └── outbound
     │   │       ├── mongodb

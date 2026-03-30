@@ -2,18 +2,110 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any, Union
+
+
+@dataclass(kw_only=True)
+class MetricValue:
+    """
+    Represents a single metric value coming from a specific provider.
+    Each metric stores:
+    - value: the numeric value of the metric
+    - provider: the provider that supplied this metric (e.g., "apify", "brightdata")
+    - fetched_at: timestamp when this metric was retrieved
+    """
+    value: Optional[Union[int, float]] = None
+    provider: Optional[str] = None
+    fetched_at: Optional[datetime] = None
+
+
+@dataclass(kw_only=True)
+class TwitterStats:
+    """
+    Represents performance metrics for a published tweet.
+    Supports both basic metrics (Apify) and advanced metrics (Bright Data or future providers).
+    Each metric is a MetricValue, allowing multiple providers to contribute independently.
+    """
+    # Basic metrics (Apify)
+    likes: Optional[MetricValue] = None
+    retweets: Optional[MetricValue] = None
+    replies: Optional[MetricValue] = None
+    quotes: Optional[MetricValue] = None
+    impressions: Optional[MetricValue] = None
+    bookmarks: Optional[MetricValue] = None
+    author_followers: Optional[MetricValue] = None
+
+    # Advanced metrics (Bright Data or future providers)
+    profile_visits: Optional[MetricValue] = None
+    detail_expands: Optional[MetricValue] = None
+    link_clicks: Optional[MetricValue] = None
+    user_follows: Optional[MetricValue] = None
+    engagement_rate: Optional[MetricValue] = None
+    video_views: Optional[MetricValue] = None
+    media_views: Optional[MetricValue] = None
+    media_engagements: Optional[MetricValue] = None
+
+    # Raw payloads grouped by provider (optional but useful for debugging)
+    raw: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+
+
+@dataclass
+class TweetEmbeddingRefs:
+    """
+    Represents the reference ID of the embedding stored in the vectorDB
+    """
+    tweet_text_id: Optional[str] = None
+    video_transcript_id: Optional[str] = None
+
+    # Embedding representing the creator's personal writing style. 
+    # Not used yet. In the future, this will store a vector derived from 
+    # multiple tweets of the user, allowing the system to generate content 
+    # that matches the creator's tone, voice, communication personality and stylistic patterns.
+    # Servirá para permitir que el sistema genere tweets que: 
+    # - suenen como el usuario, no como un modelo genérico
+    # - mantengan coherencia estilística
+    # - respeten su tono, humor, ritmo, vocabulario
+    # - se adapten a su “marca personal”
+    # In summary --> creator_style_id permitirá personalizar la generación de contenido para cada usuario.
+    creator_style_id: Optional[str] = None
+
+
+@dataclass
+class GrowthScore:
+    """
+    Represents the metrics used to determine the growth score of a Tweet
+    (i.e., the impact and quality of the tweet).
+    """
+    engagement: Optional[float] = None        # How strongly the audience interacted (0–1)
+    style_alignment: Optional[float] = None   # How well the tweet matches the creator's style (0–1)
+    topic_relevance: Optional[float] = None   # How relevant the tweet is to the chosen topic (0–1)
+    overall: Optional[float] = None           # Final combined score summarizing tweet quality (0–1)
+    version: Optional[str] = None             # Version of the scoring algorithm used
+
 
 @dataclass(kw_only=True)
 class Tweet:
+    """
+    Domain entity representing a generated or published tweet.
+    """
     id: Optional[str] = None
     user_id: str
     video_id: str
     generation_id: str                          # FK → tweet_generations._id
     text: str                                   # The tweet itself
-    index_in_generation: Optional[int] = None   # Posición dentro de la generación
+    index_in_generation: Optional[int] = None   # Position inside the generation
     published: bool = False                     # True if already published in X
-    published_at: Optional[datetime] = None     # Publication day in X
+    published_at: Optional[datetime] = None     # Publication timestamp in X
     twitter_id: Optional[str] = None            # ID of the tweet in X
+
+    # Performance metrics (optional, filled after scraping the metrics from Twitter)
+    twitter_stats: Optional[TwitterStats] = None
+
+    # References to the embedding IDs related to the Tweet stored in the vectorDB 
+    embedding_refs: Optional[TweetEmbeddingRefs] = None
+
+    # Growth score computed from twitter_stats (performance metrics)
+    growth_score: Optional[GrowthScore] = None
+
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[str] = None

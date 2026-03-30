@@ -29,7 +29,7 @@ async def test_async_list_collections():
     """
     names = await db.list_collection_names()
     # print("✅ Colecciones encontradas:", names)
-    logger.info("✅ Collections found: %s", names, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
+    logger.info("✅ Collections found (%s): %s", len(names), names, extra={"module_name": __name__, "function_name": inspect.currentframe().f_code.co_name})
 
 
 def main():

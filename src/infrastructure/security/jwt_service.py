@@ -1,12 +1,12 @@
 # src/security/jwt_service.py
 
-# generar un JWT_SECRET_KEY --> bash terminal --> python -c "import secrets; print(secrets.token_hex(32))"
+# generar un JWT_SECRET_KEY genérico válido --> bash terminal --> python -c "import secrets; print(secrets.token_hex(32))"
 
 from datetime import datetime, timedelta
 from typing import Optional
 
 from jose import jwt, JWTError
-import src.config as config
+import config as config
 
 
 class JWTService:

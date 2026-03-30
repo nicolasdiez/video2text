@@ -19,17 +19,30 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
 
         return AppConfig(
             scheduler_config=SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(
-                    scheduler_config.get("ingestionPipelineFrequencyMinutes", 5)
+                generation_pipeline_frequency_minutes=int(
+                    scheduler_config.get("generationPipelineFrequencyMinutes", 5)
                 ),
                 publishing_pipeline_frequency_minutes=int(
                     scheduler_config.get("publishingPipelineFrequencyMinutes", 2)
                 ),
-                is_ingestion_pipeline_enabled=bool(
-                    scheduler_config.get("isIngestionPipelineEnabled", True)
+                stats_pipeline_frequency_minutes=int(
+                    scheduler_config.get("statsPipelineFrequencyMinutes", 2)
+                ),
+                embeddings_pipeline_frequency_minutes=int(
+                    scheduler_config.get("embeddingsPipelineFrequencyMinutes", 2)
+                ),
+
+                is_generation_pipeline_enabled=bool(
+                    scheduler_config.get("isGenerationPipelineEnabled", True)
                 ),
                 is_publishing_pipeline_enabled=bool(
                     scheduler_config.get("isPublishingPipelineEnabled", True)
+                ),
+                is_stats_pipeline_enabled=bool(
+                    scheduler_config.get("isStatsPipelineEnabled", True)
+                ),
+                is_embeddings_pipeline_enabled=bool(
+                    scheduler_config.get("isEmbeddingsPipelineEnabled", True)
                 ),
             )
         )
@@ -44,10 +57,14 @@ class MongoAppConfigRepository(AppConfigRepositoryPort):
             {
                 "$set": {
                     "schedulerConfig": {
-                        "ingestionPipelineFrequencyMinutes": sc.ingestion_pipeline_frequency_minutes,
+                        "generationPipelineFrequencyMinutes": sc.generation_pipeline_frequency_minutes,
                         "publishingPipelineFrequencyMinutes": sc.publishing_pipeline_frequency_minutes,
-                        "isIngestionPipelineEnabled": sc.is_ingestion_pipeline_enabled,
+                        "statsPipelineFrequencyMinutes": sc.stats_pipeline_frequency_minutes,
+                        "embeddingsPipelineFrequencyMinutes": sc.embeddings_pipeline_frequency_minutes,
+                        "isGenerationPipelineEnabled": sc.is_generation_pipeline_enabled,
                         "isPublishingPipelineEnabled": sc.is_publishing_pipeline_enabled,
+                        "isStatsPipelineEnabled": sc.is_stats_pipeline_enabled,
+                        "isEmbeddingsPipelineEnabled": sc.is_embeddings_pipeline_enabled,
                     }
                 }
             },

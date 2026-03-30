@@ -11,7 +11,7 @@ import logging
 from domain.ports.inbound.publishing_pipeline_port import PublishingPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
 from domain.ports.outbound.mongodb.tweet_repository_port import TweetRepositoryPort
-from domain.ports.outbound.twitter_port import TwitterPort
+from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from domain.entities.tweet import Tweet
 from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port import UserSchedulerRuntimeStatusRepositoryPort
 
@@ -32,12 +32,12 @@ class PublishingPipelineService(PublishingPipelinePort):
         self,
         user_repo: UserRepositoryPort,
         tweet_repo: TweetRepositoryPort,
-        twitter_client: TwitterPort,
+        twitter_publication_client: TwitterPublicationPort,
         user_scheduler_runtime_repo: UserSchedulerRuntimeStatusRepositoryPort,
     ):
         self.user_repo = user_repo
         self.tweet_repo = tweet_repo
-        self.twitter_client = twitter_client
+        self.twitter_publication_client = twitter_publication_client
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
 
     async def run_for_user(self, user_id: str) -> None:
@@ -68,20 +68,20 @@ class PublishingPipelineService(PublishingPipelinePort):
             max_tweets_to_publish = user.max_tweets_to_publish
             tweets_to_publish = tweets[:max_tweets_to_publish]
 
-            # 4. Publish and update only those tweets
+            # 4. Publish and update only selected tweets
             logger.info("Starting to publish %s tweets (out of max %s)", len(tweets_to_publish), max_tweets_to_publish, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             for index, tweet in enumerate(tweets_to_publish, start=1):
-
-                # Retrieve X user credentials
-                creds = user.twitter_credentials
-                if not creds or not creds.oauth1_access_token or not creds.oauth1_access_token_secret:
-                    logger.error("User %s has no valid OAuth1 credentials, skipping tweet publication", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
-                    continue
                 
-                # Publish tweet with user credentials
-                tweet_id = await self.twitter_client.publish(tweet.text, oauth1_access_token=creds.oauth1_access_token, oauth1_access_token_secret=creds.oauth1_access_token_secret,)
-                logger.info("Tweet %s/%s published successfully with tweet_id %s", index, len(tweets_to_publish), tweet_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name,},)
+                try:
+                    # Single unified call — the client handles OAuth1/OAuth2 internally
+                    tweet_id = await self.twitter_publication_client.publish(user, tweet.text)
+                    logger.info("Tweet %s/%s published successfully (id=%s)", index, len(tweets_to_publish), tweet_id)
 
+                except Exception as e:
+                    logger.error("Tweet publication skipped due to error: %s", e, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                    continue
+
+                # Update tweet metadata
                 now = datetime.utcnow()
                 tweet.published = True
                 tweet.published_at = now
@@ -104,5 +104,5 @@ class PublishingPipelineService(PublishingPipelinePort):
                 await self.user_scheduler_runtime_repo.mark_publishing_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
                 logger.exception("Failed updating user runtime status after publishing pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-            logger.exception("Publishing pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.exception("Finished KO", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise

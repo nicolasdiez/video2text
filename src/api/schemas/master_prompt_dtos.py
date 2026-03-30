@@ -13,15 +13,6 @@ class PromptContentDTO(BaseModel):
     user_message: str = Field(..., min_length=1)
 
 
-class TweetLengthPolicyDTO(BaseModel):
-    mode: str = Field(..., pattern="^(fixed|range)$")
-    min_length: Optional[int] = None
-    max_length: Optional[int] = None
-    target_length: Optional[int] = None
-    tolerance_percent: int = 10
-    unit: str = Field(default="chars", pattern="^(chars|tokens)$")
-
-
 # -------------------------
 # Main DTOs
 # -------------------------
@@ -30,8 +21,6 @@ class MasterPromptCreateDTO(BaseModel):
     subcategory: str
     prompt_content: PromptContentDTO
     language_of_the_prompt: str
-    language_to_generate_tweets: str
-    tweet_length_policy: Optional[TweetLengthPolicyDTO] = None
 
 
 class MasterPromptUpdateDTO(BaseModel):
@@ -39,8 +28,6 @@ class MasterPromptUpdateDTO(BaseModel):
     subcategory: Optional[str] = None
     prompt_content: Optional[PromptContentDTO] = None
     language_of_the_prompt: Optional[str] = None
-    language_to_generate_tweets: Optional[str] = None
-    tweet_length_policy: Optional[TweetLengthPolicyDTO] = None
 
 
 class MasterPromptResponseDTO(BaseModel):
@@ -49,7 +36,5 @@ class MasterPromptResponseDTO(BaseModel):
     subcategory: str
     prompt_content: PromptContentDTO
     language_of_the_prompt: str
-    language_to_generate_tweets: str
-    tweet_length_policy: Optional[TweetLengthPolicyDTO]
     created_at: datetime
     updated_at: datetime

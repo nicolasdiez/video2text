@@ -1,22 +1,22 @@
-# adapters/inbound/http/pipeline_controller.py
+# src/adapters/inbound/http/pipeline_controller.py
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
-from application.services.ingestion_pipeline_service import IngestionPipelineService
+from application.services.generation_pipeline_service import GenerationPipelineService
 from application.services.publishing_pipeline_service import PublishingPipelineService
 
 router = APIRouter(prefix="", tags=["pipeline"])
 
 # global services variables, where the instances with the adapters put in place will be injected from main.py
-ingestion_pipeline_service: IngestionPipelineService
+generation_pipeline_service: GenerationPipelineService
 publishing_pipeline_service: PublishingPipelineService
 
 
-@router.post("/pipelines/ingestion/run/{user_id}")
-async def run_ingestion_pipeline(user_id: str, service: IngestionPipelineService = Depends(lambda: ingestion_pipeline_service)):
+@router.post("/pipelines/generation/run/{user_id}")
+async def run_generation_pipeline(user_id: str, service: GenerationPipelineService = Depends(lambda: generation_pipeline_service)):
     """
-    Lanza el pipeline de ingestion para el user indicado:
+    Lanza el pipeline de generation para el user indicado:
       - user_id: User ID
     """
     try:

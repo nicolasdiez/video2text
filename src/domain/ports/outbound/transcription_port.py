@@ -1,4 +1,4 @@
-# src/domain/ports/transcription_port.py
+# src/domain/ports/outbound/transcription_port.py
 
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -10,4 +10,4 @@ class TranscriptionPort(ABC):
 
     @abstractmethod
     async def transcribe(self, video_id: str, language: Optional[str] = None) -> Optional[str]:
-        pass
+        raise NotImplementedError

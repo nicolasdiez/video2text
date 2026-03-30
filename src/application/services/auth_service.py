@@ -7,7 +7,7 @@ from adapters.outbound.mongodb.user_repository import MongoUserRepository
 from infrastructure.security.password_hasher import PasswordHasher
 from infrastructure.security.jwt_service import JWTService
 
-from api.schemas.auth_schemas import LoginResponseDTO, UserResponseDTO
+from api.schemas.auth_dtos import LoginResponseDTO, UserResponseDTO
 
 from domain.entities.user import User
 

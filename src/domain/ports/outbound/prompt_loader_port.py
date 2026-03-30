@@ -1,4 +1,4 @@
-# domain/ports/prompt_loader_port.py
+# src/domain/ports/outbound/prompt_loader_port.py
 
 
 from abc import ABC, abstractmethod
@@ -16,4 +16,4 @@ class PromptLoaderPort(ABC):
         :param prompt_file_name: nombre del archivo en el directorio de prompts
         :return: texto plano del prompt
         """
-        pass
+        raise NotImplementedError

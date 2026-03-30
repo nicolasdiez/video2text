@@ -1,4 +1,14 @@
-# adapters/outbound/file_prompt_loader.py
+# src/adapters/outbound/file_prompt_loader.py
+
+# Ultra resumen Hexagonal:
+
+# src/domain/ports/outbound/    → define qué necesita el dominio del mundo exterior
+# src/adapters/outbound/        → implementa cómo se consigue lo que el dominio necesita del mundo exterior
+
+# src/domain/ports/inbound/     → define lo que el mundo exterior le puede pedir al dominio (= qué ofrece el dominio al exterior -casos de uso-)
+# src/adapters/inbound/         → implementa cómo el mundo exterior invoca a los casos de uso del dominio (HTTP, cron, cli...)
+# src/application/services/     → implementa cómo se ejecutan esos casos de uso (orquestación)
+
 
 import os
 import asyncio

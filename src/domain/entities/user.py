@@ -21,10 +21,14 @@ class UserTwitterCredentials:
     """
     oauth1_access_token: str
     oauth1_access_token_secret: str
+
     oauth2_access_token: str
     oauth2_access_token_expires_at: Optional[datetime] = None
     oauth2_refresh_token: Optional[str] = None
     oauth2_refresh_token_expires_at: Optional[datetime] = None
+    oauth2_state: Optional[str] = None              # used to validate OAuth2 state
+    oauth2_code_verifier: Optional[str] = None      # used for OAuth2 PKCE
+    
     screen_name: Optional[str] = None
 
 

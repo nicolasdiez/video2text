@@ -1,4 +1,4 @@
-# adapters/outbound/mongo/user_repository.py
+# src/adapters/outbound/mongodb/user_repository.py
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -124,9 +124,11 @@ class MongoUserRepository(UserRepositoryPort):
                     "oauth1AccessToken": encrypt_value(creds.oauth1_access_token) if creds.oauth1_access_token else None,
                     "oauth1AccessTokenSecret": encrypt_value(creds.oauth1_access_token_secret) if creds.oauth1_access_token_secret else None,
                     "oauth2AccessToken": encrypt_value(creds.oauth2_access_token) if creds.oauth2_access_token else None,
-                    "oauth2AccessTokenExpiresAt": encrypt_value(creds.oauth2_access_token_expires_at) if creds.oauth2_access_token_expires_at else None,
+                    "oauth2AccessTokenExpiresAt": creds.oauth2_access_token_expires_at,
                     "oauth2RefreshToken": encrypt_value(creds.oauth2_refresh_token) if creds.oauth2_refresh_token else None,
-                    "oauth2RefreshTokenExpiresAt": encrypt_value(creds.oauth2_refresh_token_expires_at) if creds.oauth2_refresh_token_expires_at else None,
+                    "oauth2RefreshTokenExpiresAt": creds.oauth2_refresh_token_expires_at,
+                    "oauth2State": creds.oauth2_state,
+                    "oauth2CodeVerifier": creds.oauth2_code_verifier,
                     "screenName": creds.screen_name,
                 },
                 "updatedAt": datetime.utcnow()
@@ -150,9 +152,11 @@ class MongoUserRepository(UserRepositoryPort):
                 oauth1_access_token=decrypt_value(creds.get("oauth1AccessToken")) if creds.get("oauth1AccessToken") else None,
                 oauth1_access_token_secret=decrypt_value(creds.get("oauth1AccessTokenSecret")) if creds.get("oauth1AccessTokenSecret") else None,
                 oauth2_access_token=decrypt_value(creds.get("oauth2AccessToken")) if creds.get("oauth2AccessToken") else None,
-                oauth2_access_token_expires_at=decrypt_value(creds.get("oauth2AccessTokenExpiresAt")) if creds.get("oauth2AccessTokenExpiresAt") else None,
+                oauth2_access_token_expires_at=creds.get("oauth2AccessTokenExpiresAt"),
                 oauth2_refresh_token=decrypt_value(creds.get("oauth2RefreshToken")) if creds.get("oauth2RefreshToken") else None,
-                oauth2_refresh_token_expires_at=decrypt_value(creds.get("oauth2RefreshTokenExpiresAt")) if creds.get("oauth2RefreshTokenExpiresAt") else None,
+                oauth2_refresh_token_expires_at=creds.get("oauth2RefreshTokenExpiresAt"),
+                oauth2_state=creds.get("oauth2State"),
+                oauth2_code_verifier=creds.get("oauth2CodeVerifier"),
                 screen_name=creds.get("screenName"),
             )
 
@@ -160,10 +164,14 @@ class MongoUserRepository(UserRepositoryPort):
         scheduler_config = None
         if sc_doc:
             scheduler_config = SchedulerConfig(
-                ingestion_pipeline_frequency_minutes=int(sc_doc.get("ingestionPipelineFrequencyMinutes", 1)),
+                generation_pipeline_frequency_minutes=int(sc_doc.get("generationPipelineFrequencyMinutes", 1)),
                 publishing_pipeline_frequency_minutes=int(sc_doc.get("publishingPipelineFrequencyMinutes", 10)),
-                is_ingestion_pipeline_enabled=bool(sc_doc.get("isIngestionPipelineEnabled", True)),
+                stats_pipeline_frequency_minutes=int(sc_doc.get("statsPipelineFrequencyMinutes", 10)),
+                embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 10)),
+                is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
                 is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
+                is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
+                is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
             )
 
         return User(
@@ -197,16 +205,22 @@ class MongoUserRepository(UserRepositoryPort):
                 "oauth1AccessToken": encrypt_value(user.twitter_credentials.oauth1_access_token) if user.twitter_credentials and user.twitter_credentials.oauth1_access_token else None,
                 "oauth1AccessTokenSecret": encrypt_value(user.twitter_credentials.oauth1_access_token_secret) if user.twitter_credentials and user.twitter_credentials.oauth1_access_token_secret else None,
                 "oauth2AccessToken": encrypt_value(user.twitter_credentials.oauth2_access_token) if user.twitter_credentials and user.twitter_credentials.oauth2_access_token else None,
-                "oauth2AccessTokenExpiresAt": encrypt_value(user.twitter_credentials.oauth2_access_token_expires_at) if user.twitter_credentials and user.twitter_credentials.oauth2_access_token_expires_at else None,
+                "oauth2AccessTokenExpiresAt": user.twitter_credentials.oauth2_access_token_expires_at if user.twitter_credentials else None,
                 "oauth2RefreshToken": encrypt_value(user.twitter_credentials.oauth2_refresh_token) if user.twitter_credentials and user.twitter_credentials.oauth2_refresh_token else None,
-                "oauth2RefreshTokenExpiresAt": encrypt_value(user.twitter_credentials.oauth2_refresh_token_expires_at) if user.twitter_credentials and user.twitter_credentials.oauth2_refresh_token_expires_at else None,
+                "oauth2RefreshTokenExpiresAt": user.twitter_credentials.oauth2_refresh_token_expires_at if user.twitter_credentials else None,
+                "oauth2State": user.twitter_credentials.oauth2_state if user.twitter_credentials else None,
+                "oauth2CodeVerifier": user.twitter_credentials.oauth2_code_verifier if user.twitter_credentials else None,
                 "screenName": user.twitter_credentials.screen_name if user.twitter_credentials else None,
             } if user.twitter_credentials else None,
             "schedulerConfig": {
-                "ingestionPipelineFrequencyMinutes": user.scheduler_config.ingestion_pipeline_frequency_minutes,
+                "generationPipelineFrequencyMinutes": user.scheduler_config.generation_pipeline_frequency_minutes,
                 "publishingPipelineFrequencyMinutes": user.scheduler_config.publishing_pipeline_frequency_minutes,
-                "isIngestionPipelineEnabled": user.scheduler_config.is_ingestion_pipeline_enabled,
+                "statsPipelineFrequencyMinutes": user.scheduler_config.stats_pipeline_frequency_minutes,
+                "embeddingsPipelineFrequencyMinutes": user.scheduler_config.embeddings_pipeline_frequency_minutes,
+                "isGenerationPipelineEnabled": user.scheduler_config.is_generation_pipeline_enabled,
                 "isPublishingPipelineEnabled": user.scheduler_config.is_publishing_pipeline_enabled,
+                "isStatsPipelineEnabled": user.scheduler_config.is_stats_pipeline_enabled,
+                "isEmbeddingsPipelineEnabled": user.scheduler_config.is_embeddings_pipeline_enabled,
             } if user.scheduler_config else None,
             "maxTweetsToFetchFromDB": user.max_tweets_to_fetch_from_db,
             "maxTweetsToPublish": user.max_tweets_to_publish,
