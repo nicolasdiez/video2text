@@ -206,7 +206,7 @@ async def seed():
         # --- user_doc uses ObjectId type for _id ---
         user_doc = {
             "_id": MASTER_USER_ID,
-            "username": "nico",
+            "username": "nico@nico.com",
             "email": "nico@nico.com",
             "hashedPassword": "12345",
             "isActive": True, 
@@ -229,8 +229,8 @@ async def seed():
                 "embeddingsPipelineFrequencyMinutes": 1440,
                 "isGenerationPipelineEnabled": True,
                 "isPublishingPipelineEnabled": True,
-                "isStatsPipelineEnabled": True,
-                "isEmbeddingsPipelineEnabled": True
+                "isStatsPipelineEnabled": False,
+                "isEmbeddingsPipelineEnabled": False
             },
             "maxTweetsToFetchFromDB": 4,
             "maxTweetsToPublish": 1,
@@ -264,8 +264,8 @@ async def seed():
                     embeddings_pipeline_frequency_minutes=int(sc_doc.get("embeddingsPipelineFrequencyMinutes", 1000)),
                     is_generation_pipeline_enabled=bool(sc_doc.get("isGenerationPipelineEnabled", True)),
                     is_publishing_pipeline_enabled=bool(sc_doc.get("isPublishingPipelineEnabled", True)),
-                    is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", True)),
-                    is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", True)),
+                    is_stats_pipeline_enabled=bool(sc_doc.get("isStatsPipelineEnabled", False)),
+                    is_embeddings_pipeline_enabled=bool(sc_doc.get("isEmbeddingsPipelineEnabled", False)),
                 )
 
                 user_entity = User(
@@ -321,7 +321,7 @@ async def seed():
                 {"youtubeChannelId": "UC9vUu4vlIlMC0dHQCTvQPbg", "title": "@MoneyGuyShow"},
                 {"youtubeChannelId": "UCAeAB8ABXGoGMbXuYPmiu2A", "title": "@TheSwedishInvestor"},
                 #{"youtubeChannelId": "UCV6KDgJskWaEckne5aPA0aQ", "title": "@GrahamStephan"},
-                {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
+                # {"youtubeChannelId": "UCT3EznhW_CNFcfOlyDNTLLw", "title": "@MinorityMindset"},
                 {"youtubeChannelId": "UCFBpVaKCC0ajGps1vf0AgBg", "title": "@humphrey"},
             ]
 
@@ -602,8 +602,8 @@ async def seed():
             embeddings_pipeline_frequency_minutes=20,
             is_generation_pipeline_enabled=True,
             is_publishing_pipeline_enabled=True,
-            is_stats_pipeline_enabled=True,
-            is_embeddings_pipeline_enabled=True,
+            is_stats_pipeline_enabled=False,
+            is_embeddings_pipeline_enabled=False,
         )
         app_config = AppConfig(scheduler_config=scheduler_config)
         app_config_repo = MongoAppConfigRepository(db)

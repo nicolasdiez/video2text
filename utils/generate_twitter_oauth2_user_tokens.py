@@ -1,7 +1,7 @@
 # utils/generate_twitter_oauth2_user_tokens.py
 
 # ---- WHAT IS THIS SCRIPT FOR -----
-# Script used to generate the Twitter X_OAUTH2_ACCESS_TOKEN, X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT, X_OAUTH2_REFRESH_TOKEN and X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT from the email and pass of the user.
+# Script used to generate the Twitter user tokens: X_OAUTH2_ACCESS_TOKEN, X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT, X_OAUTH2_REFRESH_TOKEN and X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT from the email and pass of the user.
 
 # ---- HOW TO USE THIS SCRIPT -----
 # 1. Run an instance of the App (uvicorn server) into localhost:8081 --> i.e. Run main.py (uvicorn.run("main:app", host="0.0.0.0", port=8081))

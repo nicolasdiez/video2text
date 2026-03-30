@@ -87,8 +87,8 @@ class LLMGeminiClient(LLMPort):
                 model=model,
                 contents=full_prompt,
                 config={
-                    "temperature": 1.4,
-                    "top_p": 0.95,
+                    "temperature": 1.5,
+                    "top_p": 0.98,
                     "top_k": 40,
                 },
             )

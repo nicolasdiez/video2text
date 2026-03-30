@@ -32,7 +32,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Image and Push to GHCR                                    # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
+      - name: Build Image and Push to GHCR                        # build docker image from Dockerfile, and push it to GitHub Container Registry (when 'push: true')
         uses: docker/build-push-action@v6                         # 'build-push-action@v6' is a reusable GitHub Action, which under the hood runs "docker buildx build", which uses the ./Dockerfile
         with:
           context: .
@@ -60,8 +60,14 @@ jobs:
           ENVIRONMENT=${{ vars.ENVIRONMENT }}
           JWT_ALGORITHM=${{ vars.JWT_ALGORITHM }}
           JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${{ vars.JWT_ACCESS_TOKEN_EXPIRE_MINUTES }}
+          STATS_MAX_DAYS_BACK_FETCH_TWEETS=${{ vars.STATS_MAX_DAYS_BACK_FETCH_TWEETS }}
+          STATS_MAX_TWEET_AGE_MINUTES=${{ vars.STATS_MAX_TWEET_AGE_MINUTES }}
+          STATS_MIN_STATS_FRESHNESS_MINUTES=${{ vars.STATS_MIN_STATS_FRESHNESS_MINUTES }}
+          STATS_MIN_TWEET_AGE_MINUTES=${{ vars.STATS_MIN_TWEET_AGE_MINUTES }}
           YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          APIFY_API_TOKEN_PERSONAL=${{ secrets.APIFY_API_TOKEN_PERSONAL }}
           MONGO_USER=${{ secrets.MONGO_USER }}
           MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
           MONGO_HOST=${{ secrets.MONGO_HOST }}
@@ -71,14 +77,8 @@ jobs:
           X_OAUTH2_API_BEARER_TOKEN=${{ secrets.X_OAUTH2_API_BEARER_TOKEN }}
           X_OAUTH2_CLIENT_ID=${{ secrets.X_OAUTH2_CLIENT_ID }}
           X_OAUTH2_CLIENT_SECRET=${{ secrets.X_OAUTH2_CLIENT_SECRET }}
+          X_OAUTH2_REDIRECT_URI=${{ secrets.X_OAUTH2_REDIRECT_URI }}
           DB_ENCRIPTION_SECRET_KEY=${{ secrets.DB_ENCRIPTION_SECRET_KEY }}
-          X_OAUTH1_ACCESS_TOKEN=${{ secrets.X_OAUTH1_ACCESS_TOKEN }}
-          X_OAUTH1_ACCESS_TOKEN_SECRET=${{ secrets.X_OAUTH1_ACCESS_TOKEN_SECRET }}
-          X_OAUTH2_ACCESS_TOKEN=${{ secrets.X_OAUTH2_ACCESS_TOKEN }}
-          X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT=${{ secrets.X_OAUTH2_ACCESS_TOKEN_EXPIRES_AT }}
-          X_OAUTH2_REFRESH_TOKEN=${{ secrets.X_OAUTH2_REFRESH_TOKEN }}
-          X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT=${{ secrets.X_OAUTH2_REFRESH_TOKEN_EXPIRES_AT }}
-          X_SCREEN_NAME=${{ secrets.X_SCREEN_NAME }}
           YOUTUBE_OAUTH_CLIENT_ID=${{ secrets.YOUTUBE_OAUTH_CLIENT_ID }}
           YOUTUBE_OAUTH_CLIENT_SECRET=${{ secrets.YOUTUBE_OAUTH_CLIENT_SECRET }}
           YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN=${{ secrets.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN }}

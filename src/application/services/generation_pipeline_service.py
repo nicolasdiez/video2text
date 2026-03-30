@@ -211,7 +211,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                         
                         # 11. Generate raw texts (tweets) for the video
                         # model = "gpt-4o"
-                        models = ["gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"]
+                        models = ["gemini-3.1-pro-preview"] #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
                         model = random.choice(models)
                         max_retries = 3
                         backoff = 2  # seconds
