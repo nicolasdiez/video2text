@@ -43,7 +43,7 @@ jobs:
           # cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache          # registry cache ref so subsequent runs reuse layer cache from GHCR
           # cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
-  deploy-and-run-container:
+  deploy-container-prep:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
     needs: build
     environment: production                                      # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
@@ -146,6 +146,26 @@ jobs:
             echo "Port $PORT is free."
           fi
 
+      - name: Upload env file                         # upload .env file
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-file
+          path: .env.ci
+  
+  deploy-container-start:
+    runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
+    needs: deploy-container-prep
+    environment: production                                      # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download env file                                   # retrieve .env file
+        uses: actions/download-artifact@v4
+        with:
+          name: env-file
+      
       - name: Run container (detached)                          # run a container named sut-_ID (detached = non-blocking action for the runner step). Before run ensure no leftover container exists.
         run: |
           # Use a run-unique name and label so we don't collide with production containers
