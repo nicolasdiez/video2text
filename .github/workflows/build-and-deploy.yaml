@@ -86,6 +86,15 @@ jobs:
           EOF
         shell: bash
 
+      - name: Verify env file exists
+        run: ls -la .env.ci
+
+      - name: Upload env file                         # upload .env file
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-file
+          path: .env.ci
+
       - name: Log in to GHCR                                    # authenticates the runner into ghcr.io so the image pull ahead succeeds
         uses: docker/login-action@v3
         with:
@@ -145,12 +154,6 @@ jobs:
           else
             echo "Port $PORT is free."
           fi
-
-      - name: Upload env file                         # upload .env file
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-file
-          path: .env.ci
   
   deploy-container-start:
     runs-on: [self-hosted, Linux, ci-debian-bookworm-01, X64]
