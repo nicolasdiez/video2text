@@ -209,7 +209,7 @@ app_config_repo = MongoAppConfigRepository(database=db)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # Obtener el event loop REAL que está usando Uvicorn
+    # Obtener el event loop real que está usando Uvicorn
     loop = asyncio.get_running_loop()
 
     # Crear el scheduler usando explícitamente ese loop
@@ -615,19 +615,29 @@ async def lifespan(app: FastAPI):
     logger.info("APScheduler started")
 
     yield  # Application runs here
-
+    logger.info("Lifespan shutdown: scheduler left running intentionally")
+    
     # shutdown scheduler
-    scheduler.shutdown()
-    logger.info("APScheduler stopped")
+    # scheduler.shutdown()
+    # logger.info("APScheduler stopped")
 
 
 # Start FastAPI application
-app = FastAPI(
-    title       = "Pipelines: | Generation | Publishing | Stats | Embeddings |",
-    version     = "1.0.0",
-    description = "",
-    lifespan    = lifespan   # start the scheduler
-)
+# app = FastAPI(
+#    title       = "Pipelines: | Generation | Publishing | Stats | Embeddings |",
+#    version     = "1.0.0",
+#    description = "",
+#    lifespan    = lifespan   # start the scheduler
+#)
+
+def create_app():
+    return FastAPI(
+        title="Pipelines: | Generation | Publishing | Stats | Embeddings |",
+        version="1.0.0",
+        lifespan=lifespan
+    )
+
+app = create_app()
 
 # Register routes
 app.include_router(pipeline_controller.router)
