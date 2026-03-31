@@ -1,3 +1,5 @@
+# /Dockefile
+
 # Imagen base ligera con Python 3.11 para build (builder stage)
 FROM python:3.11-slim
 
@@ -8,9 +10,10 @@ ENV PYTHONUNBUFFERED=1
 # Crear directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev)
+# Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev) (tini: init process mínimo designed to be PID 1 of the container)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primero para aprovechar cache de Docker
@@ -28,6 +31,9 @@ WORKDIR /app/src
 
 # Exponer puerto
 EXPOSE 8081
+
+# Usar tini como init process (PID 1)
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Comando de arranque (Uvicorn en modo producción)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081"]
