@@ -203,12 +203,17 @@ embeddings_pipeline_servive = EmbeddingsPipelineService(
 app_config_repo = MongoAppConfigRepository(database=db)
 
 # APScheduler instance
-scheduler = AsyncIOScheduler()
-
+# scheduler = AsyncIOScheduler()
 
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    # Obtener el event loop REAL que está usando Uvicorn
+    loop = asyncio.get_running_loop()
+
+    # Crear el scheduler usando explícitamente ese loop
+    scheduler = AsyncIOScheduler(event_loop=loop)
 
     # ===== START TEMPORARY BLOCK =====
     # Escribir en el document del USER_ID las credentials de usuario que temporalmente están en .env
