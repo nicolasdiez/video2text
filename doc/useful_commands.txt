@@ -45,6 +45,9 @@ docker run -p 8081:8081 ghcr.io/nicolasdiez/video2text:latest
 # check the docker image I have locally
 docker images ghcr.io/nicolasdiez/video2text
 
+# list all local images
+docker images
+
 # remove the old local latest image
 docker rmi ghcr.io/nicolasdiez/video2text:latest
 
@@ -53,6 +56,9 @@ docker images -a
 
 # remove all local images
 docker rmi -f $(docker images -aq)
+
+# remove all local images (to free space)
+docker images -aq | xargs -r docker rmi -f
 
 # inspect container
 sudo docker inspect CONTAINER_NAME --format '{{.Name}} {{.State.Status}} {{.NetworkSettings.Ports}}'
@@ -85,7 +91,8 @@ sudo docker unpause $(docker ps -q)
 sudo docker unpause $(docker ps -q)
 
 
-# logs
+
+### logs
 
 # see logs realtime (parar con Ctrl+C)
 sudo docker logs -f CONTAINER_NAME
@@ -134,11 +141,20 @@ sudo docker ps -a
 
 ### GITHUB SELF-HOSTED RUNNER (GCP VM) ###
 
+# Run runner in background (deja libre el terminal)
+./run.sh & disown
+
+# Ver logs del runner
+ps aux | grep Runner
+
+# Matar el runner
+pkill -f Runner.Listener
+
 # Run github actions self-hosted runner job in VM
 cd actions-runner/
 ./run.sh
 
-# matar todos los procesos corriendo del runner
+# Matar todos los procesos corriendo del runner
 pkill -f actions-runner
 
 # Ver puertos y conexiones en la VM
