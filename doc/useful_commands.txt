@@ -66,6 +66,9 @@ docker stop $(docker ps -q)
 # kill all running containers (USAR rm mejor que stop, es más limpio)
 docker rm -f $(docker ps -q)
 
+# mata todos los contenedores (running, stopped...) (esta es la MÁS SAFE)
+docker ps -aq | xargs -r docker rm -f
+
 # pause container from running (freeze process, without stopping or re-starting)
 sudo docker pause CONTAINER_NAME
 

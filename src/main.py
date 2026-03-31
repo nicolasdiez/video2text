@@ -109,7 +109,7 @@ logger = logging.getLogger(__name__)
 try:
     youtube_client = get_youtube_client(client_id=config.YOUTUBE_OAUTH_CLIENT_ID, client_secret=config.YOUTUBE_OAUTH_CLIENT_SECRET, refresh_token=config.YOUTUBE_OAUTH_CLIENT_REFRESH_TOKEN)
 except RuntimeError as exc:
-    logger.error("YouTube client could not be constructed: %s", str(exc), extra={"mod": __name__})
+    logger.error("YouTube client could not be constructed (to use as input for YouTubeTranscriptionClientOfficialDataAPI): %s", str(exc), extra={"mod": __name__})
     youtube_client = None
 
 # --- Repo adapters & service instantiation ---
@@ -231,7 +231,9 @@ async def lifespan(app: FastAPI):
     # ===== END TEMPORARY BLOCK =====
 
 
-    # ===== GENERATION PIPELINE job =====
+    # ==================================================================================================================
+    # =============================================== GENERATION PIPELINE job ==========================================
+    # ==================================================================================================================
     async def generation_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -319,10 +321,12 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Generation pipeline app config frequency: %s", str(ex), extra={"job": "generation"})
         else:
             logger.debug("Generation pipeline app config frequency has not changed (current freq: %s mins)", current_generation_frequency_minutes, extra={"job": "generation"})
+    # ==================================================================================================================
 
 
-
-    # ===== PUBLISHING PIPELINE job =====
+    # ==================================================================================================================
+    # =============================================== PUBLISHING PIPELINE job ==========================================
+    # ==================================================================================================================
     async def publishing_job():
         # 1. Get pipeline execution frequency at app config level
         app_config = await app_config_repo.get_config()
@@ -410,10 +414,12 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Publishing pipeline app config frequency: %s", str(ex), extra={"job": "publishing"})
         else:   
             logger.debug("Publishing pipeline app config frequency has not changed (current freq: %s mins)", current_publishing_frequency_minutes, extra={"job": "publishing"})
+    # ==================================================================================================================
 
 
-
-    # ===== STATS PIPELINE job =====
+    # ==================================================================================================================
+    # =============================================== STATS PIPELINE job ==========================================
+    # ==================================================================================================================
     async def stats_job():
         # 1. Get app-level config
         app_config = await app_config_repo.get_config()
@@ -496,10 +502,12 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Stats pipeline app config frequency: %s", str(ex), extra={"job": "stats"})
         else:
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
-    
-    
+    # ==================================================================================================================
 
-    # ===== EMBEDDINGS PIPELINE job =====
+    
+    # ==================================================================================================================
+    # =============================================== EMBEDDINGS PIPELINE job ==========================================
+    # ==================================================================================================================
     async def embeddings_job():
         # 1. Get app-level config
         app_config = await app_config_repo.get_config()
@@ -579,7 +587,7 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Embeddings pipeline app config frequency: %s", str(ex), extra={"job": "embeddings"})
         else:
             logger.debug("Embeddings pipeline app config frequency has not changed (current freq: %s mins)", current_embeddings_frequency_minutes, extra={"job": "embeddings"})
-
+    # ==================================================================================================================
 
 
 
@@ -594,8 +602,8 @@ async def lifespan(app: FastAPI):
     # setup job execution frequency
     scheduler.add_job(generation_job, "interval", minutes=generation_pipeline_frequency_minutes, id="generation_job")
     scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
-    scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
-    scheduler.add_job(embeddings_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
+    # scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
+    # scheduler.add_job(embeddings_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
 
     # start scheduler.
     scheduler.start()

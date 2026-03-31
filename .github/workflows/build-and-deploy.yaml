@@ -17,7 +17,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest                                        # run on github-hosted runner
-    # runs-on: [self-hosted, Linux, X64]   # run on self-hosted runner (all these tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners)
+    # runs-on: [self-hosted, Linux, X64]                          # run on self-hosted runner (all these tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners)
     steps:
       - name: Checkout                                            # fetch the project github repo
         uses: actions/checkout@v4
@@ -44,9 +44,9 @@ jobs:
           # cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max   # registry cache ref so subsequent runs reuse layer cache from GHCR
 
   deploy:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64]                          # run on self-hosted runner (all these tags have to match with the ones defined in GitHub Repo --> Actions --> Runners --> Self-hosted Runners)
     needs: build
-    environment: production                                      # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
+    environment: production                                     # must have full match to the exact name of the Environment in Github repo --> Settings --> Secrets and variables --> Actions --> Environment secrets. Otherwise the workflow won´t have access to the vars and secrets.
     timeout-minutes: 120
     steps:
       - name: Checkout                                          # fetch the project github repo (needed to generate .env.ci file with the vars/secrets)
