@@ -13,7 +13,6 @@ WORKDIR /app
 # Instalar dependencias de compilación (build-essential: gcc, g++, make, libc-dev) (tini: init process mínimo designed to be PID 1 of the container)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements primero para aprovechar cache de Docker
@@ -33,9 +32,9 @@ WORKDIR /app/src
 EXPOSE 8081
 
 # Usar tini como init process (PID 1)
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Comando de arranque (Uvicorn en modo producción)
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081"]
-CMD ["uvicorn", "main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8081"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081"]
+# CMD ["uvicorn", "main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8081"]
 
