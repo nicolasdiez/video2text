@@ -1,5 +1,17 @@
 # Youtbe App-level OAuth credentials (for trancript service)
 
+## How to Deploy App in Production (VM GCP - Compute Engine)
+- commit changes from local branch to branch origin develop (git add . | git commit -m '...' | git push origin develop)
+- create PR from compare:develop to base:main
+- authorize PR with option "create a merge commit" into main
+- bypass all authorizations
+- before moving on with next step, align origin:main with origin:develop (in local terminal --> git fetch origin | git checkout develop | git merge origin/main | git push origin develop)
+- let the yaml build-and-deploy pipeline start (triggered by a push to origin:main)
+-- build job will execute in github runner host
+-- before deploy job begins, start the self-hosted runner agent in VM GCP (compute engine): cd actions-runner/ | ./run.sh
+-- deploy job will execute in self-hosted runner (VM GCP)
+- let the yaml build-and-deploy pipeline finish and the app will end up started and running in the VM GCP
+
 ## How to Refresh access token
 - execute script /utils/get_youtube_refresh_token.py
 - authorize (in web URL) the app video2text to act on behalf of the desired user (in this case is a development user: ju.....@....com)
