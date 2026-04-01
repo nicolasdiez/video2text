@@ -199,44 +199,78 @@ class GenerationPipelineService(GenerationPipelinePort):
 
                         # 10. Load and prepare user and system messages for the PROMPT
                         # user message
-                        prompt_user_message_with_language = self.prompt_composer_service.add_output_language(message=final_prompt.user_message, output_language=final_prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
-                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=prompt_user_message_with_language, sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
-                        prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective, transcript=video.transcript, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective = self.prompt_composer_service.add_objective(message=final_prompt.user_message, sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.AFTER)
+                        prompt_user_message_with_objective_and_language = self.prompt_composer_service.add_output_language(message=prompt_user_message_with_objective, output_language=final_prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
+                        prompt_user_message = self.prompt_composer_service.add_transcript(message=prompt_user_message_with_objective_and_language, transcript=video.transcript, position=InstructionPosition.AFTER)
                         logger.info("Prompt user_message loaded (+output_language +objective +transcript)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         # system message
-                        prompt_system_message_with_objective = self.prompt_composer_service.add_objective(message="", sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
+                        prompt_system_message_with_objective = "" # self.prompt_composer_service.add_objective(message="", sentences=channel.tweets_to_generate_per_video, position=InstructionPosition.BEFORE)
                         prompt_system_message_with_objective_and_length = prompt_system_message_with_objective + self.prompt_composer_service.add_output_length(message=final_prompt.system_message, tweet_length_policy=final_prompt.tweet_length_policy, position=InstructionPosition.BEFORE)
                         prompt_system_message = self.prompt_composer_service.add_output_language(message=prompt_system_message_with_objective_and_length, output_language=final_prompt.language_to_generate_tweets, position=InstructionPosition.AFTER)
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         
                         # 11. Generate raw texts (tweets) for the video
-                        # model = "gpt-4o"
-                        models = ["gemini-3.1-pro-preview"] #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
+                        REQUEST_INTERVAL_SECONDS = 4.0          # pause between successful requests (between videos)
+                        RETRY_BACKOFF_INITIAL_SECONDS = 4.0     # initial backoff for retries (exponential)
+                        models = ["gemini-3.1-pro-preview"]     #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
                         model = random.choice(models)
                         max_retries = 3
-                        backoff = 2  # seconds
+                        backoff = RETRY_BACKOFF_INITIAL_SECONDS
+                        json_response = None
 
                         for attempt in range(1, max_retries + 1):
+                            logger.info("Calling tweet_generation_client (attempt %s/%s) model=%s", attempt, max_retries, model, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             try:
-                                json_response = await self.tweet_generation_client.generate_tweets(
+                                # Adapter returns a parsed dict or raises RuntimeError
+                                result = await self.tweet_generation_client.generate_tweets(
                                     prompt_user_message=prompt_user_message,
                                     prompt_system_message=prompt_system_message,
                                     model=model)
-                                logger.error("Tweet AI generation successful", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                                break  # success → exit retry loop
+                                logger.info("Tweet generation client returned result for video %s (attempt %s)", video.id, attempt, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                logger.debug("Tweet generation raw summary (adapter may include raw): %s", (result.get("raw") if isinstance(result, dict) else "<no-raw>"), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
+                                # Defensive structural check: expect a dict with 'tweets' list (adapter guarantees this)
+                                if not isinstance(result, dict) or not isinstance(result.get("tweets"), list):
+                                    logger.warning("Tweet generation client returned unexpected structure for video %s on attempt %s: %r", video.id, attempt, result, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                    json_response = None
+                                    if attempt < max_retries:
+                                        await asyncio.sleep(backoff)
+                                        backoff *= 2
+                                        continue
+                                    else:
+                                        break
+
+                                # Success: adapter returned parsed JSON dict (compatible with pipeline)
+                                json_response = result
+                                logger.info("Tweet AI generation successful for video %s (attempt %s) -> %s tweets", video.id, attempt, len(json_response.get("tweets", [])), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                
+                                # pause between successful requests if configured
+                                if REQUEST_INTERVAL_SECONDS and REQUEST_INTERVAL_SECONDS > 0:
+                                    logger.debug("Sleeping %ss between tweet generation requests (video %s)", REQUEST_INTERVAL_SECONDS, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                    await asyncio.sleep(REQUEST_INTERVAL_SECONDS)
+                                
+                                break
+
                             except Exception as e:
                                 error_text = str(e).lower()
-                                # Only retry on transient errors (503 or similar)
                                 is_transient = ("503" in error_text or "temporarily unavailable" in error_text or "high demand" in error_text)
+                                logger.warning("Tweet generation client exception on attempt %s/%s for video %s: %s", attempt, max_retries, video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                                 if attempt < max_retries and is_transient:
-                                    logger.warning("Gemini transient error on attempt %s/%s for video %s. Retrying in %ss...", attempt, max_retries, video.id, backoff, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                    logger.info("Retrying after transient error (sleep %ss)...", backoff, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                                     await asyncio.sleep(backoff)
                                     backoff *= 2
                                     continue
                                 logger.error("Tweet AI generation failed for video %s after %s attempts: %s", video.id, attempt, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                                continue  # skip this video and move to the next one
+                                json_response = None
+                                break
+
+                        # After retry loop: ensure we have a valid parsed dict response
+                        if not json_response:
+                            logger.error("Tweet AI generation failed for video %s: no valid response after %s attempts", video.id, max_retries, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                            continue
 
                         # 12. Validate tweet output using guardrails
+                        logger.debug("Passing json_response to guardrails for video %s: %s", video.id, repr(json_response)[:1000], extra={...})
                         try:
                             expected_count = channel.tweets_to_generate_per_video
                             # validate tweet count
@@ -274,8 +308,12 @@ class GenerationPipelineService(GenerationPipelinePort):
                             openai_request=openai_req,
                             generated_at = tweet_generation_ts
                         )
-                        generation_id = await self.tweet_generation_repo.save(tweet_generation)
-                        logger.info("Tweet generation %s saved in 'tweet_generations'", generation_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        try:
+                            generation_id = await self.tweet_generation_repo.save(tweet_generation)
+                            logger.info("Tweet generation %s saved in 'tweet_generations'", generation_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                        except Exception:
+                            logger.exception("Failed saving in 'tweet_generations' for video %s", video.id, extra={...})
+                            continue
 
                         # 15. Map DTO raw_tweets_text List[str] → to domain entity Tweet
                         tweets: List[Tweet] = [
@@ -294,13 +332,23 @@ class GenerationPipelineService(GenerationPipelinePort):
                         ]
 
                         # 16. Save Tweet entities (in batch)
-                        await self.tweet_repo.save_all(tweets)
-                        logger.info("%s tweets saved in 'tweets'", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
+                        try:
+                            await self.tweet_repo.save_all(tweets)
+                            logger.info("%s tweets saved in 'tweets'", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
+                        except Exception:
+                            logger.exception("Failed saving tweets for video %s", video.id, extra={...})
+                            continue
 
                         # 17. Update video entity
-                        video.tweets_generated = True
-                        video.updated_at = datetime.utcnow()
-                        await self.video_repo.update(video)
+                        try:
+                            video.tweets_generated = True
+                            video.updated_at = datetime.utcnow()
+                            await self.video_repo.update(video)         
+                            logger.info("Video %s updated in 'videos'", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
+                        except Exception:
+                            logger.exception("Failed updating video %s in 'videos'", video.id, extra={...})
+                            continue
+
                     else:
                         logger.info("Skipping tweet generation - Video %s already has tweets generated, or video has no transcript available", video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
