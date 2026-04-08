@@ -8,7 +8,8 @@ Beyond standard generation, PostPilotApp implements a **Performance-Weighted RAG
 
 ## 🎯 Functional Overview
 
-The application operates through **four fully automated, interconnected pipelines**. The core generation flow is completely decoupled from the continuous learning mechanism:
+The application operates through **4 fully automated, interconnected pipelines**. 
+The core generation flow is completely decoupled from the continuous learning mechanism:
 
 ### 1. ✍️ Generation Pipeline (The Active Creator)
 This is the entry point for new content creation, handling everything from raw video ingestion to final text generation.
@@ -37,7 +38,8 @@ The analytics engine that closes the learning loop.
 
 ## 🛠️ Technical Architecture
 
-PostPilotApp is built using **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports and Adapters)**. This strict boundary management ensures that the core business logic remains completely decoupled from external frameworks, databases, or third-party APIs.
+PostPilotApp is built using **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports and Adapters)**. 
+This strict boundary management ensures that the core business logic remains completely decoupled from external frameworks, databases, or third-party APIs.
 
 ### 🏗️ Core Layers
 
@@ -76,9 +78,9 @@ PostPilotApp is built using **Domain-Driven Design (DDD)** and **Hexagonal Archi
 
 2. Create your virtual environment and install dependencies:
     python -m venv post-pilot-app-venv
-    # On Windows:
+    #### On Windows:
     post-pilot-app-venv\Scripts\activate
-    # On macOS/Linux:
+    #### On macOS/Linux:
     source post-pilot-app-venv/bin/activate
 
     pip install -r requirements.txt
@@ -97,6 +99,13 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 ---
 
 ## 📝 License
-This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
+
+**© 2026 Nicolas Diez. All Rights Reserved.**
+
+This repository and its contents are proprietary software. 
+
+The source code is published here exclusively for portfolio, educational, and demonstration purposes. 
+
+You are welcome to read and review the code for educational purposes. However, you are **NOT** permitted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software, or any part of it, for any commercial or non-commercial purposes without explicit written permission from the author.
 
 ---
