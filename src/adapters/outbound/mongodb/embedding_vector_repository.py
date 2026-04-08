@@ -18,7 +18,7 @@ class MongoEmbeddingVectorRepository(EmbeddingVectorRepositoryPort):
     """
 
     def __init__(self, database: AsyncIOMotorDatabase):
-        self.collection = database["embedding_vectors"]   # Single collection for all embeddings
+        self.collection = database["embedding_vectors"]   # Single collection for all embeddings (Tweet texts & Video transcripts)
 
     def _to_entity(self, doc) -> EmbeddingVector:
         return EmbeddingVector(

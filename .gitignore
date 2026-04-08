@@ -1,4 +1,4 @@
-video2text-venv/
+post-pilot-app-venv/
 # Ignore all env files
 .env*
 # But keep example in the build context
@@ -36,4 +36,4 @@ __pycache__/
 *.tmp
 
 # Kubernetes real secrets
-k8s/secret.yaml
+k8s/secret.yamlpost-pilot-app-venv/

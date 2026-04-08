@@ -31,6 +31,11 @@ class UserTwitterCredentials:
     
     screen_name: Optional[str] = None
 
+    twitter_user_id: Optional[str] = None
+    twitter_connected: bool = False                 # indicates if user has passed OAuth2 flow successfully
+    last_access_token_refresh_at: Optional[datetime] = None
+    access_token_refresh_failure_count: int = 0
+
 
 @dataclass(kw_only=True)
 class User:

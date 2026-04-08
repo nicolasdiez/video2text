@@ -130,6 +130,10 @@ class MongoUserRepository(UserRepositoryPort):
                     "oauth2State": creds.oauth2_state,
                     "oauth2CodeVerifier": creds.oauth2_code_verifier,
                     "screenName": creds.screen_name,
+                    "twitter_user_id": creds.twitter_user_id,
+                    "twitter_connected": creds.twitter_connected,
+                    "last_access_token_refresh_at": creds.last_access_token_refresh_at,
+                    "access_token_refresh_failure_count": creds.access_token_refresh_failure_count,
                 },
                 "updatedAt": datetime.utcnow()
             }}
@@ -158,6 +162,10 @@ class MongoUserRepository(UserRepositoryPort):
                 oauth2_state=creds.get("oauth2State"),
                 oauth2_code_verifier=creds.get("oauth2CodeVerifier"),
                 screen_name=creds.get("screenName"),
+                twitter_user_id=creds.get("twitter_user_id"),
+                twitter_connected=creds.get("twitter_connected"),
+                last_access_token_refresh_at=creds.get("last_access_token_refresh_at"),
+                access_token_refresh_failure_count=creds.get("access_token_refresh_failure_count")
             )
 
         sc_doc = doc.get("schedulerConfig")
@@ -211,6 +219,10 @@ class MongoUserRepository(UserRepositoryPort):
                 "oauth2State": user.twitter_credentials.oauth2_state if user.twitter_credentials else None,
                 "oauth2CodeVerifier": user.twitter_credentials.oauth2_code_verifier if user.twitter_credentials else None,
                 "screenName": user.twitter_credentials.screen_name if user.twitter_credentials else None,
+                "twitter_user_id": user.twitter_credentials.twitter_user_id if user.twitter_credentials else None,
+                "twitter_connected": user.twitter_credentials.twitter_connected if user.twitter_credentials else None,
+                "last_access_token_refresh_at": user.twitter_credentials.last_access_token_refresh_at if user.twitter_credentials else None,
+                "access_token_refresh_failure_count": user.twitter_credentials.access_token_refresh_failure_count if user.twitter_credentials else None,
             } if user.twitter_credentials else None,
             "schedulerConfig": {
                 "generationPipelineFrequencyMinutes": user.scheduler_config.generation_pipeline_frequency_minutes,

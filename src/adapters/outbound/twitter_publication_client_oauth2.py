@@ -3,7 +3,7 @@
 import aiohttp
 import logging
 import inspect
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from domain.ports.outbound.twitter_publication_port import TwitterPublicationPort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
@@ -59,11 +59,15 @@ class TwitterPublicationClientOAuth2(TwitterPublicationPort):
             raise RuntimeError("User has no OAuth2 credentials configured.")
 
         # Refresh user access token if expired
-        if creds.oauth2_access_token_expires_at <= datetime.utcnow():
-            logger.info(
-                f"Access token expired for user {user.id}, refreshing...",
-                extra={"user_id": user.id, "module_name": __name__, "method": "publish"},
-            )
+        REFRESH_BUFFER = timedelta(seconds=60)
+        expires_at = creds.oauth2_access_token_expires_at
+        now = datetime.utcnow()
+
+        if (expires_at is None) or (expires_at <= now + REFRESH_BUFFER):
+            logger.info("Access token missing or near expiry for user %s (expires_at=%s), refreshing...",
+                user.id,
+                expires_at,
+                extra={"user_id": user.id, "module_name": __name__, "method": "publish"},)
             access_token = await self.oauth2_service.refresh_tokens(user.id)
         else:
             access_token = creds.oauth2_access_token

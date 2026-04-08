@@ -7,6 +7,7 @@ import hashlib
 import base64
 from datetime import datetime, timedelta
 from typing import Optional
+import asyncio
 
 from domain.entities.user import UserTwitterCredentials
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
@@ -19,6 +20,9 @@ from config import (
 
 import logging
 logger = logging.getLogger(__name__)
+
+# Refresh buffer: refresh if token will expire within this window
+REFRESH_BUFFER = timedelta(seconds=60)
 
 
 def generate_pkce_pair():
@@ -53,6 +57,9 @@ class TwitterOAuth2Service:
 
     def __init__(self, user_repo: UserRepositoryPort):
         self.user_repo = user_repo
+
+        # Per-user asyncio.Lock to implement single-flight refreshes
+        self._refresh_locks: dict[str, asyncio.Lock] = {}
 
     # ---------------------------------------------------------
     # 1) Generate authorization URL
@@ -189,64 +196,161 @@ class TwitterOAuth2Service:
     # ---------------------------------------------------------
     async def refresh_tokens(self, user_id: str) -> str:
         """
-        Uses the stored refresh_token to obtain a new access_token.
-        Twitter may rotate refresh tokens, so we persist the new one if provided.
+        Single-flight refresh implementation:
+        - Acquire a per-user asyncio.Lock so only one coroutine refreshes at a time.
+        - Re-read credentials from the DB inside the lock to detect if another coroutine already refreshed while we were waiting.
+        - If token is still near expiry (with buffer) perform refresh, persist and return.
+        - If another coroutine already refreshed, return the persisted token.
+        - On failures increment a failure counter and mark disconnected after a threshold.
         """
-        user = await self.user_repo.find_by_id(user_id)
-        if not user or not user.twitter_credentials:
-            raise RuntimeError("User has no Twitter credentials to refresh.")
+        FAILURE_THRESHOLD = 5  # number of consecutive failures before marking disconnected
+        
+        # Obtain or create the lock for this user
+        lock = self._refresh_locks.setdefault(user_id, asyncio.Lock())
 
-        refresh_token = user.twitter_credentials.oauth2_refresh_token
-        if not refresh_token:
-            raise RuntimeError("User has no refresh_token stored.")
+        async with lock:
+            # Re-read user and credentials: another worker may have updated them
+            user = await self.user_repo.find_by_id(user_id)
+            if not user or not user.twitter_credentials:
+                raise RuntimeError("User has no Twitter credentials to refresh.")
 
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": refresh_token,
-            "client_id": X_OAUTH2_CLIENT_ID,
-        }
+            creds = user.twitter_credentials
+            expires_at = creds.oauth2_access_token_expires_at
+            now = datetime.utcnow()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.TOKEN_URL,
-                data=data,
-                auth=aiohttp.BasicAuth(
-                    X_OAUTH2_CLIENT_ID,
-                    X_OAUTH2_CLIENT_SECRET
-                )
-            ) as resp:
+            # If token is valid beyond the buffer, return it (no refresh needed)
+            if expires_at is not None and expires_at > now + REFRESH_BUFFER:
+                return creds.oauth2_access_token
 
-                if resp.status != 200:
-                    body = await resp.text()
-                    logger.error(
-                        f"Failed to refresh tokens: {resp.status} - {body}",
-                        extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
-                    )
-                    raise RuntimeError(f"Twitter OAuth2 refresh failed: {resp.status}")
+            # Ensure we have a refresh token to use
+            refresh_token = creds.oauth2_refresh_token
+            if not refresh_token:
+                raise RuntimeError("User has no refresh_token stored.")
 
-                payload = await resp.json()
+            # Prepare refresh request
+            data = {
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": X_OAUTH2_CLIENT_ID,
+            }
 
-        # Extract new tokens
-        new_access_token = payload["access_token"]
-        new_refresh_token = payload.get("refresh_token", refresh_token)
-        expires_in = payload.get("expires_in", 7200)
-        refresh_expires_in = payload.get("refresh_token_expires_in", 30 * 24 * 3600)
+            # Perform HTTP request to token endpoint with a short timeout
+            timeout = aiohttp.ClientTimeout(total=15)
+            try:
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.post(
+                        self.TOKEN_URL,
+                        data=data,
+                        auth=aiohttp.BasicAuth(X_OAUTH2_CLIENT_ID, X_OAUTH2_CLIENT_SECRET),
+                    ) as resp:
+                        if resp.status != 200:
+                            body = await resp.text()
+                            logger.error(
+                                "Failed to refresh tokens: %s - %s",
+                                resp.status,
+                                body,
+                                extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+                            )
 
-        # Persist updated tokens
-        await self._update_user_tokens(
-            user_id=user_id,
-            access_token=new_access_token,
-            refresh_token=new_refresh_token,
-            expires_in=expires_in,
-            refresh_expires_in=refresh_expires_in,
-        )
+                            # Increment refresh_failure_count and persist for diagnostics/backoff
+                            try:
+                                user_for_fail = await self.user_repo.find_by_id(user_id)
+                                if user_for_fail and user_for_fail.twitter_credentials:
+                                    creds_fail = user_for_fail.twitter_credentials
+                                    creds_fail.refresh_failure_count = (creds_fail.refresh_failure_count or 0) + 1
+                                    await self.user_repo.update_twitter_credentials(user_id, creds_fail)
+                                    logger.warning(
+                                        "Incremented refresh_failure_count for user %s -> %s",
+                                        user_id,
+                                        creds_fail.refresh_failure_count,
+                                        extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+                                    )
 
-        logger.info(
-            f"Successfully refreshed tokens for user {user_id}",
-            extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
-        )
+                                    # If threshold exceeded, mark disconnected to avoid immediate retries
+                                    if creds_fail.refresh_failure_count >= FAILURE_THRESHOLD:
+                                        creds_fail.twitter_connected = False
+                                        try:
+                                            await self.user_repo.update_twitter_credentials(user_id, creds_fail)
+                                            logger.warning(
+                                                "Marked twitter_connected=False for user %s after %s consecutive refresh failures",
+                                                user_id,
+                                                creds_fail.refresh_failure_count,
+                                                extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+                                            )
+                                        except Exception:
+                                            logger.exception("Failed to persist twitter_connected=False for user %s", user_id)
+                            except Exception:
+                                logger.exception("Failed to persist refresh_failure_count for user %s", user_id)
 
-        return new_access_token
+                            raise RuntimeError(f"Twitter OAuth2 refresh failed: {resp.status}")
+
+                        payload = await resp.json()
+            except Exception:
+                # Network/timeout/other exception: increment failure counter and re-raise
+                try:
+                    user_for_fail = await self.user_repo.find_by_id(user_id)
+                    
+                    if user_for_fail and user_for_fail.twitter_credentials:
+                        creds_fail = user_for_fail.twitter_credentials
+                        creds_fail.refresh_failure_count = (creds_fail.refresh_failure_count or 0) + 1
+                        await self.user_repo.update_twitter_credentials(user_id, creds_fail)
+                        logger.warning(
+                            "Incremented refresh_failure_count for user %s due to exception -> %s",
+                            user_id,
+                            creds_fail.refresh_failure_count,
+                            extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+                        )
+
+                        if creds_fail.refresh_failure_count >= FAILURE_THRESHOLD:
+                            creds_fail.twitter_connected = False
+                            try:
+                                await self.user_repo.update_twitter_credentials(user_id, creds_fail)
+                                logger.warning(
+                                    "Marked twitter_connected=False for user %s after %s consecutive refresh failures",
+                                    user_id,
+                                    creds_fail.refresh_failure_count,
+                                    extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+                                )
+                            except Exception:
+                                logger.exception("Failed to persist twitter_connected=False for user %s", user_id)
+                except Exception:
+                    logger.exception("Failed to persist refresh_failure_count after exception for user %s", user_id)
+
+                # re-raise so caller sees the failure
+                raise
+
+            # Instrumentation: log expires_in and whether refresh_token was rotated
+            expires_in = payload.get("expires_in")
+            rotated = "refresh_token" in payload
+            logger.info(
+                "token-refresh resp for user %s: expires_in=%s refresh_token_rotated=%s",
+                user_id,
+                expires_in,
+                rotated,
+                extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+            )
+
+            # Extract tokens and persist; only replace refresh_token if provider returned one
+            new_access_token = payload["access_token"]
+            new_refresh_token = payload.get("refresh_token", refresh_token)
+            refresh_expires_in = payload.get("refresh_token_expires_in", 30 * 24 * 3600)
+
+            # Persist updated tokens (this method computes expires_at and writes atomically)
+            await self._update_user_tokens(
+                user_id=user_id,
+                access_token=new_access_token,
+                refresh_token=new_refresh_token,
+                expires_in=expires_in if expires_in is not None else 7200,
+                refresh_expires_in=refresh_expires_in,
+            )
+
+            logger.info(
+                "Successfully refreshed tokens for user %s",
+                user_id,
+                extra={"user_id": user_id, "module_name": __name__, "method": "refresh_tokens"},
+            )
+
+            return new_access_token
 
     # ---------------------------------------------------------
     # Internal helper: persist tokens
@@ -279,5 +383,9 @@ class TwitterOAuth2Service:
         creds.oauth2_access_token_expires_at = expires_at
         creds.oauth2_refresh_token = refresh_token
         creds.oauth2_refresh_token_expires_at = refresh_expires_at
+
+        creds.twitter_connected = True
+        creds.last_token_refresh_at = datetime.utcnow()
+        creds.refresh_failure_count = 0
 
         await self.user_repo.update_twitter_credentials(user_id, creds)

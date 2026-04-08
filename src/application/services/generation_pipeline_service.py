@@ -49,7 +49,7 @@ class GenerationPipelineService(GenerationPipelinePort):
     def __init__(
         self,
         user_repo: UserRepositoryPort,
-        prompt_loader: PromptLoaderPort,
+        prompt_loader: PromptLoaderPort,        # <--- ELIMINAR, YA NO SE USA !!
         channel_repo: ChannelRepositoryPort,
         video_source: VideoSourcePort,
         video_repo: VideoRepositoryPort,
@@ -210,7 +210,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         
                         # 11. Generate raw texts (tweets) for the video
-                        REQUEST_INTERVAL_SECONDS = 4.0          # pause between successful requests (between videos)
+                        REQUEST_INTERVAL_SECONDS = 10.0         # pause between successful requests (between videos)
                         RETRY_BACKOFF_INITIAL_SECONDS = 4.0     # initial backoff for retries (exponential)
                         models = ["gemini-3.1-pro-preview"]     #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
                         model = random.choice(models)
@@ -291,6 +291,10 @@ class GenerationPipelineService(GenerationPipelinePort):
                         tweet_generation_ts = datetime.utcnow()
                         logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
+                        # log each tweet
+                        for i, t in enumerate(raw_tweets_text, start=1):
+                            logger.info("Tweet %s/%s: '%s'", i, len(raw_tweets_text), " ".join(t.splitlines()).strip(), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+
                         # 14. Persist tweet generation metadata
                         openai_req = OpenAIRequest(
                             prompt_content=PromptContent(
@@ -336,7 +340,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                             await self.tweet_repo.save_all(tweets)
                             logger.info("%s tweets saved in 'tweets'", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})                    
                         except Exception:
-                            logger.exception("Failed saving tweets for video %s", video.id, extra={...})
+                            logger.exception("Failed saving tweets in 'tweets' for video %s", video.id, extra={...})
                             continue
 
                         # 17. Update video entity

@@ -16,7 +16,7 @@ doc/Road_To_Pro.xlsx
 .vscode/
 .idea/
 *.log
-video2text-venv/
+post-pilot-app-venv/
 
 # Ignore mongoDB seed testing data (not needed in PRO server)
 utils/seed_master_data_mongodb.py

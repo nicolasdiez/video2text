@@ -13,7 +13,7 @@ class Channel:
     user_id: str                                                # FK → users._id
     youtube_channel_id: str
     selected_prompt_id: Optional[str] = None                    # FK → prompts._id
-    # selected_master_prompt_id: Optional[str] = None             # FK → master_prompts._id
+    # selected_master_prompt_id: Optional[str] = None           # FK → master_prompts._id
     
     title: str
     max_videos_to_fetch_from_channel: Optional[int] = None      # max number of videos to retrieve from the channel

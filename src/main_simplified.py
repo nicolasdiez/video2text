@@ -1,3 +1,5 @@
+# /src/main_simplified.py
+
 import asyncio
 import logging
 import os

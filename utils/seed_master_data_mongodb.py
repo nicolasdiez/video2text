@@ -252,7 +252,11 @@ async def seed():
                     oauth2_refresh_token_expires_at=None,
                     oauth2_state=None,
                     oauth2_code_verifier=None,
-                    screen_name=None
+                    screen_name=None,
+                    twitter_user_id=None,
+                    twitter_connected=None,
+                    last_access_token_refresh_at=None,
+                    access_token_refresh_failure_count=None
                 )
 
                 # build SchedulerConfig from the user_doc (use defaults if keys missing)

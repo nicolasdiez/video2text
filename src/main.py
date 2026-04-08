@@ -1,4 +1,4 @@
-# /src/main_2.py
+# /src/main.py
 
 # TODO:
 # - implementar “Context‑Aware Tweet Generation” con RAG (ANTES de generar tweets, lanzar semantic query a vectorDB con el transcript y pasar los N tweets similares como contexto en el prompt (filtrando por los q mejores stats tengan). DESPUES de generar tweet --> embedding_model(tweet) --> persist vector in vectorDB)
@@ -62,7 +62,7 @@ import adapters.inbound.http.pipeline_controller as pipeline_controller
 # Generation pipeline
 from application.services.generation_pipeline_service import GenerationPipelineService
 from adapters.outbound.mongodb.user_repository import MongoUserRepository
-from adapters.outbound.file_prompt_loader import FilePromptLoader
+from adapters.outbound.file_prompt_loader import FilePromptLoader       # <--- ELIMINAR, YA NO SE USA !!
 from adapters.outbound.mongodb.channel_repository import MongoChannelRepository
 from adapters.outbound.youtube_video_client import YouTubeVideoClient
 from adapters.outbound.mongodb.video_repository import MongoVideoRepository
@@ -120,7 +120,7 @@ except RuntimeError as exc:
 
 # Generation, Publishing, Stats, Embeddings pipelines 
 user_repo                                   = MongoUserRepository(database=db)
-prompt_loader                               = FilePromptLoader(prompts_dir="prompts")
+prompt_loader                               = FilePromptLoader(prompts_dir="prompts")  # <--- ELIMINAR, YA NO SE USA !!
 channel_repo                                = MongoChannelRepository(database=db)
 video_source                                = YouTubeVideoClient(api_key=config.YOUTUBE_API_KEY)
 video_repo                                  = MongoVideoRepository(database=db)
@@ -146,7 +146,7 @@ twitter_publication_client_oauth2           = TwitterPublicationClientOAuth2(use
 # Create an instance of GenerationPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of GenerationPipelineService)
 generation_pipeline_service_instance = GenerationPipelineService(
     user_repo                       = user_repo,
-    prompt_loader                   = prompt_loader,
+    prompt_loader                   = prompt_loader,            # <--- ELIMINAR, YA NO SE USA !!  
     channel_repo                    = channel_repo,
     video_source                    = video_source,
     video_repo                      = video_repo,
@@ -248,7 +248,7 @@ async def lifespan(app: FastAPI):
     # ==================================================================================================================
     async def generation_job():
         try:
-            logger.info("JOB STARTING: generation_job PID=%s THREAD=%s", os.getpid(), threading.get_ident())
+            logger.info("JOB STARTING: generation_job PID=%s THREAD=%s", os.getpid(), threading.get_ident(), extra={"job": "generation"})
             
             # 1. Get pipeline execution frequency at app config level
             app_config = await app_config_repo.get_config()
@@ -349,7 +349,7 @@ async def lifespan(app: FastAPI):
     # ==================================================================================================================
     async def publishing_job():
         try:
-            logger.info("JOB STARTING: publishing_job PID=%s THREAD=%s", os.getpid(), threading.get_ident())
+            logger.info("JOB STARTING: publishing_job PID=%s THREAD=%s", os.getpid(), threading.get_ident(), extra={"job": "publishing"})
             
             # 1. Get pipeline execution frequency at app config level
             app_config = await app_config_repo.get_config()
