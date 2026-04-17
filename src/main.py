@@ -341,7 +341,6 @@ async def lifespan(app: FastAPI):
             logger.error("JOB generation_job crashed: %s", str(exc), extra={"job":"generation"})
             logger.error("TRACEBACK:\n%s", traceback.format_exc())
             return
-    # ==================================================================================================================
 
 
     # ==================================================================================================================
@@ -442,7 +441,6 @@ async def lifespan(app: FastAPI):
             logger.error("JOB publishing_job crashed: %s", str(exc), extra={"job":"publishing"})
             logger.error("TRACEBACK:\n%s", traceback.format_exc())
             return
-    # ==================================================================================================================
 
 
     # ==================================================================================================================
@@ -530,7 +528,6 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Stats pipeline app config frequency: %s", str(ex), extra={"job": "stats"})
         else:
             logger.debug("Stats pipeline app config frequency has not changed (current freq: %s mins)", current_stats_frequency_minutes, extra={"job": "stats"})
-    # ==================================================================================================================
 
     
     # ==================================================================================================================
@@ -615,8 +612,6 @@ async def lifespan(app: FastAPI):
                 logger.warning("Failed to reschedule Embeddings pipeline app config frequency: %s", str(ex), extra={"job": "embeddings"})
         else:
             logger.debug("Embeddings pipeline app config frequency has not changed (current freq: %s mins)", current_embeddings_frequency_minutes, extra={"job": "embeddings"})
-    # ==================================================================================================================
-
 
 
     # load appConfig from repo

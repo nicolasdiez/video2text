@@ -1,5 +1,5 @@
 # Ingress: Hace accesible la app desde fuera con dominio/host. 
-# Requiere que tengas instalado un Ingress Controller en tu cluster (ej. helm install ingress-nginx ingress-nginx/ingress-nginx).
+# Requiere tener instalado un Ingress Controller en el cluster (ej. helm install ingress-nginx ingress-nginx/ingress-nginx).
 # El Ingress expone el servicio al exterior a través de un controlador (en AKS suele usarse NGINX Ingress Controller).
 
 apiVersion: networking.k8s.io/v1

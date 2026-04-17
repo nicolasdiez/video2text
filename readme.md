@@ -1,4 +1,4 @@
-# 🚀 PostPilotApp (formerly video2text)
+# 🚀 PostPilotApp
 
 An AI-driven content repurposing engine designed to automatically transform YouTube videos into highly engaging, scheduled Twitter/X threads and posts. 
 
@@ -9,7 +9,11 @@ Beyond standard generation, PostPilotApp implements a **Performance-Weighted RAG
 ## 🎯 Functional Overview
 
 The application operates through **4 fully automated, interconnected pipelines**. 
-The core generation flow is completely decoupled from the continuous learning mechanism:
+
+The core generation flow (Generation & Publishing) is strictly decoupled from the continuous learning mechanism (Stats & Embeddings). 
+
+Each pipeline serves a single, well-defined purpose and they interact seamlessly through an **asynchronous choreography pattern**, reading and writing state via domain entities. 
+The system is designed to be highly resilient: if a pipeline lacks the necessary upstream data, it gracefully skips its execution until the next scheduled trigger, allowing the system to self-heal once the required input data is produced by other pipelines.
 
 ### 1. ✍️ Generation Pipeline (The Active Creator)
 This is the entry point for new content creation, handling everything from raw video ingestion to final text generation.
@@ -31,20 +35,20 @@ Handles the complex logistics of social media distribution.
 
 ### 4. 📊 Stats Pipeline (The Evaluator)
 The analytics engine that closes the learning loop.
-* **Performance Tracking:** Scrapes and tracks the engagement metrics (likes, retweets, replies, bookmarks) of the published content using Twitter APIs and Apify.
+* **Performance Tracking:** Scrapes and tracks the engagement metrics (likes, retweets, replies, bookmarks) of the published content using Twitter APIs and Apify APIs (actors).
 * **Growth Scoring:** Calculates a Growth Score for every published tweet. This score is attached to the tweet's embedding in the database, actively dictating which tweets the Generation Pipeline will select as winning examples in the future.
 
 ---
 
 ## 🛠️ Technical Architecture
 
-PostPilotApp is built using **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports and Adapters)**. 
+PostPilotApp is built using **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports and Adapters)**.
 This strict boundary management ensures that the core business logic remains completely decoupled from external frameworks, databases, or third-party APIs.
 
 ### 🏗️ Core Layers
 
 * **Domain Layer:** Contains the pure business rules and logic. Includes Entities (`User`, `Tweet`, `Video`, `MasterPrompt`), Value Objects (`EmbeddingVector`), and Domain Services (`PromptComposerService`, `GrowthScoreCalculatorService`).
-* **Application Layer:** Orchestrates the use cases. This is where the 4 main Pipeline Services (`embeddings`, `generation`, `publishing`, `stats`) live, interacting solely with domain objects and interface ports.
+* **Application Layer:** Orchestrates the use cases. This is where the 4 main Pipeline Services (`generation`, `embeddings`, `publishing`, `stats`) live, interacting solely with domain objects and interface ports.
 * **Adapters (Inbound / Primary):** Driving the application.
   * **HTTP API:** RESTful endpoints built with **FastAPI** to interface with frontends, schedulers, or webhooks.
 * **Adapters (Outbound / Secondary):** Driven by the application.
@@ -54,14 +58,14 @@ This strict boundary management ensures that the core business logic remains com
 
 ### 💻 Tech Stack & Infrastructure
 
-* **Backend:** Python 3, FastAPI, Pydantic (Data Validation).
-* **Database:** MongoDB (NoSQL) & Vector Storage.
-* **AI & Machine Learning:** OpenAI API, Google Gemini API, Whisper ASR, RAG.
+* **Backend & API:** Python 3.10+, **FastAPI** (Web Framework), **Uvicorn** (ASGI Web Server), **Pydantic** (Data Validation & Serialization).
+* **Task Orchestration:** **AsyncIOScheduler** (Advanced Python Scheduler) managing the asynchronous execution of the different background pipelines.
+* **Database:** **MongoDB** (NoSQL) & Vector Storage for semantic search.
+* **AI & Machine Learning:** OpenAI API, Google Gemini API, Whisper ASR, Custom RAG architecture.
 * **Security:** JWT (JSON Web Tokens) for authentication, Password Hashing, AES Encryption for API keys.
 * **DevOps & Deployment:** * Containerized with **Docker**.
-  * Orchestrated via **Kubernetes** (`deployment`, `service`, `ingress`, `configmap`).
-  * CI/CD pipelines managed via **GitHub Actions** (`build-and-deploy.yaml`).
-
+  * CI/CD pipelines managed via **GitHub Actions**, deploying automatically to a **Self-Hosted Linux VM (Google Cloud Platform)** via direct Docker runtime management.
+  * **Kubernetes-ready:** Includes full K8s manifests (`deployment`, `service`, `ingress`, `configmap`) ready for future horizontal scaling.
 ---
 
 ## 🚀 Getting Started
@@ -106,6 +110,6 @@ This repository and its contents are proprietary software.
 
 The source code is published here exclusively for portfolio, educational, and demonstration purposes. 
 
-You are welcome to read and review the code for educational purposes. However, you are **NOT** permitted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software, or any part of it, for any commercial or non-commercial purposes without explicit written permission from the author.
+You are welcome to read and review the code for the abovementioned purposes. However, you are **NOT** permitted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software, or any part of it, for any commercial or non-commercial purposes without explicit written permission from the author.
 
 ---

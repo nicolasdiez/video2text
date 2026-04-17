@@ -1,6 +1,6 @@
 #.github/workflows/build-and-deploy.yaml
 
-name: Build and Deploy to Self-Hosted Runner VM
+name: Build (on github-hoster runner) and Deploy (on self-hosted runner GCP CE VM)
 
 on:
   push:
