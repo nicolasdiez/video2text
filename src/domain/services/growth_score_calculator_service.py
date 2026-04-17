@@ -1,12 +1,15 @@
 # src/domain/services/growth_score_calculator_service.py
 
+# === Regla rápida === 
+# - si código necesita un repo/client               → application service
+# - si código calcula/decide solo usando entidades  → domain service
+
 # === Application Service === 
 # Hace orquestación. 
 # Coordina repositorios, pipelines, consume servicios externos, actualiza estado, orquesta pasos.
 # Aplica reglas de aplicación (no de dominio).
 # Tiene efectos secundarios (persistencia, llamadas a APIs).
 # Ej: GenerationPipelineService (llama a repositorios, llama al LLM, guarda tweets...)
-# Regla rápida: si el código necesita un repo/client → application; si es cálculo/decisión puro sobre entidades → domain.
 
 # === Domain Service === 
 # NO es orquestación. Es lógica de dominio pura.

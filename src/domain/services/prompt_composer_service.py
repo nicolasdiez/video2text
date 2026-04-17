@@ -3,7 +3,7 @@
 # valorar moverlo a domain/services
 
 # Reminder:
-# - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitae que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
+# - Si un servicio A necesita otro servicio B, inyectar B en A por constructor desde el composition root (main.py) (A recibe B). Evitar que A importe y construya B por su cuenta (previene acoplamiento y ciclos).
 
 from enum import Enum
 from typing import Optional

@@ -1,9 +1,8 @@
 # src/application/services/prompt_resolver_service.py
 
-#  Es un application service (y no un domain service) porque:
-#   - Necesita acceder a repositorios (para cargar MasterPrompt).
-#   - Orquesta entidades y value objects.
-#   - Produce un resultado listo para usar por pipelines.
+#  Es un domain service (y no un application service) porque:
+#   - No accede a repositorios.
+#   - Contiene reglas del dominio que no pertenecen a una entidad concreta, sino a varias.
 
 from typing import Optional
 
