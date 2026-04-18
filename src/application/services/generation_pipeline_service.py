@@ -90,7 +90,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                 logger.exception("Failed to mark generation pipeline started", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 raise
 
-            # 1. Validate that user actually exists on the repo
+            # 1. Validate user exists
             user = await self.user_repo.find_by_id(user_id)
             if user is None:
                 raise LookupError(f"User {user_id} not found")
@@ -210,7 +210,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         
                         # 11. Generate raw texts (tweets) for the video
-                        REQUEST_INTERVAL_SECONDS = 10.0         # pause between successful requests (between videos)
+                        REQUEST_INTERVAL_SECONDS = 5.0         # pause between successful requests (between videos)
                         RETRY_BACKOFF_INITIAL_SECONDS = 4.0     # initial backoff for retries (exponential)
                         models = ["gemini-3.1-pro-preview"]     #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
                         model = random.choice(models)

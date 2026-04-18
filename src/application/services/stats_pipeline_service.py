@@ -42,22 +42,6 @@ class StatsPipelineService(StatsPipelinePort):
         self.growth_score_calculator = growth_score_calculator
         self.user_scheduler_runtime_repo = user_scheduler_runtime_repo
 
-    def _get_latest_fetched_at(self, stats: TwitterStats) -> Optional[datetime]:
-        """ 
-        Extract the most recent fetched_at across all metrics in TwitterStats. 
-        Helps decide whether stats are recent enough to avoid fetching again. 
-        """
-        if not stats:
-            return None
-
-        timestamps = []
-        for field_name in stats.__dataclass_fields__:
-            value = getattr(stats, field_name)
-            if isinstance(value, MetricValue) and value.fetched_at:
-                timestamps.append(value.fetched_at)
-
-        return max(timestamps) if timestamps else None
-
 
     async def run_for_user(self, user_id: str) -> None:
         try:
@@ -91,7 +75,7 @@ class StatsPipelineService(StatsPipelinePort):
                     logger.warning("Tweet %s/%s has no twitter_id, skipping", index, len(tweets))
                     continue
 
-                # Compute tweet age
+                # 4. Compute tweet age
                 tweet_age_minutes = (datetime.utcnow() - tweet.created_at).total_seconds() / 60
 
                 # Skip if tweet is too young
@@ -113,7 +97,7 @@ class StatsPipelineService(StatsPipelinePort):
                             logger.info("Skipping tweet %s/%s (stats freshness %.1f < %s mins)", index, len(tweets), age_minutes, STATS_MIN_STATS_FRESHNESS_MINUTES)
                             continue
 
-                # Fetch stats
+                # 5. Fetch tweet stats
                 try:
                     stats = await self.stats_provider.fetch_tweet_stats(tweet.twitter_id)
                     logger.info(
@@ -135,13 +119,13 @@ class StatsPipelineService(StatsPipelinePort):
                     logger.warning("Stats is None for tweet_id %s, skipping update and growth score", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                     continue
 
-                # Update tweet stats
+                # 6. Update tweet stats
                 now = datetime.utcnow()
                 tweet.twitter_stats = stats
                 tweet.updated_at = now
                 logger.info("Updated tweet stats in DB 'tweets' (twitter_id: %s)", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # Compute growth score
+                # 7. Compute tweet growth score
                 try:
                     growth_score = await self.growth_score_calculator.compute_growth_score(tweet)
                     if growth_score:
@@ -150,7 +134,7 @@ class StatsPipelineService(StatsPipelinePort):
                 except Exception:
                     logger.exception("Failed to compute growth score for tweet_id %s", tweet.twitter_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # Persist updated tweet
+                # 8. Persist updated tweet (stats and growth score)
                 try:
                     await self.tweet_repo.update(tweet)
                     logger.info("Updated tweet stats in DB 'tweets' (tweet_id: %s, _id: %s)", tweet.twitter_id, tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -159,12 +143,12 @@ class StatsPipelineService(StatsPipelinePort):
 
                 logger.info("Stats tweet %s/%s - Finished", index, len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-            # 4-a. Finishing pipeline OK
+            # 9-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_stats_finished(user_id, datetime.utcnow(), success=True)
             await self.user_scheduler_runtime_repo.reset_stats_failures(user_id)
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-        # 4-b. Finishing pipeline KO
+        # 9-b. Finishing pipeline KO
         except Exception:
             try:
                 await self.user_scheduler_runtime_repo.increment_stats_failures(user_id, by=1)
@@ -173,3 +157,20 @@ class StatsPipelineService(StatsPipelinePort):
                 logger.exception("Failed updating user runtime status after stats pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             logger.exception("Stats pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise
+
+
+    def _get_latest_fetched_at(self, stats: TwitterStats) -> Optional[datetime]:
+        """ 
+        Extract the most recent fetched_at across all metrics in TwitterStats. 
+        Helps decide whether stats are recent enough to avoid fetching again. 
+        """
+        if not stats:
+            return None
+
+        timestamps = []
+        for field_name in stats.__dataclass_fields__:
+            value = getattr(stats, field_name)
+            if isinstance(value, MetricValue) and value.fetched_at:
+                timestamps.append(value.fetched_at)
+
+        return max(timestamps) if timestamps else None

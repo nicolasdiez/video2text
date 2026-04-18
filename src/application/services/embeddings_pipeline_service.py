@@ -81,7 +81,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                 if tweet.embedding_refs is None:
                     tweet.embedding_refs = tweet.embedding_refs.__class__()  # TweetEmbeddingRefs()
 
-                # 3.a. Calculate embedding for tweet text
+                # 4. Calculate embedding for tweet text
                 if tweet.text and not tweet.embedding_refs.tweet_text_id:
                     try:
                         logger.info("Generating embedding for tweet text...", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -99,7 +99,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                     except Exception:
                         logger.exception("Failed generating embedding for tweet text (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # 3.b. Calculate embedding for video transcript
+                # 5. Calculate embedding for video transcript
                 if tweet.video_id and not tweet.embedding_refs.video_transcript_id:
                     try:
                         video = await self.video_repo.find_by_id(tweet.video_id)
@@ -121,19 +121,19 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                     except Exception:
                         logger.exception("Failed generating embedding for video transcript (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # 3.c. Persist updated tweet
+                # 6. Persist updated tweet
                 try:
                     await self.tweet_repo.update(tweet)
                     logger.info("Updated tweet embedding refs (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 except Exception:
                     logger.exception("Failed updating tweet after embeddings (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-            # 4-a. Finishing pipeline OK
+            # 7-a. Finishing pipeline OK
             await self.user_scheduler_runtime_repo.mark_embeddings_finished(user_id, datetime.utcnow(), success=True)
             await self.user_scheduler_runtime_repo.reset_embeddings_failures(user_id)
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-        # 4-b. Finishing pipeline KO
+        # 7-b. Finishing pipeline KO
         except Exception:
             try:
                 await self.user_scheduler_runtime_repo.increment_embeddings_failures(user_id, by=1)

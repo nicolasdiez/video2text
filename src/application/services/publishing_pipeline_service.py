@@ -50,7 +50,7 @@ class PublishingPipelineService(PublishingPipelinePort):
                 logger.exception("Failed to mark publishing pipeline started", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                 raise
 
-            # 1. Validate that user actually exists on the repo
+            # 1. Validate user exists
             user = await self.user_repo.find_by_id(user_id)
             if user is None:
                 raise LookupError(f"User '{user_id}' not found")
@@ -68,12 +68,12 @@ class PublishingPipelineService(PublishingPipelinePort):
             max_tweets_to_publish = user.max_tweets_to_publish
             tweets_to_publish = tweets[:max_tweets_to_publish]
 
-            # 4. Publish and update only selected tweets
+            # 4. Publish tweet and update metadata
             logger.info("Starting to publish %s tweets (out of max %s)", len(tweets_to_publish), max_tweets_to_publish, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             for index, tweet in enumerate(tweets_to_publish, start=1):
                 
                 try:
-                    # Single unified call — the client handles OAuth1/OAuth2 internally
+                    # Publish tweet
                     tweet_id = await self.twitter_publication_client.publish(user, tweet.text)
                     logger.info("Tweet %s/%s published successfully (id=%s)", index, len(tweets_to_publish), tweet_id)
 
