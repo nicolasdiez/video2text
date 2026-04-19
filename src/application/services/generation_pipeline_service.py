@@ -210,48 +210,53 @@ class GenerationPipelineService(GenerationPipelinePort):
                         logger.info("Prompt system_message loaded (+objective +output_length +output_language)", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         
                         # 11. Generate raw texts (tweets) for the video
-                        REQUEST_INTERVAL_SECONDS = 5.0         # pause between successful requests (between videos)
+                        REQUEST_INTERVAL_SECONDS = 5.0          # pause between successful requests (between videos)
                         RETRY_BACKOFF_INITIAL_SECONDS = 4.0     # initial backoff for retries (exponential)
+                        MAX_BACKOFF_SECONDS = 60.0              # limit the pauses between retries
                         models = ["gemini-3.1-pro-preview"]     #["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview"#]
                         model = random.choice(models)
                         max_retries = 3
                         backoff = RETRY_BACKOFF_INITIAL_SECONDS
                         json_response = None
 
+                        # call LLM (with retry loop)
                         for attempt in range(1, max_retries + 1):
                             logger.info("Calling tweet_generation_client (attempt %s/%s) model=%s", attempt, max_retries, model, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             try:
-                                # Adapter returns a parsed dict or raises RuntimeError
-                                result = await self.tweet_generation_client.generate_tweets(
+                                # call LLM
+                                llm_response = await self.tweet_generation_client.generate_tweets(
                                     prompt_user_message=prompt_user_message,
                                     prompt_system_message=prompt_system_message,
                                     model=model)
-                                logger.info("Tweet generation client returned result for video %s (attempt %s)", video.id, attempt, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                                logger.debug("Tweet generation raw summary (adapter may include raw): %s", (result.get("raw") if isinstance(result, dict) else "<no-raw>"), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                logger.info("Tweet generation client returned response for video %s (attempt %s)", video.id, attempt, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                logger.debug("Tweet generation raw summary (adapter may include raw): %s", (llm_response.get("raw") if isinstance(llm_response, dict) else "<no-raw>"), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                                # Defensive structural check: expect a dict with 'tweets' list (adapter guarantees this)
-                                if not isinstance(result, dict) or not isinstance(result.get("tweets"), list):
-                                    logger.warning("Tweet generation client returned unexpected structure for video %s on attempt %s: %r", video.id, attempt, result, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+                                # validate that LLM response comes in JSON format
+                                ok, reason = self.tweet_output_guardrail_service.is_json_structure_valid(llm_response)
+                                if not ok:
+                                    logger.warning("Tweet generation returned invalid JSON format for video %s on attempt %s: %s model=%s", video.id, attempt, reason, model, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                                     json_response = None
                                     if attempt < max_retries:
+                                        # backoff exponential with limit
                                         await asyncio.sleep(backoff)
-                                        backoff *= 2
-                                        continue
+                                        backoff = min(backoff * 2, MAX_BACKOFF_SECONDS)
+                                        continue    # retry call LLM
                                     else:
-                                        break
+                                        break   # no more retries allowed
 
                                 # Success: adapter returned parsed JSON dict (compatible with pipeline)
-                                json_response = result
+                                json_response = llm_response
                                 logger.info("Tweet AI generation successful for video %s (attempt %s) -> %s tweets", video.id, attempt, len(json_response.get("tweets", [])), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                                 
-                                # pause between successful requests if configured
+                                # Throttle (pause) between successful requests
                                 if REQUEST_INTERVAL_SECONDS and REQUEST_INTERVAL_SECONDS > 0:
                                     logger.debug("Sleeping %ss between tweet generation requests (video %s)", REQUEST_INTERVAL_SECONDS, video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                                     await asyncio.sleep(REQUEST_INTERVAL_SECONDS)
-                                
-                                break
+
+                                break   # success: exit the retry loop
 
                             except Exception as e:
+                                # classify transcient errors based on text
                                 error_text = str(e).lower()
                                 is_transient = ("503" in error_text or "temporarily unavailable" in error_text or "high demand" in error_text)
                                 logger.warning("Tweet generation client exception on attempt %s/%s for video %s: %s", attempt, max_retries, video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -267,10 +272,10 @@ class GenerationPipelineService(GenerationPipelinePort):
                         # After retry loop: ensure we have a valid parsed dict response
                         if not json_response:
                             logger.error("Tweet AI generation failed for video %s: no valid response after %s attempts", video.id, max_retries, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue
+                            continue    # skip this video and move to the next one
 
-                        # 12. Validate tweet output using guardrails
-                        logger.debug("Passing json_response to guardrails for video %s: %s", video.id, repr(json_response)[:1000], extra={...})
+                        # 12. Validate tweet output using business guardrails
+                        logger.debug("Passing json_response to business guardrails for video %s: %s", video.id, repr(json_response)[:1000], extra={...})
                         try:
                             expected_count = channel.tweets_to_generate_per_video
                             # validate tweet count
@@ -284,7 +289,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                         except Exception as e:
                             # any unexpected error in guardrails should also skip the video
                             logger.error("Tweet guardrail validation error for video %s: %s", video.id, str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-                            continue
+                            continue   
 
                         # 13. Extract tweets from JSON
                         raw_tweets_text: List[str] = [t["text"].strip() for t in json_response.get("tweets", []) if "text" in t]

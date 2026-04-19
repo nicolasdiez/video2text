@@ -4,7 +4,7 @@
 
 import logging
 import inspect
-from typing import Dict
+from typing import Dict, Any, Tuple, Optional
 from domain.ports.inbound.tweet_output_guardrail_service_port import TweetOutputGuardrailPort
 from domain.entities.user_prompt import TweetLengthPolicy, TweetLengthMode, TweetLengthUnit
 
@@ -69,6 +69,54 @@ class TweetOutputGuardrailService(TweetOutputGuardrailPort):
         # All tweets passed
         logger.info("Length validation result: True", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         return True
+
+    def is_json_structure_valid(self, json_response: Any) -> Tuple[bool, Optional[str]]:
+        """
+        Pure JSON format validator for LLM output.
+        - Returns (True, None) when payload is a dict with a 'tweets' list that contains
+          at least one plausible text candidate (string or dict with text-like key).
+        - Returns (False, reason) otherwise.
+        - Logs a concise info line with the validation result (same style as other methods).
+        """
+        method_name = inspect.currentframe().f_code.co_name
+
+        # Basic type check
+        if not isinstance(json_response, dict):
+            logger.info("JSON structure validation result: False (payload not a dict)", extra={"class": self.__class__.__name__, "method": method_name})
+            return False, "payload-not-dict"
+
+        tweets = json_response.get("tweets")
+        if not isinstance(tweets, list):
+            logger.info("JSON structure validation result: False (missing or non-list 'tweets')", extra={"class": self.__class__.__name__, "method": method_name})
+            return False, "missing-or-nonlist-tweets"
+
+        # Quick scan for at least one plausible text candidate
+        found_candidate = False
+        for item in tweets:
+            if isinstance(item, str):
+                if item.strip():
+                    found_candidate = True
+                    break
+                else:
+                    continue
+            if isinstance(item, dict):
+                # accept common text-like keys without extracting/normalizing
+                for key in ("text", "tweet", "content"):
+                    if key in item:
+                        val = item.get(key)
+                        if isinstance(val, str) and val.strip():
+                            found_candidate = True
+                            break
+                if found_candidate:
+                    break
+
+        if not found_candidate:
+            logger.info("JSON structure validation result: False (no text candidates in 'tweets' list)", extra={"class": self.__class__.__name__, "method": method_name})
+            return False, "no-text-candidates-in-tweets-list"
+
+        # Passed minimal structural checks
+        logger.info("JSON structure validation result: True", extra={"class": self.__class__.__name__, "method": method_name})
+        return True, None
 
     def is_semantically_valid(self, json_response: Dict) -> bool:
         # Placeholder for future LLM-based semantic validation
