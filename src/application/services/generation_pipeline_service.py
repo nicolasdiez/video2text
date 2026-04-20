@@ -296,7 +296,7 @@ class GenerationPipelineService(GenerationPipelinePort):
                         tweet_generation_ts = datetime.utcnow()
                         logger.info("%s tweets generated for video %s", len(raw_tweets_text), video.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                        # log each tweet
+                        # log each tweet text
                         for i, t in enumerate(raw_tweets_text, start=1):
                             logger.info("Tweet %s/%s: '%s'", i, len(raw_tweets_text), " ".join(t.splitlines()).strip(), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 

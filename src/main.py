@@ -143,7 +143,7 @@ twitter_publication_client_oauth1           = TwitterPublicationClientOAuth1(oau
 oauth2_service                              = TwitterOAuth2Service(user_repo=user_repo)
 twitter_publication_client_oauth2           = TwitterPublicationClientOAuth2(user_repo=user_repo, oauth2_service=oauth2_service)
 
-# Create an instance of GenerationPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of GenerationPipelineService)
+# Generation pipeline (inject adapters into the ports)
 generation_pipeline_service_instance = GenerationPipelineService(
     user_repo                       = user_repo,
     prompt_loader                   = prompt_loader,            # <--- ELIMINAR, YA NO SE USA !!  
@@ -165,7 +165,7 @@ generation_pipeline_service_instance = GenerationPipelineService(
 # Inject the instance of GenerationPipelineService (with all the Adapters) into the pipeline controller 
 pipeline_controller.generation_pipeline_service = generation_pipeline_service_instance
 
-# Create an instance of PublishingPipelineService with the concrete implementations of the ports (i.e., inject Adapters into the Ports of PublishingPipelineService)
+# Publishing pipeline
 publishing_pipeline_service_instance = PublishingPipelineService(
     user_repo                       = user_repo,
     tweet_repo                      = tweet_repo,
@@ -200,14 +200,12 @@ embeddings_pipeline_servive = EmbeddingsPipelineService(
     embeddings_client                           = embeddings_client,
     user_scheduler_runtime_repo                 = user_scheduler_runtime_repo,
     embedding_model                             = "text-embedding-3-small",
-    tweet_max_days_back_calculate_embeddings    = 60,
+    tweet_max_days_back_calculate_embeddings    = 120,
 )
 
 # --- AppConfig adapter ---
 app_config_repo = MongoAppConfigRepository(database=db)
 
-# APScheduler instance
-# scheduler = AsyncIOScheduler()
 
 # Lifespan context manager (replaces deprecated @app.on_event)
 @asynccontextmanager
@@ -626,7 +624,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(generation_job, "interval", minutes=generation_pipeline_frequency_minutes, id="generation_job")
     scheduler.add_job(publishing_job, "interval", minutes=publishing_pipeline_frequency_minutes, id="publishing_job")
     # scheduler.add_job(stats_job, "interval", minutes=stats_pipeline_frequency_minutes, id="stats_job")
-    # scheduler.add_job(embeddings_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
+    scheduler.add_job(embeddings_job, "interval", minutes=embeddings_pipeline_frequency_minutes, id="embeddings_job")
 
     # start scheduler.
     logger.info("JOBS BEFORE START: %s", [j.id for j in scheduler.get_jobs()])

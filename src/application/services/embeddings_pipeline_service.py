@@ -4,6 +4,7 @@ import inspect
 import logging
 from datetime import datetime
 from typing import List, Optional
+from types import SimpleNamespace
 
 from domain.ports.inbound.embeddings_pipeline_port import EmbeddingsPipelinePort
 from domain.ports.outbound.mongodb.user_repository_port import UserRepositoryPort
@@ -16,6 +17,7 @@ from domain.ports.outbound.mongodb.user_scheduler_runtime_status_repository_port
 from domain.value_objects.embedding_vector import EmbeddingVector
 from domain.value_objects.embedding_type import EmbeddingType
 from domain.entities.tweet import Tweet
+from domain.entities.user import TweetFetchSortOrder
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +69,10 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
             logger.info("User found (username: %s)", user.username, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
             # 2. Fetch tweets of the user
-            tweets: List[Tweet] = await self.tweet_repo.find_by_user(
+            # tweets: List[Tweet] = await self.tweet_repo.find_by_user(user_id=user.id, max_days_back=self.tweet_max_days_back_calculate_embeddings)
+            tweets: List[Tweet] = await self.tweet_repo.find_published_by_user(
                 user_id=user.id,
+                order=TweetFetchSortOrder.newest_first,
                 max_days_back=self.tweet_max_days_back_calculate_embeddings
             )
             logger.info("Fetched %s tweets for embeddings", len(tweets), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -77,9 +81,9 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
             for index, tweet in enumerate(tweets, start=1):
                 logger.info("Processing tweet %s/%s (_id: %s)", index, len(tweets), tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
-                # Ensure embedding_refs attribute exists
-                if tweet.embedding_refs is None:
-                    tweet.embedding_refs = tweet.embedding_refs.__class__()  # TweetEmbeddingRefs()
+                # ensure embedding_refs attribute exists
+                if getattr(tweet, "embedding_refs", None) is None:
+                    tweet.embedding_refs = SimpleNamespace(tweet_text_id=None, video_transcript_id=None)
 
                 # 4. Calculate embedding for tweet text
                 if tweet.text and not tweet.embedding_refs.tweet_text_id:
@@ -95,6 +99,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                             created_at=datetime.utcnow())
                         
                         embedding_id = await self.embeddings_repo.save(embedding)
+                        logger.info("Saved embedding vector (type: %s) (size: %s)", embedding.type.value if embedding.type is not None else "none", len(vector), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                         tweet.embedding_refs.tweet_text_id = embedding_id
                     except Exception:
                         logger.exception("Failed generating embedding for tweet text (_id: %s)", tweet.id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
@@ -115,6 +120,7 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
                                 created_at=datetime.utcnow())
                             
                             embedding_id = await self.embeddings_repo.save(embedding)
+                            logger.info("Saved embedding vector (type: %s) (size: %s)", embedding.type.value if embedding.type is not None else "none", len(vector), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
                             tweet.embedding_refs.video_transcript_id = embedding_id
                         else:
                             logger.info("No transcript found for video_id %s, skipping transcript embedding", tweet.video_id, extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})

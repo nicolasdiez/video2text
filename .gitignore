@@ -14,6 +14,11 @@ doc/Road_To_Pro.xlsx
 $sw_architecture.drawio.bkp
 doc/$sw_architecture.drawio.bkp
 doc/.$sw_architecture.drawio.dtmp
+doc/.$C4 Model - Level 1 - System Context Diagram.drawio
+doc/.$C4 Model - Level 2 - Container Diagram.drawio
+doc/.$C4 Model - Level 3 - Component Diagram.drawio
+doc/.$C4 Model - Level 4 - Code Diagram.drawio
+
 
 # Python cache
 __pycache__/

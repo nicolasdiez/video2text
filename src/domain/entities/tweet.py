@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Dict, Any, Union
+from types import SimpleNamespace
 
 
 @dataclass(kw_only=True)
@@ -99,13 +100,13 @@ class Tweet:
     twitter_id: Optional[str] = None            # ID of the tweet in X
 
     # Performance metrics (optional, filled after scraping the metrics from Twitter)
-    twitter_stats: Optional[TwitterStats] = None
+    twitter_stats: Optional[TwitterStats] = field(default_factory=TwitterStats)
 
     # References to the embedding IDs related to the Tweet stored in the vectorDB 
-    embedding_refs: Optional[TweetEmbeddingRefs] = None
+    embedding_refs: Optional[TweetEmbeddingRefs] = field(default_factory=TweetEmbeddingRefs)
 
     # Growth score computed from twitter_stats (performance metrics)
-    growth_score: Optional[GrowthScore] = None
+    growth_score: Optional[GrowthScore] = field(default_factory=GrowthScore)
 
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[str] = None

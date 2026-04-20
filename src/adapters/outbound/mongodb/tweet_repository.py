@@ -127,8 +127,7 @@ class MongoTweetRepository(TweetRepositoryPort):
     ) -> List[Tweet]:
         """
         Fetch all tweets belonging to a given user.
-        If `max_days_back` is provided, restrict results to tweets created
-        within the last X days.
+        If `max_days_back` is provided, restrict results to tweets created within the last max_days_back days.
         """
 
         query = {"user_id": user_id}
@@ -136,9 +135,9 @@ class MongoTweetRepository(TweetRepositoryPort):
         # Apply date filter if needed
         if max_days_back is not None:
             cutoff_date = datetime.utcnow() - timedelta(days=max_days_back)
-            query["created_at"] = {"$gte": cutoff_date}
+            query["createdAt"] = {"$gte": cutoff_date}
 
-        cursor = self.collection.find(query)
+        cursor = self._coll.find(query)
 
         docs = await cursor.to_list(length=None)
 
