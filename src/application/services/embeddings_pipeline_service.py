@@ -140,12 +140,11 @@ class EmbeddingsPipelineService(EmbeddingsPipelinePort):
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 7-b. Finishing pipeline KO
-        except Exception:
+        except Exception as e:
             try:
                 await self.user_scheduler_runtime_repo.increment_embeddings_failures(user_id, by=1)
                 await self.user_scheduler_runtime_repo.mark_embeddings_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
                 logger.exception("Failed updating user runtime status after embeddings pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-
-            logger.exception("Embeddings pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.exception("Embeddings pipeline failed (error: %s)", str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise

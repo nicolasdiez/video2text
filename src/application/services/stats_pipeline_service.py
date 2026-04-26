@@ -149,13 +149,13 @@ class StatsPipelineService(StatsPipelinePort):
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
 
         # 9-b. Finishing pipeline KO
-        except Exception:
+        except Exception as e:
             try:
                 await self.user_scheduler_runtime_repo.increment_stats_failures(user_id, by=1)
                 await self.user_scheduler_runtime_repo.mark_stats_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
                 logger.exception("Failed updating user runtime status after stats pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-            logger.exception("Stats pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.exception("Stats pipeline failed (error: %s)", str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise
 
 
