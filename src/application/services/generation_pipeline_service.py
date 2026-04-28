@@ -376,13 +376,13 @@ class GenerationPipelineService(GenerationPipelinePort):
             logger.info("Finished OK", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
         
         # 18-b. Finishing pipeline KO
-        except Exception:
+        except Exception as e:
             # increment failure counter and mark as finished with failure
             try:
                 await self.user_scheduler_runtime_repo.increment_generation_failures(user_id, by=1)
                 await self.user_scheduler_runtime_repo.mark_generation_finished(user_id, datetime.utcnow(), success=False)
             except Exception:
                 logger.exception("Failed updating user runtime status after generation pipeline error", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
-            logger.exception("Generation pipeline failed", extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
+            logger.exception("Generation pipeline failed (error: %s)", str(e), extra={"class": self.__class__.__name__, "method": inspect.currentframe().f_code.co_name})
             raise
 
